@@ -5,6 +5,8 @@
 #include <QLabel>
 #include <QPushButton>
 
+#include "../Utils.h"
+
 DataLineEditor::DataLineEditor(int line, QPushButton *plus, QPushButton *minus, QLineEdit *edit) : QObject(){
 	_line = line;
 	connect(plus, SIGNAL(clicked()), this, SLOT(plus()));
@@ -28,7 +30,7 @@ void DataLineEditor::changed(QString text){
 	bool ok;
 	int i = text.toInt(&ok, 16);
 	if(ok){
-		emit dataChanged(_line, quint8(i));
+		emit dataChanged(_line, byte(i));
 	}
 }
 
@@ -69,7 +71,7 @@ void DataEditor::rebuild(){
 		DataLineEditor *dle0 = new DataLineEditor(0, plus);
 		connect(dle0, SIGNAL(plusClicked(int)), this, SLOT(plusClicked(int)));
 
-		foreach(qint8 c, _data){
+		foreach(byte c, _data){
 
 			QLabel *label = new QLabel("0x", _central);
 			layout->addWidget(label, row, 0, 1, 1);
@@ -77,7 +79,7 @@ void DataEditor::rebuild(){
 			QLineEdit *edit = new QLineEdit(_central);
 			edit->setInputMask("HH");
 			QString text;
-			text.sprintf("%02X", quint8(c));
+			text.sprintf("%02X", byte(c));
 			edit->setText(text);
 			layout->addWidget(edit, row, 1, 1, 1);
 
@@ -92,18 +94,18 @@ void DataEditor::rebuild(){
 			DataLineEditor *dle = new DataLineEditor(row, plus, minus, edit);
 			connect(dle, SIGNAL(minusClicked(int)), this, SLOT(minusClicked(int)));
 			connect(dle, SIGNAL(plusClicked(int)), this, SLOT(plusClicked(int)));
-			connect(dle, SIGNAL(dataChanged(int,quint8)), this, SLOT(dataChanged(int,quint8)));
+			connect(dle, SIGNAL(dataChanged(int, ubyte)), this, SLOT(dataChanged(int, ubyte)));
 			row++;
 		}
 	}
 }
 
-void DataEditor::dataChanged(int line, quint8 data){
-	_data[line-1] = qint8(data);
+void DataEditor::dataChanged(int line, ubyte data){
+	_data[line-1] = byte(data);
 }
 
 void DataEditor::plusClicked(int line){
-	_data = _data.insert(line, qint8(0));
+	_data = _data.insert(line, byte(0));
 	rebuild();
 }
 

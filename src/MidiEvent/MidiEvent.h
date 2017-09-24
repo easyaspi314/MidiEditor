@@ -25,6 +25,8 @@
 #include "../protocol/ProtocolEntry.h"
 #include <QWidget>
 
+#include "../Utils.h"
+
 class MidiFile;
 class QSpinBox;
 class QLabel;
@@ -111,7 +113,7 @@ class MidiEvent : public ProtocolEntry, public GraphicObject {
 	protected:
 		int numChannel, timePos;
 		MidiFile *midiFile;
-		static quint8 _startByte;
+		static ubyte _startByte;
 		static EventWidget *_eventWidget;
 		MidiTrack *_track;
 		int _tempID;

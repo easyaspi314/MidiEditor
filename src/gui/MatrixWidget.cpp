@@ -38,6 +38,7 @@
 #include <QList>
 #include <QPixmapCache>
 #include <QtCore/qmath.h>
+#include <QBuffer>
 #include <QTime>
 
 #define NUM_LINES 139
@@ -76,6 +77,7 @@ MatrixWidget::MatrixWidget(QWidget *parent) : PaintWidget(parent) {
 	scrollDir = NONE;
 	// Double the cache space as we use it a lot.
 	QPixmapCache::setCacheLimit(20480);
+	pixmap = 0;
 	file = 0;
 	scaleX = 1;
 	pianoEvent = new NoteOnEvent(0, 100, 0, 0);
@@ -116,7 +118,7 @@ void MatrixWidget::timeMsChanged(int ms, bool ignoreLocked) {
 	int endTimeXTemp = msOfXPos(relativeRect().right());
 
 	if ((!screen_locked || ignoreLocked) && (x < 0 || ms < startTimeXTemp
-			|| ms > endTimeXTemp || x > width() - 100)) {
+			|| ms > endTimeXTemp || x > (relativeRect().left() + relativeRect().width() + 100))) {
 
 		// return if the last tick is already shown
 		if (file->maxTime() <= endTimeXTemp && ms >= startTimeXTemp) {
@@ -125,7 +127,7 @@ void MatrixWidget::timeMsChanged(int ms, bool ignoreLocked) {
 		}
 
 		// sets the new position and repaints
-		emit scrollChanged(relativeRect().right(), relativeRect().top());
+		emit scrollChanged(qRound(relativeRect().right() + (relativeRect().width() * 0.9)), relativeRect().top());
 	} else {
 		update();
 	}
@@ -137,6 +139,9 @@ void MatrixWidget::timeMsChanged(int ms, bool ignoreLocked) {
 void MatrixWidget::paintEvent(QPaintEvent *event) {
 	// Q_UNUSED(event)
 	if (!file) {
+		return;
+	}
+	if (height() <= 0) {
 		return;
 	}
 	if (paintingActive()) {
@@ -168,6 +173,37 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 		painter.setClipping(true);
 		painter.setClipRect(relativeRect());
 	}
+	QPixmap linesTexture;
+	if (!QPixmapCache::find("MatrixWidget_" + QString::number(scaleY, 'f', 2), linesTexture)) {
+			linesTexture = QPixmap(1, height());
+			//linesTexture.fill(Qt::transparent);
+
+			QPainter linesPainter(&linesTexture);
+			if (antiAliasingEnabled) {
+				linesPainter.setRenderHint(QPainter::Antialiasing);
+			}
+			for (int i = qFloor(startLineY); i <= qFloor(endLineY); i++) {
+				int startLine = yPosOfLine(i);
+				QColor c(194, 230, 255);
+				if (i % 2 == 0) {
+					c = QColor(234, 246, 255);
+				}
+				if (i > 127) {
+					c = QColor(194, 194, 194);
+					if (i % 2 == 1) {
+						c = QColor(234, 246, 255);
+					}
+				}
+				linesPainter.fillRect(qRectF(0, startLine, 1,
+											  startLine + lineHeight()), c);
+
+			}
+			linesPainter.end();
+			QPixmapCache::insert("MatrixWidget_" + QString::number(scaleY, 'f', 2), linesTexture);
+			QPalette palette;
+			palette.setBrush(backgroundRole(), QBrush(linesTexture));
+			setPalette(palette);
+		}
 	// This complex QString serves as the ID of the events pixmap.
 	// It stores the zoom level, measure division, and the UUID of the current ProtocolStep.
 	QString pixmapId = "ProtocolStep_"
@@ -175,52 +211,26 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 			+ QString::number(scaleY, 'f', 2) + "_"
 			+ QString::number(div()) + "_"
 			+ file->protocol()->currentStepId();
-	QPixmap notesPixmap;
-	bool totalRepaint = !QPixmapCache::find(pixmapId, notesPixmap);
+	//QPixmap notesPixmap;
+	bool totalRepaint = !pixmap && !QPixmapCache::find(pixmapId, pixmap);
 
 	if (totalRepaint) {
-		QPixmap linesTexture;
-		if (!QPixmapCache::find("MatrixWidget_" + QString::number(scaleY, 'f', 2), linesTexture)) {
-				linesTexture = QPixmap(1, height());
-				//linesTexture.fill(Qt::transparent);
-
-				QPainter linesPainter(&linesTexture);
-				if (antiAliasingEnabled) {
-					linesPainter.setRenderHint(QPainter::Antialiasing);
-				}
-				for (int i = qFloor(startLineY); i <= qFloor(endLineY); i++) {
-					int startLine = yPosOfLine(i);
-					QColor c(194, 230, 255);
-					if (i % 2 == 0) {
-						c = QColor(234, 246, 255);
-					}
-					if (i > 127) {
-						c = QColor(194, 194, 194);
-						if (i % 2 == 1) {
-							c = QColor(234, 246, 255);
-						}
-					}
-					linesPainter.fillRect(qRectF(0, startLine, 1,
-												  startLine + lineHeight()), c);
-
-				}
-				linesPainter.end();
-				QPixmapCache::insert("MatrixWidget_" + QString::number(scaleY, 'f', 2), linesTexture);
-			}
 		this->pianoKeys.clear();
-		notesPixmap = QPixmap(width(), height());
+		pixmap = new QPixmap(width(), height());
 
-		if (notesPixmap.paintingActive()) {
+
+		if (pixmap->paintingActive()) {
 			return;
 		}
-		notesPixmap.fill(Qt::transparent);
-		QPainter pixpainter(&notesPixmap);
+		pixmap->fill(Qt::transparent);
+		QPainter pixpainter(pixmap);
+		//pixpainter.set
 		pixpainter.setBrush(Qt::transparent);
 		if (antiAliasingEnabled) {
 			pixpainter.setRenderHint(QPainter::Antialiasing);
 		}
 		// fill background
-		pixpainter.fillRect(qRectF(0, 0, width(), height()), QBrush(linesTexture));
+		//pixpainter.fillRect(qRectF(0, 0, width(), height()), Qt::lightGray);
 
 		QFont f = pixpainter.font();
 		f.setPixelSize(12);
@@ -261,8 +271,8 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 		while (tick + currentEvent->ticksPerMeasure() <= 0) {
 			tick += currentEvent->ticksPerMeasure();
 		}
-		qreal xfrom,xDiv;
-		int measureStartTick, metronomeDiv, ticksPerDiv, startTickDiv, divTick;
+		qreal xfrom, xDiv, metronomeDiv;
+		int measureStartTick, ticksPerDiv, startTickDiv, divTick;
 		QPen oldPen, dashPen;
 		while (tick < file->endTick()) {
 			TimeSignatureEvent *measureEvent = currentTimeSignatureEvents->at(i);
@@ -280,7 +290,7 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 			}
 			// draw measures
 			if (_div >= 0) {
-				metronomeDiv = qRound(4 / qPow(2, _div));
+				metronomeDiv = 4 / qPow(2, _div);
 				ticksPerDiv = metronomeDiv * file->ticksPerQuarter();
 				startTickDiv = ticksPerDiv;
 				oldPen = pixpainter.pen();
@@ -290,7 +300,7 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 					divTick = startTickDiv + measureStartTick;
 					xDiv = xPosOfMs(msOfTick(divTick));
 					currentDivs.append(QPair<qreal, int>(xDiv, divTick));
-					pixpainter.drawLine(qLineF(xDiv, 0, xDiv, height()));
+					pixpainter.drawLine(QLineF(xDiv, 0, xDiv, height()));
 					startTickDiv += ticksPerDiv;
 				}
 				pixpainter.setPen(oldPen);
@@ -299,7 +309,7 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 
 		// line between time texts and matrixarea
 		pixpainter.setPen(Qt::gray);
-		pixpainter.drawLine(qLineF(0, 0, width(), 0));
+		pixpainter.drawLine(QLineF(0, 0, width(), 0));
 		pixpainter.drawLine(qLineF(0, 0, 0,
 									height()));
 
@@ -315,17 +325,17 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 		pixpainter.setPen(Qt::black);
 		pixpainter.end();
 
-		QPixmapCache::insert(pixmapId, notesPixmap);
+		QPixmapCache::insert(pixmapId, *pixmap);
 		emit objectListChanged();
 
 		// Set the background of the widget to prevent further
 		// repaints.
-		QPalette palette = this->palette();
+		/*QPalette palette = this->palette();
 		palette.setBrush(backgroundRole(), QBrush(notesPixmap));
-		setPalette(palette);
+		setPalette(palette);*/
 	}
 	// TODO: I don't think we need this.
-	/*switch (updatemode) {
+	switch (updatemode) {
 		case 1: {
 			QPainter::PixmapFragment frags[event->region().rectCount()];
 			QVector<QRect> rects = event->region().rects();
@@ -333,22 +343,21 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 				QRect rect = rects.at(i);
 				frags[i] = QPainter::PixmapFragment::create(rect.center(), rect, 1, 1, 0, 1);
 			}
-			painter.drawPixmapFragments(frags, event->region().rectCount(), notesPixmap);
+			painter.drawPixmapFragments(frags, event->region().rectCount(), *pixmap);
 			break;
 		}
 		case 2: {
 			QPainter::PixmapFragment frag = QPainter::PixmapFragment::create(event->rect().center(), event->rect());
-			painter.drawPixmapFragments(&frag, 1, notesPixmap);
+			painter.drawPixmapFragments(&frag, 1, *pixmap);
 			break;
 		}
 		default:
 			QPainter::PixmapFragment frag = QPainter::PixmapFragment::create(relativeRect().center(), relativeRect());
 
-			painter.drawPixmapFragments(&frag, 1, notesPixmap);
-	}*/
+			painter.drawPixmapFragments(&frag, 1, *pixmap);
+	}
 
-	if (!QApplication::arguments().contains("--no-antialiasing")
-			&& antiAliasingEnabled) {
+	if (antiAliasingEnabled) {
 		painter.setRenderHint(QPainter::Antialiasing);
 	}
 	// draw the piano / linenames
@@ -504,7 +513,7 @@ void MatrixWidget::setFile(MidiFile *f) {
 
 	setFixedWidth(widthNew);
 	connect(file->protocol(), SIGNAL(actionFinished()), this,
-			SLOT(update()));
+			SLOT(redraw()));
 
 	calcSizes();
 
@@ -529,7 +538,7 @@ void MatrixWidget::setFile(MidiFile *f) {
 	if (maxNote - 5 > 0) {
 		// startLineY = maxNote - 5.0;
 	}
-	update();
+	redraw();
 }
 
 void MatrixWidget::setPianoWidget(PianoWidget *widget) {
@@ -819,4 +828,9 @@ QList<QPair<qreal, int> > MatrixWidget::divs() {
 
 int MatrixWidget::div() {
 	return _div;
+}
+void MatrixWidget::redraw() {
+	delete pixmap;
+	pixmap = 0;
+	update(relativeRect());
 }

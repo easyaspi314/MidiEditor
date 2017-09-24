@@ -42,14 +42,14 @@ QString KeySignatureEvent::toMessage(){
 
 QByteArray KeySignatureEvent::save(){
 	QByteArray array = QByteArray();
-	array.append(qint8(0xFF));
-	array.append(0x59 | qint8(channel()));
-	array.append(qint8(0x02));
-	array.append(qint8(tonality()));
+	array.append(byte(0xFF));
+	array.append(byte(0x59 | channel()));
+	array.append(byte(0x02));
+	array.append(byte(tonality()));
 	if(_minor){
-		array.append(qint8(0x01));
+		array.append(byte(0x01));
 	} else {
-		array.append(qint8(0x00));
+		array.append(byte(0x00));
 	}
 	return array;
 }

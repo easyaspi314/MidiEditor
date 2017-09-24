@@ -59,10 +59,11 @@ ChannelListItem::ChannelListItem(int ch, ChannelListWidget *parent) : QWidget(pa
 	QToolBar *toolBar = new QToolBar(this);
 	toolBar->setIconSize(QSize(12, 12));
 
-	// macOS hack to remove unwanted gradients.
+	// macOS hack to remove unwanted gradients so we can set the background to what we want.
 	toolBar->setStyleSheet("QToolBar { border: none; }");
+
 	QPalette palette = toolBar->palette();
-	palette.setColor(QPalette::Background, Qt::white);
+	palette.setColor(QPalette::Background, Qt::transparent);
 	toolBar->setPalette(palette);
 
 	// visibility

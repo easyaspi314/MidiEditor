@@ -543,7 +543,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
 			DataEditor *edit = qobject_cast<DataEditor*>(editor);
 			QByteArray data = edit->data();
 			if(eventWidget->type() == MidiEvent::SystemExclusiveEventType){
-				if(data.contains(quint8(0xF7))){
+				if(data.contains(ubyte(0xF7))){
 					QMessageBox::warning(eventWidget, "Error", QString("The data must not contain byte 0xF7 (End of SysEx)"));
 					return;
 				}
@@ -1194,9 +1194,9 @@ void EventWidget::getKey(int index, int *tonality, bool *minor){
 
 QString EventWidget::dataToString(QByteArray data){
 	QString s;
-	foreach(qint8 b, data){
+	foreach(byte b, data){
 		QString t;
-		t.sprintf("%02X", quint8(b));
+		t.sprintf("%02X", ubyte(b));
 		s=s+"0x"+t+"\n";
 	}
 	return s.trimmed();

@@ -100,13 +100,13 @@ void TimeSignatureEvent::setDenominator(int d){
 
 QByteArray TimeSignatureEvent::save(){
 	QByteArray array = QByteArray();
-	array.append(qint8(0xFF));
-	array.append(qint8(0x58));
-	array.append(qint8(0x04));
-	array.append(qint8(numerator));
-	array.append(qint8(denominator));
-	array.append(qint8(midiClocksPerMetronome));
-	array.append(qint8(num32In4th));
+	array.append(byte(0xFF));
+	array.append(byte(0x58));
+	array.append(byte(0x04));
+	array.append(byte(numerator));
+	array.append(byte(denominator));
+	array.append(byte(midiClocksPerMetronome));
+	array.append(byte(num32In4th));
 	return array;
 }
 

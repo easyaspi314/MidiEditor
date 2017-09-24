@@ -47,10 +47,12 @@ MiscWidget::MiscWidget(MatrixWidget *mw,
 	setRepaintOnMouseMove(true);
 	setRepaintOnMousePress(true);
 	setRepaintOnMouseRelease(true);
+	setMouseTracking(true);
 	matrixWidget = mw;
 	edit_mode = SINGLE_MODE;
 	mode = VelocityEditor;
 	channel = 0;
+	QPixmapCache::setCacheLimit(20480);
 	controller = 0;
 	file = 0;
 	dragY = 0;
@@ -115,7 +117,7 @@ void MiscWidget::setControl(int ctrl) {
 }
 
 void MiscWidget::paintEvent(QPaintEvent *event) {
-	if (!matrixWidget || !file || paintingActive() || height() < 10) {
+	if (!matrixWidget || !file || !file->protocol() || paintingActive() ) {
 		return;
 	}
 
@@ -125,12 +127,6 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 
 	// draw background
 	QPainter painter(this);
-	if (MatrixWidget::antiAliasingEnabled) {
-		painter.setRenderHint(QPainter::Antialiasing);
-	}
-	QFont f = painter.font();
-	f.setPixelSize(9);
-	painter.setFont(f);
 	int updatemode = 0;
 	if (!event->region().isNull() && !event->region().isEmpty()) {
 		updatemode = 1;
@@ -144,6 +140,13 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 		painter.setClipping(true);
 		painter.setClipRect(relativeRect());
 	}
+	if (MatrixWidget::antiAliasingEnabled) {
+		painter.setRenderHint(QPainter::Antialiasing);
+	}
+	QFont f = painter.font();
+	f.setPixelSize(9);
+	painter.setFont(f);
+
 	// divs
 	QPixmap notes;
 	QString notesId = "MiscWidget_" + QString::number(height()) + "_" +
@@ -174,6 +177,9 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 			}
 			pixpainter.end();
 			QPixmapCache::insert("MiscWidget_" + QString::number(height()), background);
+			QPalette palette;
+			palette.setBrush(backgroundRole(), QBrush(background));
+			setPalette(palette);
 		}
 
 		notes = QPixmap(width(), height());
@@ -182,7 +188,7 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 		if (MatrixWidget::antiAliasingEnabled) {
 			pixpainter.setRenderHint(QPainter::Antialiasing);
 		}
-		pixpainter.fillRect(0, 0, width(), height(), QBrush(background));
+		//pixpainter.fillRect(0, 0, width(), height(), QBrush(background));
 		pixpainter.setBrush(QColor(234, 246, 255));
 		pixpainter.setPen(QColor(194, 230, 255));
 		typedef QPair<qreal, int> TMPPair;

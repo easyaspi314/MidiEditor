@@ -74,9 +74,9 @@ void PlayerThread::run() {
 	// Reset all Controllers
 	for(int i = 0; i<16; i++){
 		QByteArray array;
-		array.append(0xB0 | qint8(i));
-		array.append(121);
-		array.append(qint8(0));
+		array.append(byte(0xB0) | byte(i));
+		array.append(byte(121));
+		array.append(byte(0));
 		MidiOutput::instance()->sendCommand(array);
 	}
 	MidiOutput::instance()->playedNotes.clear();
@@ -129,18 +129,18 @@ void PlayerThread::timeout() {
 		for (int i = 0; i < 16; i++) {
 			// value (third number) should be 0, but doesnt work
 			QByteArray array;
-			array.append(0xB0 | qint8(i));
-			array.append(qint8(123));
-			array.append(qint8(127));
+			array.append(0xB0 | byte(i));
+			array.append(byte(123));
+			array.append(byte(127));
 			MidiOutput::instance()->sendCommand(array);
 		}
 		if(MidiOutput::isAlternativePlayer()) {
 			foreach(int channel, MidiOutput::instance()->playedNotes.keys()){
 				foreach(int note, MidiOutput::instance()->playedNotes.value(channel)) {
 					QByteArray array;
-					array.append(0x80 | qint8(channel));
-					array.append(qint8(note));
-					array.append(qint8(0));
+					array.append(0x80 | byte(channel));
+					array.append(byte(note));
+					array.append(byte(0));
 					MidiOutput::instance()->sendCommand(array);
 				}
 			}

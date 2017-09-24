@@ -40,9 +40,9 @@ int SysExEvent::line(){
 
 QByteArray SysExEvent::save(){
 	QByteArray s;
-	s.append(qint8(0xF0));
+	s.append(byte(0xF0));
 	s.append(_data);
-	s.append(qint8(0xF7));
+	s.append(byte(0xF7));
 	return s;
 }
 

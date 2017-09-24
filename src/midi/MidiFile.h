@@ -26,7 +26,6 @@
 #include <QObject>
 #include <QList>
 
-
 class MidiEvent;
 class TimeSignatureEvent;
 class TempoChangeEvent;

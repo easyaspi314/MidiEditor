@@ -97,6 +97,7 @@ class MatrixWidget : public PaintWidget {
 		void takeKeyReleaseEvent(QKeyEvent *event);
 		void setDiv(int div);
 		int div();
+		void redraw();
 	signals:
 		void sizeChanged(int maxScrollTime, double maxScrollLine, int valueX,
 				double valueY);

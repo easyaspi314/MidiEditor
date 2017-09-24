@@ -94,17 +94,17 @@ QString NoteOnEvent::offEventMessage(){
 
 QByteArray NoteOnEvent::save(){
 	QByteArray array = QByteArray();
-	array.append(0x90 | qint8(channel()));
-	array.append(qint8(note()));
-	array.append(qint8(velocity()));
+	array.append(byte(0x90 | channel()));
+	array.append(byte(note()));
+	array.append(byte(velocity()));
 	return array;
 }
 
 QByteArray NoteOnEvent::saveOffEvent(){
 	QByteArray array = QByteArray();
-	array.append(0x80 | qint8(channel()));
-	array.append(qint8(note()));
-	array.append(qint8(0x0));
+	array.append(byte(0x80 | channel()));
+	array.append(byte(note()));
+	array.append(byte(0x0));
 	return array;
 }
 

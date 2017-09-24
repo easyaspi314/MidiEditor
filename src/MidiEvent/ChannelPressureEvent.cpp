@@ -44,8 +44,8 @@ QString ChannelPressureEvent::toMessage(){
 
 QByteArray ChannelPressureEvent::save() {
 	QByteArray array = QByteArray();
-	array.append(0xD0 | qint8(channel()));
-	array.append(qint8(_value));
+	array.append(byte(0xD0 | channel()));
+	array.append(byte(_value));
 	return array;
 }
 

@@ -46,9 +46,9 @@ QString KeyPressureEvent::toMessage(){
 
 QByteArray KeyPressureEvent::save(){
 	QByteArray array = QByteArray();
-	array.append(0xA0 | qint8(channel()));
-	array.append(qint8(_note));
-	array.append(qint8(_value));
+	array.append(byte(0xA0 | channel()));
+	array.append(byte(_note));
+	array.append(byte(_value));
 	return array;
 }
 

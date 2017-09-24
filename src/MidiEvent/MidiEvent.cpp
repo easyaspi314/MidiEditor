@@ -38,7 +38,7 @@
 
 #include "../midi/MidiChannel.h"
 
-quint8 MidiEvent::_startByte = 0;
+ubyte MidiEvent::_startByte = 0;
 EventWidget *MidiEvent::_eventWidget = 0;
 
 MidiEvent::MidiEvent(int channel, MidiTrack *track) : ProtocolEntry(),
@@ -216,7 +216,7 @@ MidiEvent *MidiEvent::loadMidiEvent(QDataStream *content, bool *ok,
 					while (tempByte != 0xF7) {
 						(*content) >> tempByte;
 						if (tempByte != 0xF7) {
-							array.append(qint8(tempByte));
+							array.append(byte(tempByte));
 						}
 					}
 					*ok = true;
@@ -238,9 +238,9 @@ MidiEvent *MidiEvent::loadMidiEvent(QDataStream *content, bool *ok,
 							//	*ok = false;
 							//	return 0;
 							//}
-							uint value;
+							quint32 value;
 							(*content) >> value;
-							// 1te Stelle abziehen,
+							// remove first position,
 							value -= 50331648;
 							return new TempoChangeEvent(17, int(value), track);
 						}
@@ -304,7 +304,7 @@ MidiEvent *MidiEvent::loadMidiEvent(QDataStream *content, bool *ok,
 								return textEvent;
 							} else {
 								// tempByte is meta event type
-								int typeByte = (qint8(tempByte));
+								int typeByte = (byte(tempByte));
 
 								// read length
 								int length = MidiFile::variableLengthvalue(content);
@@ -313,7 +313,7 @@ MidiEvent *MidiEvent::loadMidiEvent(QDataStream *content, bool *ok,
 								QByteArray array;
 								for (int i = 0; i < length; i++) {
 									(*content) >> tempByte;
-									array.append(qint8(tempByte));
+									array.append(byte(tempByte));
 								}
 								*ok = true;
 								return new UnknownEvent(channel, typeByte, array, track);

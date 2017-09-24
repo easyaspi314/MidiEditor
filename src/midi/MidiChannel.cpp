@@ -98,7 +98,7 @@ void MidiChannel::reloadState(ProtocolEntry *entry){
 	_visible = other->_visible;
 	_mute = other->_mute;
 	_solo = other->_solo;
-	_events = other->_events;
+	_events = new QMultiMap<int, MidiEvent*>(*(other->_events));
 	//_color = other->_color;
 	_num = other->_num;
 	_color = other->_color;

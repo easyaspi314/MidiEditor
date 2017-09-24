@@ -33,6 +33,7 @@
 #include "../MidiEvent/NoteOnEvent.h"
 #include "../MidiEvent/OffEvent.h"
 
+#include "../Utils.h"
 #include "../Singleton.h"
 
 SenderThread *MidiOutput::_sender = new SenderThread();
@@ -147,10 +148,10 @@ void MidiOutput::sendEnqueuedCommand(QByteArray array) {
 	if (_outPort != "") {
 
 		// convert data to std::vector
-		std::vector<quint8> message;
+		std::vector<ubyte> message;
 
-		foreach (qint8 byte, array) {
-			message.push_back(quint8(byte));
+		foreach (byte data, array) {
+			message.push_back(byte(data));
 		}
 		try {
 			_midiOut->sendMessage(&message);
@@ -170,8 +171,8 @@ int MidiOutput::standardChannel() {
 
 void MidiOutput::sendProgram(int channel, int prog) {
 	QByteArray array = QByteArray();
-	array.append(0xC0 | qint8(channel));
-	array.append(qint8(prog));
+	array.append(0xC0 | byte(channel));
+	array.append(byte(prog));
 	sendCommand(array);
 }
 MidiOutput *MidiOutput::createInstance() {

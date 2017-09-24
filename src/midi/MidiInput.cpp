@@ -41,7 +41,7 @@
 MidiInput::MidiInput() : QObject() {
 	_midiIn = 0;
 	_inPort = "";
-	_messages = new QMultiMap<int, std::vector<quint8> >;
+	_messages = new QMultiMap<int, std::vector<ubyte> >;
 	_currentTime = 0;
 	_recording = false;
 	_thru = false;
@@ -62,7 +62,7 @@ void MidiInput::init(){
 	MainWindow::getMainWindow()->ioReady(true);
 }
 
-void MidiInput::receiveMessage(qreal deltatime, std::vector<quint8>
+void MidiInput::receiveMessage(qreal deltatime, std::vector<ubyte>
 		*message, void *userData)
 {
 	if(message->size()>1){
@@ -76,36 +76,36 @@ void MidiInput::receiveMessage(qreal deltatime, std::vector<quint8>
 			if(i == 0){
 				switch(message->at(i) & 0xF0){
 					case 0x80: {
-						a.append(0x80 | qint8(MidiOutput::instance()->standardChannel()));
+						a.append(0x80 | byte(MidiOutput::instance()->standardChannel()));
 						continue;
 					}
 					case 0x90: {
-						a.append(0x90 | qint8(MidiOutput::instance()->standardChannel()));
+						a.append(0x90 | byte(MidiOutput::instance()->standardChannel()));
 						continue;
 					}
 					case 0xD0: {
-						a.append(0xD0 | qint8(MidiOutput::instance()->standardChannel()));
+						a.append(0xD0 | byte(MidiOutput::instance()->standardChannel()));
 						continue;
 					}
 					case 0xC0: {
-						a.append(0xC0 | qint8(MidiOutput::instance()->standardChannel()));
+						a.append(0xC0 | byte(MidiOutput::instance()->standardChannel()));
 						continue;
 					}
 					case 0xB0: {
-						a.append(0xB0 | qint8(MidiOutput::instance()->standardChannel()));
+						a.append(0xB0 | byte(MidiOutput::instance()->standardChannel()));
 						continue;
 					}
 					case 0xA0: {
-						a.append(0xA0 | qint8(MidiOutput::instance()->standardChannel()));
+						a.append(0xA0 | byte(MidiOutput::instance()->standardChannel()));
 						continue;
 					}
 					case 0xE0: {
-						a.append(0xE0 | qint8(MidiOutput::instance()->standardChannel()));
+						a.append(0xE0 | byte(MidiOutput::instance()->standardChannel()));
 						continue;
 					}
 				}
 			}
-			a.append(qint8(message->at(i)));
+			a.append(byte(message->at(i)));
 		}
 		MidiOutput::instance()->sendCommand(a);
 	}
@@ -173,7 +173,7 @@ QMultiMap<int, MidiEvent*> MidiInput::endInput(MidiTrack *track){
 	QMultiMap<int, MidiEvent*> eventList;
 	QByteArray array;
 
-	QMultiMap<int, std::vector<quint8> >::iterator it =
+	QMultiMap<int, std::vector<ubyte> >::iterator it =
 			_messages->begin();
 
 	bool ok = true;
@@ -187,8 +187,8 @@ QMultiMap<int, MidiEvent*> MidiInput::endInput(MidiTrack *track){
 
 		array.clear();
 
-		for(quint8 i = 0; i<it.value().size(); i++){
-			array.append(qint8(it.value().at(i)));
+		for(ubyte i = 0; i<it.value().size(); i++){
+			array.append(byte(it.value().at(i)));
 		}
 
 		QDataStream tempStream(array);

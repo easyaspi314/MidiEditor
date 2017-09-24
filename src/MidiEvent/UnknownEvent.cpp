@@ -44,8 +44,8 @@ int UnknownEvent::line(){
 
 QByteArray UnknownEvent::save(){
 	QByteArray s;
-	s.append(qint8(0xFF));
-	s.append(qint8(_type));
+	s.append(byte(0xFF));
+	s.append(byte(_type));
 	s.append(MidiFile::writeVariableLengthValue(_data.length()));
 	s.append(_data);
 	return s;

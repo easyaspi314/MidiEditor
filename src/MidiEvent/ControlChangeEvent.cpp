@@ -49,9 +49,9 @@ QString ControlChangeEvent::toMessage(){
 
 QByteArray ControlChangeEvent::save(){
 	QByteArray array = QByteArray();
-	array.append(0xB0 | qint8(channel()));
-	array.append(qint8(_control));
-	array.append(qint8(_value));
+	array.append(byte(0xB0 | channel()));
+	array.append(byte(_control));
+	array.append(byte(_value));
 	return array;
 }
 

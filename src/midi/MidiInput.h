@@ -26,6 +26,8 @@
 
 #include <vector>
 
+#include "../Utils.h"
+
 class MidiEvent;
 class RtMidiIn;
 class RtMidiOut;
@@ -50,7 +52,7 @@ class MidiInput : public QObject {
 		QMultiMap<int, MidiEvent*> endInput(MidiTrack *track);
 
 		static void receiveMessage(double deltatime,
-					std::vector<quint8> *message, void *userData = 0);
+					std::vector<ubyte> *message, void *userData = 0);
 
 		void setTime(int ms);
 
@@ -64,7 +66,7 @@ class MidiInput : public QObject {
 	private:
 		QString _inPort;
 		RtMidiIn *_midiIn;
-		QMultiMap<int, std::vector<quint8> > *_messages;
+		QMultiMap<int, std::vector<ubyte> > *_messages;
 		int _currentTime;
 		bool _recording;
 		QList<int> toUnique(QList<int> in);

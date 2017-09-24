@@ -41,7 +41,7 @@ void MidiPlayer::play(MidiFile *file) {
 		stop();
 	}
 // I don't know why we are reinstancing this.
-#ifdef Q_OS_WIN32
+/*#ifdef Q_OS_WIN32
 	delete filePlayer;
 	filePlayer = new PlayerThread();
 
@@ -58,7 +58,7 @@ void MidiPlayer::play(MidiFile *file) {
 			SIGNAL(playerStopped()), Metronome::instance(), SLOT(playbackStopped()));
 	connect(_playerThread,
 			SIGNAL(playerStarted()), Metronome::instance(), SLOT(playbackStarted()));
-#endif
+#endif*/
 
 	int tickFrom = file->cursorTick();
 	if (file->pauseTick() >= 0) {
@@ -118,25 +118,25 @@ void MidiPlayer::panic() {
 	for (int i = 0; i < 16; i++) {
 		// value (third number) should be 0, but doesn't work
 		QByteArray array;
-		array.append(qint8(0xB0 | i));
-		array.append(qint8(123));
-		array.append(qint8(127));
+		array.append(byte(0xB0 | i));
+		array.append(byte(123));
+		array.append(byte(127));
 
 		MidiOutput::instance()->sendCommand(array);
 
 		array.clear();
-		array.append(qint8(0xB0 | i));
-		array.append(qint8(120));
-		array.append(qint8(0));
+		array.append(byte(0xB0 | i));
+		array.append(byte(120));
+		array.append(byte(0));
 		MidiOutput::instance()->sendCommand(array);
 	}
 	if (MidiOutput::isAlternativePlayer()) {
 		foreach (int channel, MidiOutput::instance()->playedNotes.keys()) {
 			foreach (int note, MidiOutput::instance()->playedNotes.value(channel)) {
 				QByteArray array;
-				array.append(qint8(0x80 | channel));
-				array.append(qint8(note));
-				array.append(qint8(0));
+				array.append(byte(0x80 | channel));
+				array.append(byte(note));
+				array.append(byte(0));
 				MidiOutput::instance()->sendCommand(array);
 			}
 		}

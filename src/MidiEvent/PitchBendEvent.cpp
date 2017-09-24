@@ -47,9 +47,9 @@ QString PitchBendEvent::toMessage(){
 
 QByteArray PitchBendEvent::save(){
 	QByteArray array = QByteArray();
-	array.append(0xE0 | qint8(channel()));
-	array.append(qint8(_value) & 0x7F);
-	array.append((qint8(_value) >> 7) & 0x7F);
+	array.append(byte(0xE0 | channel()));
+	array.append(byte(_value & 0x7F));
+	array.append(byte((_value >> 7) & 0x7F));
 	return array;
 }
 

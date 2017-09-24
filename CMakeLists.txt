@@ -35,7 +35,7 @@ if (WIN32)
 		add_definitions(-DNO_CONSOLE_MODE)
 	endif()
 
-	    # MinGW isn't currently supported on 64-bit.
+		# MinGW isn't currently supported on 64-bit.
 	if( NOT MINGW AND CMAKE_CL_64 OR CMAKE_SIZEOF_VOID_P EQUAL 8 )
 		set(QT5_DIR_GUESS "C:/Qt/5.9.1/${COMPILER_CODE}_64/lib/cmake" CACHE STRING "Additional search paths for QT5")
 		SET(ARCH "x64")
@@ -44,10 +44,11 @@ if (WIN32)
 		set(QT5_DIR_GUESS "C:/Qt/5.9.1/${COMPILER_CODE}/lib/cmake" CACHE STRING "Additional search paths for Qt 5")
 		SET(ARCH "x86")
 
-	endif( CMAKE_CL_64 OR CMAKE_SIZEOF_VOID_P EQUAL 8 )
-	add_definitions(/W3)
-	add_definitions(-D__WINDOWS_MM__ -D_UNICODE)
+	endif()
+
+	add_definitions(-D__WINDOWS_MM__)
 	if (MSVC)
+		add_definitions(/W3 -D_UNICODE)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 	endif()
 
@@ -55,8 +56,8 @@ if (WIN32)
 
 elseif (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" AND APPLE) # Apple Clang
 
-message(STATUS "Your compiler, AppleClang ${CMAKE_CXX_COMPILER_VERSION}, is supported.")
-    add_definitions(-std=c++11)
+	message(STATUS "Your compiler, AppleClang ${CMAKE_CXX_COMPILER_VERSION}, is supported.")
+	add_definitions(-std=c++11)
 
 	set(CMAKE_MACOSX_RPATH 1)
 
@@ -64,8 +65,10 @@ message(STATUS "Your compiler, AppleClang ${CMAKE_CXX_COMPILER_VERSION}, is supp
 	if (USE_JACK)
 		message(STATUS "Enabling Jack Audio support...")
 		add_definitions(-D__UNIX_JACK__)
-	endif()
+	endif (USE_JACK)
+
 	add_definitions(-D__MACOSX_CORE__)
+
 	set(QT5_DIR_GUESS "~/Qt/5.9.1/clang_64/lib/cmake" CACHE STRING "Additional search paths for Qt 5" )
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
@@ -73,11 +76,13 @@ elseif (CMAKE_COMPILER_IS_GNUCXX) # Gnu C++
 
 	message(STATUS "Your compiler, ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}, is supported.")
 	add_definitions(-std=c++11)
+
 	option(USE_JACK "Use Jack Audio as well as ALSA for IO" OFF)
 	if (USE_JACK)
 		message(STATUS "Enabling Jack Audio support...")
 		add_definitions(-D__UNIX_JACK__)
-	endif()
+	endif(USE_JACK)
+
 	add_definitions(-D__LINUX_ALSASEQ__)
 	add_definitions(-D__LINUX_ALSA__)
 	set(QT5_DIR_GUESS "~/Qt/5.9.1/gcc_64/lib/cmake" CACHE STRING "Additional search paths for QT5")
@@ -108,22 +113,22 @@ find_package(Qt5 COMPONENTS Core Widgets Multimedia Xml Network REQUIRED PATHS $
 # Check Qt version
 if (Qt5Core_FOUND)
 	if (Qt5Core_VERSION VERSION_LESS 5.9)
-		        message(FATAL_ERROR "Your Qt version (${Qt5Core_VERSION}) is out of date. \
+				message(FATAL_ERROR "Your Qt version (${Qt5Core_VERSION}) is out of date. \
 Please update to Qt >= 5.9.")
-    else()
+	else()
 		message(STATUS "Found Qt version ${Qt5Core_VERSION}.")
 	endif()
 else()
 	message(FATAL_ERROR "You don't have Qt 5 installed. \
 Alternatively, you may need to set CMAKE_PREFIX_PATH to
-        /path/to/Qt/<Qt Version>/<Compiler>/lib/cmake
+		/path/to/Qt/<Qt Version>/<Compiler>/lib/cmake
 and try again. \
 On Windows, this is usually in C:/Qt, and on Linux/Mac, it is usually ~/Qt.")
 endif()
-find_package(Qt5Widgets    REQUIRED HINTS ${QT5_DIR_HINT})
-find_package(Qt5Network    REQUIRED HINTS ${QT5_DIR_HINT})
-find_package(Qt5Xml        REQUIRED HINTS ${QT5_DIR_HINT})
-find_package(Qt5Multimedia REQUIRED HINTS ${QT5_DIR_HINT})
+#find_package(Qt5Widgets    REQUIRED HINTS ${QT5_DIR_HINT})
+#find_package(Qt5Network    REQUIRED HINTS ${QT5_DIR_HINT})
+#find_package(Qt5Xml        REQUIRED HINTS ${QT5_DIR_HINT})
+#find_package(Qt5Multimedia REQUIRED HINTS ${QT5_DIR_HINT})
 if (APPLE)
 	find_package(Qt5MacExtras  REQUIRED HINTS ${QT5_DIR_HINT})
 endif()
@@ -173,7 +178,7 @@ if (APPLE)
 	set(MACOSX_BUNDLE_ICON_FILE "MidiEditor.icns")
 
 	add_executable(MidiEditor
-		    MACOSX_BUNDLE
+			MACOSX_BUNDLE
 			  ${main}      ${mainh}
 		   ${RTMidi}    ${RTMidih}
 		   ${Protocol}  ${Protocolh}
@@ -215,18 +220,18 @@ if(WIN32)
 			set_target_properties(MidiEditor PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
 		endif()
 	endif()
-	set(QT5_DLLs_DEP_RELEASE "${QT5_DIR}/../../bin/Qt5Widgets.dll"
-		                     "${QT5_DIR}/../../bin/Qt5Network.dll"
-							 "${QT5_DIR}/../../bin/Qt5Xml.dll"
-							 "${QT5_DIR}/../../bin/Qt5Gui.dll"
-							 "${QT5_DIR}/../../bin/Qt5Core.dll"
-							 "${QT5_DIR}/../../bin/Qt5Multimedia.dll")
-						set(QT5_DLLs_DEP_DEBUG   "${QT5_DIR}/../../bin/Qt5Widgetsd.dll"
-							 "${QT5_DIR}/../../bin/Qt5Networkd.dll"
-							 "${QT5_DIR}/../../bin/Qt5Xmld.dll"
-							 "${QT5_DIR}/../../bin/Qt5Guid.dll"
-							 "${QT5_DIR}/../../bin/Qt5Cored.dll"
-							 "${QT5_DIR}/../../bin/Qt5Multimediad.dll")
+	set(QT5_DLLs_DEP_RELEASE "${Qt5_DIR}/../../../bin/Qt5Widgets.dll"
+							 "${Qt5_DIR}/../../../bin/Qt5Network.dll"
+							 "${Qt5_DIR}/../../../bin/Qt5Xml.dll"
+							 "${Qt5_DIR}/../../../bin/Qt5Gui.dll"
+							 "${Qt5_DIR}/../../../bin/Qt5Core.dll"
+							 "${Qt5_DIR}/../../../bin/Qt5Multimedia.dll")
+						set(QT5_DLLs_DEP_DEBUG   "${Qt5_DIR}/../../../bin/Qt5Widgetsd.dll"
+							 "${Qt5_DIR}/../../../bin/Qt5Networkd.dll"
+							 "${Qt5_DIR}/../../../bin/Qt5Xmld.dll"
+							 "${Qt5_DIR}/../../../bin/Qt5Guid.dll"
+							 "${Qt5_DIR}/../../../bin/Qt5Cored.dll"
+							 "${Qt5_DIR}/../../../bin/Qt5Multimediad.dll")
 						file(COPY ${QT5_DLLs_DEP_RELEASE} ${QT5_DLLs_DEP_DEBUG} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 elseif(APPLE)
@@ -236,7 +241,7 @@ elseif(APPLE)
 	find_library(CORE_MIDI CoreMIDI )
 	find_library(CORE_AUDIO CoreAudio )
 	mark_as_advanced (CORE_FOUNDATION
-		          CORE_MIDI
+				  CORE_MIDI
 			  CORE_AUDIO)
 	set(EXTRA_LIBS ${CORE_FOUNDATION} ${CORE_AUDIO} ${CORE_MIDI} )
 	if (USE_JACK)
@@ -250,13 +255,15 @@ else()
 	target_link_libraries(MidiEditor asound sfml-system sfml-audio pthread ${MidiEditorDep})
 endif()
 
+# Disable RTTI (dynamic_cast and typeid). We no longer need this, and this has the benefit
+# of better performance.
 if (MSVC)
 	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "/GR-")
 else()
 	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-fno-rtti")
 endif()
 
-#add_custom_command(TARGET MidiEditor PRE_BUILD COMMAND cmake -P ${CMAKE_BINARY_DIR}/version.cmake)
+include(${CMAKE_CURRENT_BINARY_DIR}/version.cmake)
 
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/run_environment/midieditor.ico" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/run_environment/metronome/metronome-01.wav" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/metronome)
@@ -266,12 +273,15 @@ if(INSTALL_WITH_CPACK)
 	install(TARGETS MidiEditor DESTINATION bin)
 	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/ressources.rcc" DESTINATION bin)
 	install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/run_environment/metronome/metronome-01.wav" DESTINATION bin/metronome)
-	if(WIN32)#Windows
+	if(WIN32) #Windows
 		install(FILES ${QT5_DLLs_DEP_RELEASE} DESTINATION bin)
 		set(CPACK_GENERATOR NSIS)
 		set(CPACK_PACKAGE_INSTALL_DIRECTORY "MidiEditor")
 		set(CPACK_PACKAGE_EXECUTABLES "MidiEditor" "MidiEditor" ${CPACK_PACKAGE_EXECUTABLES})
 		set(CPACK_NSIS_MODIFY_PATH OFF)
+
+	# TODO: macOS
+
 	else() #UNIX
 		set(CPACK_GENERATOR "DEB")
 		SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Amaury Bréhéret")

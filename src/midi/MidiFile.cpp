@@ -84,7 +84,7 @@ MidiFile::MidiFile() {
 
 	playerMap = new QMultiMap<int, MidiEvent *>;
 
-	midiTicks = 7680;
+	midiTicks = 40 * defaultTimePerQuarter;
 	calcMaxTime();
 }
 
@@ -344,12 +344,12 @@ int MidiFile::deltaTime(QDataStream *content) {
 
 int MidiFile::variableLengthvalue(QDataStream *content) {
 	quint32 v = 0;
-	quint8 byte = 0;
+	quint8 data = 0;
 	do {
-		(*content) >> byte;
+		(*content) >> data;
 		v <<= 7;
-		v |= (byte & 0x7F);
-	} while (byte & (1 << 7));
+		v |= (data & 0x7F);
+	} while (data & (1 << 7));
 	return int(v);
 }
 
@@ -1287,11 +1287,20 @@ bool MidiFile::channelMuted(int ch) {
 	}
 
 	// check solochannel
+	bool isSolo = false;
 	for (int i = 0; i < 17; i++) {
 		if (channel(i)->solo()) {
-			return i != ch;
+			if (i == ch) {
+				return false;
+			} else {
+				isSolo = true;
+			}
 		}
 	}
+	if (isSolo) {
+		return true;
+	}
+
 
 	return channel(ch)->mute();
 }
@@ -1456,14 +1465,14 @@ bool MidiFile::save(QString path) {
 		QByteArray deltaTime = writeDeltaTime(time);
 		numBytes += deltaTime.count();
 		data.append(deltaTime);
-		data.append(qint8(0xFF));
-		data.append(qint8(0x2F));
+		data.append(byte(0xFF));
+		data.append(byte(0x2F));
 		data.append('\0');
 		numBytes += 3;
 
 		// write numBytes
 		for (int i = 3; i >= 0; i--) {
-			data[trackLengthPos + 3 - i] = (qint8(((numBytes & (0xFF << 8 * i))) >> 8 * i));
+			data[trackLengthPos + 3 - i] = (qint8((numBytes & (0xFF << 8*i)) >>8*i));
 		}
 	}
 
@@ -1490,14 +1499,14 @@ QByteArray MidiFile::writeVariableLengthValue(int value) {
 	bool isFirst = true;
 	for (int i = 3; i >= 0; i--) {
 		int b = value >> (7 * i);
-		qint8 byte = qint8(b) & 127;
-		if (!isFirst || byte > 0 || i == 0) {
+		qint8 data = qint8(b) & 127;
+		if (!isFirst || data > 0 || i == 0) {
 			isFirst = false;
 			if (i > 0) {
 				// set 8th bit
-				byte |= 128;
+				data |= 128;
 			}
-			array.append(byte);
+			array.append(qint8(data));
 		}
 	}
 

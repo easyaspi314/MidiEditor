@@ -63,8 +63,8 @@ QByteArray TextEvent::save(){
 
 	QByteArray array = QByteArray();
 
-	array.append(qint8(0xFF));
-	array.append(qint8(_type));
+	array.append(byte(0xFF));
+	array.append(byte(_type));
 	array.append(MidiFile::writeVariableLengthValue(_text.length()));
 
 	wchar_t *text_wchar  = new wchar_t[_text.length()];

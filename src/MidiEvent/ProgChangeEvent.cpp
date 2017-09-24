@@ -42,8 +42,8 @@ QString ProgChangeEvent::toMessage(){
 
 QByteArray ProgChangeEvent::save(){
 	QByteArray array = QByteArray();
-	array.append(0xC0 | qint8(channel()));
-	array.append(qint8(_program));
+	array.append(byte(0xC0 | channel()));
+	array.append(byte(_program));
 	return array;
 }
 
