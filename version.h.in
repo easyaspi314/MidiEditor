@@ -13,10 +13,10 @@ extern "C" {
 #if _DEBUG
 #define CONF_MODE       "DEBUG" /*! Last compilation mode used */
 #else
-#define CONF_MODE       "RELEASE"/*! Last compilation mode used */
+#define CONF_MODE       "RELEASE" /*! Last compilation mode used */
 #endif
 
-#define META_INFO       "@GIT_BRANCH@ - @GIT_TAG@ - @GIT_COMMIT_HASH@ - @GIT_COMMIT_DATE@ - "CONF_MODE /*! Version name */
+#define META_INFO       "@GIT_BRANCH@ - @GIT_TAG@ - @GIT_COMMIT_HASH@ - @GIT_COMMIT_DATE@ - " CONF_MODE /*! Version name */
 
 # ifdef __cplusplus
 }
