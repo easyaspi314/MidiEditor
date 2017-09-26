@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1.0)
 
 execute_process(
 COMMAND git rev-parse --abbrev-ref HEAD
@@ -26,7 +26,7 @@ OUTPUT_VARIABLE GIT_TAG
 OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-message("update git meta data information.")
+message(STATUS "Updated Git information.")
 configure_file(
   @CMAKE_SOURCE_DIR@/version.h.in
   @CMAKE_BINARY_DIR@/version.h

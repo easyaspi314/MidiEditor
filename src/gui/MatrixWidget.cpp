@@ -137,7 +137,6 @@ void MatrixWidget::timeMsChanged(int ms, bool ignoreLocked) {
  * FIXME: Divs don't update after undo/redo
  */
 void MatrixWidget::paintEvent(QPaintEvent *event) {
-	// Q_UNUSED(event)
 	if (!file) {
 		return;
 	}
@@ -152,6 +151,7 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 	QFont font = painter.font();
 	font.setPixelSize(12);
 	painter.setFont(font);
+	QRect viewport = relativeRect();
 
 	/*
 	 * Check if we are calling a flat-out repaint
@@ -161,7 +161,7 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 	 * when scrolling.
 	 */
 	int updatemode = 0;
-	if (!event->region().isNull() && !event->region().isEmpty()) {
+	if (!event->region().isNull() && !event->region().isEmpty() ) {
 		updatemode = 1;
 		painter.setClipping(true);
 		painter.setClipRegion(event->region());
@@ -171,39 +171,38 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 		painter.setClipRect(event->rect());
 	} else {
 		painter.setClipping(true);
-		painter.setClipRect(relativeRect());
+		painter.setClipRect(viewport);
 	}
 	QPixmap linesTexture;
 	if (!QPixmapCache::find("MatrixWidget_" + QString::number(scaleY, 'f', 2), linesTexture)) {
-			linesTexture = QPixmap(1, height());
-			//linesTexture.fill(Qt::transparent);
+		linesTexture = QPixmap(1, height());
+		//linesTexture.fill(Qt::transparent);
 
-			QPainter linesPainter(&linesTexture);
-			if (antiAliasingEnabled) {
-				linesPainter.setRenderHint(QPainter::Antialiasing);
+		QPainter linesPainter(&linesTexture);
+		if (antiAliasingEnabled) {
+			linesPainter.setRenderHint(QPainter::Antialiasing);
+		}
+		for (int i = qFloor(startLineY); i <= qFloor(endLineY); i++) {
+			int startLine = yPosOfLine(i);
+			QColor c(194, 230, 255);
+			if (i % 2 == 0) {
+				c = QColor(234, 246, 255);
 			}
-			for (int i = qFloor(startLineY); i <= qFloor(endLineY); i++) {
-				int startLine = yPosOfLine(i);
-				QColor c(194, 230, 255);
-				if (i % 2 == 0) {
+			if (i > 127) {
+				c = QColor(194, 194, 194);
+				if (i % 2 == 1) {
 					c = QColor(234, 246, 255);
 				}
-				if (i > 127) {
-					c = QColor(194, 194, 194);
-					if (i % 2 == 1) {
-						c = QColor(234, 246, 255);
-					}
-				}
-				linesPainter.fillRect(qRectF(0, startLine, 1,
-											  startLine + lineHeight()), c);
-
 			}
-			linesPainter.end();
-			QPixmapCache::insert("MatrixWidget_" + QString::number(scaleY, 'f', 2), linesTexture);
-			QPalette palette;
-			palette.setBrush(backgroundRole(), QBrush(linesTexture));
-			setPalette(palette);
+			linesPainter.fillRect(qRectF(0, startLine, 1, startLine + lineHeight()), c);
+
 		}
+		linesPainter.end();
+		QPixmapCache::insert("MatrixWidget_" + QString::number(scaleY, 'f', 2), linesTexture);
+		QPalette palette;
+		palette.setBrush(backgroundRole(), QBrush(linesTexture));
+		setPalette(palette);
+	}
 	// This complex QString serves as the ID of the events pixmap.
 	// It stores the zoom level, measure division, and the UUID of the current ProtocolStep.
 	QString pixmapId = "ProtocolStep_"
@@ -218,7 +217,6 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 		this->pianoKeys.clear();
 		pixmap = new QPixmap(width(), height());
 
-
 		if (pixmap->paintingActive()) {
 			return;
 		}
@@ -229,8 +227,6 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 		if (antiAliasingEnabled) {
 			pixpainter.setRenderHint(QPainter::Antialiasing);
 		}
-		// fill background
-		//pixpainter.fillRect(qRectF(0, 0, width(), height()), Qt::lightGray);
 
 		QFont f = pixpainter.font();
 		f.setPixelSize(12);
@@ -316,24 +312,21 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 		pixpainter.setPen(Qt::black);
 
 		// paint the events
-		pixpainter.setClipping(true);
-		pixpainter.setClipRect(qRectF(0, 0, width(), height()));
+		//pixpainter.setClipping(true);
+		//pixpainter.setClipRect(qRectF(0, 0, width(), height()));
 		for (int i = 0; i < 19; i++) {
 			paintChannel(&pixpainter, i);
 		}
-		pixpainter.setClipping(false);
-		pixpainter.setPen(Qt::black);
 		pixpainter.end();
 
 		QPixmapCache::insert(pixmapId, *pixmap);
-		emit objectListChanged();
 
 		// Set the background of the widget to prevent further
 		// repaints.
 		/*QPalette palette = this->palette();
 		palette.setBrush(backgroundRole(), QBrush(notesPixmap));
 		setPalette(palette);*/
-	}
+
 	// TODO: I don't think we need this.
 	switch (updatemode) {
 		case 1: {
@@ -352,56 +345,57 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 			break;
 		}
 		default:
-			QPainter::PixmapFragment frag = QPainter::PixmapFragment::create(relativeRect().center(), relativeRect());
+			QPainter::PixmapFragment frag = QPainter::PixmapFragment::create(viewport.center(), viewport);
 
 			painter.drawPixmapFragments(&frag, 1, *pixmap);
 	}
-
+}
 	if (antiAliasingEnabled) {
 		painter.setRenderHint(QPainter::Antialiasing);
 	}
 	// draw the piano / linenames
 	if (Tool::currentTool()) {
+		painter.save();
 		painter.setClipping(true);
-		painter.setClipRect(relativeRect());
+		painter.setClipRect(viewport);
 		Tool::currentTool()->draw(&painter);
-		painter.setClipping(false);
+		painter.restore();
 	}
 
 	int timelinePos = timelineWidget->mousePosition();
-	if (enabled && timelinePos >= 0) {
+	if (enabled && timelinePos >= 0 && !MidiPlayer::instance()->isPlaying()) {
 		painter.setPen(Qt::red);
 		painter.drawLine(qLineF(timelinePos, 0, timelinePos, height()));
-		painter.setPen(Qt::black);
 	}
 
 	if (MidiPlayer::instance()->isPlaying()) {
 		painter.setPen(Qt::red);
 		int x = xPosOfMs(MidiPlayer::instance()->timeMs());
-		if (x >= 0) {
+		if (x >= 0 && viewport.contains(QPoint(x, viewport.center().y()))) {
 			painter.drawLine(qLineF(x, 0, x, height()));
 		}
-		painter.setPen(Qt::black);
+
 	}
 
 	// border
-	painter.setPen(Qt::gray);
-	painter.drawLine(qLineF(width() - 1, height() - 1, 0,
-							 height() - 1));
-	painter.drawLine(qLineF(width() - 1, height() - 1, width() - 1, 2));
+//	painter.setPen(Qt::gray);
+//	painter.drawLine(qLineF(width() - 1, height() - 1, 0,
+//							 height() - 1));
+//	painter.drawLine(qLineF(width() - 1, height() - 1, width() - 1, 2));
 
 	// if the recorder is recording, show red circle
 	if (MidiInput::instance()->recording()) {
+		painter.setPen(Qt::black);
 		painter.setBrush(Qt::red);
-		painter.drawEllipse(qPointF(width() - 20, timeHeight + 5), 15, 15);
+		painter.drawEllipse(qPointF(viewport.right() - 20, 5), 15, 15);
 	}
 
 	// if MouseRelease was not used, delete it
 	mouseReleased = false;
 
-	//if (totalRepaint) {
-	//	emit objectListChanged();
-	//}
+	if (totalRepaint) {
+		emit objectListChanged();
+	}
 }
 
 void MatrixWidget::paintChannel(QPainter *painter, int channel) {
@@ -693,7 +687,7 @@ void MatrixWidget::takeKeyReleaseEvent(QKeyEvent *event) {
 			update();
 		}
 	}
-	emit objectListChanged();
+	//emit objectListChanged();
 
 }
 

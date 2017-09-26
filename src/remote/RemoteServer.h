@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#ifdef ENABLE_REMOTE
 #ifndef REMOTESERVER_H_
 #define REMOTESERVER_H_
 
@@ -99,4 +99,5 @@ class RemoteServer : public QObject {
 		bool _connected;
 };
 
+#endif
 #endif

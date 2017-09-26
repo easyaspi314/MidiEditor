@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef ENABLE_REMOTE
 #ifndef REMOTEDIALOG_H_
 #define REMOTEDIALOG_H_
 
@@ -41,4 +42,5 @@ class RemoteSettingsWidget : public SettingsWidget {
 		QLineEdit *_ipField, *_portField;
 };
 
+#endif
 #endif

@@ -66,8 +66,9 @@ int main(int argc, char *argv[]) {
 #endif
 
 	MainWindow w(argc == 2 ? argv[1] : 0);
-
+#ifdef Q_OS_MAC
 	w.setUnifiedTitleAndToolBarOnMac(true);
+#endif
 	w.resize(QSize(1280, 800));
 	w.show();
 

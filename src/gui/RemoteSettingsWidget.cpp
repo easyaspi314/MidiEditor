@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#ifdef ENABLE_REMOTE
 #include "RemoteSettingsWidget.h"
 
 #include <QGridLayout>
@@ -73,3 +73,4 @@ bool RemoteSettingsWidget::accept(){
 	QMessageBox::information(this, "Restart", QString("You have to restart MidiEditor to connect!"));
 	return true;
 }
+#endif

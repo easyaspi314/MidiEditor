@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#ifdef ENABLE_REMOTE
 #include "RemoteServer.h"
 
 #include "../midi/MidiFile.h"
@@ -243,3 +243,4 @@ void RemoteServer::tryConnect(){
 QString RemoteServer::clientName(){
 	return _clientname;
 }
+#endif

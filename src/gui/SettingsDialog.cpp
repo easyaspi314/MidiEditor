@@ -36,7 +36,11 @@
 #endif
 #include "UpdateSettingsWidget.h"
 
-SettingsDialog::SettingsDialog(QString title, QSettings *settings, RemoteServer *server, QWidget *parent) : QDialog(parent) {
+SettingsDialog::SettingsDialog(QString title, QSettings *settings,
+							   #ifdef ENABLE_REMOTE
+							   RemoteServer *server,
+							   #endif
+							   QWidget *parent) : QDialog(parent) {
 
 	setWindowTitle(title);
 

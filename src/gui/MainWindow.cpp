@@ -2965,7 +2965,7 @@ void MainWindow::openConfig(){
 #ifdef ENABLE_REMOTE
 	SettingsDialog *d = new SettingsDialog("Settings", _settings, _remoteServer, this);
 #else
-	SettingsDialog *d = new SettingsDialog("Settings", _settings, 0, this);
+	SettingsDialog *d = new SettingsDialog("Settings", _settings, this);
 #endif
 	d->show();
 }

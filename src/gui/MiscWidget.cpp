@@ -23,13 +23,7 @@
 
 /*
  * FIXME:
- * - Kill all the forced repaint hacks
- * - Updates aren't syncing
- *   up with the protocol
- * - New notes often set to tick 0
- * - Divs aren't being painted
- *   the first time
- * - Fix measurements
+ * - Kill all the repaint hacks
  * TODO:
  * - Set everything that doesn't need to be
  *   repainted to the background, and what does
@@ -40,11 +34,11 @@
  * - Find the proper update() time
  * - update() is regional
  */
-MiscWidget::MiscWidget(MatrixWidget *mw,
-					   QWidget *parent) : PaintWidget(parent) {
+MiscWidget::MiscWidget(MatrixWidget *mw, QWidget *parent) : PaintWidget(parent) {
 	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	// FIXME: hack
-	setRepaintOnMouseMove(true);
+	inited = false;
+	setRepaintOnMouseMove(false);
 	setRepaintOnMousePress(true);
 	setRepaintOnMouseRelease(true);
 	setMouseTracking(true);
@@ -53,6 +47,7 @@ MiscWidget::MiscWidget(MatrixWidget *mw,
 	mode = VelocityEditor;
 	channel = 0;
 	QPixmapCache::setCacheLimit(20480);
+	pixmap = 0;
 	controller = 0;
 	file = 0;
 	dragY = 0;
@@ -61,20 +56,22 @@ MiscWidget::MiscWidget(MatrixWidget *mw,
 	resetState();
 	computeMinMax();
 	setFixedWidth(matrixWidget->width());
-	connect(matrixWidget, SIGNAL(objectListChanged()), this, SLOT(redraw()));
 	_dummyTool = new SelectTool(SELECTION_TYPE_SINGLE);
 	setFocusPolicy(Qt::ClickFocus);
 }
 
+/*
+ * TODO: Hopefully get rid of this
+ */
 void MiscWidget::redraw() {
+	pixmap = 0;
 	update();
 }
 
 void MiscWidget::setFile(MidiFile *midiFile) {
 	file = midiFile;
-	connect(file->protocol(), SIGNAL(actionFinished()), this, SLOT(redraw()));
-	connect(Selection::instance(), SIGNAL(selectionChanged()), this, SLOT(redraw()));
-	update();
+	redraw();
+	connect(matrixWidget, SIGNAL(objectListChanged()), this, SLOT(redraw()));
 }
 QString MiscWidget::modeToString(int mode) {
 	switch (mode) {
@@ -117,89 +114,66 @@ void MiscWidget::setControl(int ctrl) {
 }
 
 void MiscWidget::paintEvent(QPaintEvent *event) {
-	if (!matrixWidget || !file || !file->protocol() || paintingActive() ) {
+	if (!matrixWidget || !file || !file->protocol() || paintingActive() || matrixWidget->divs().isEmpty()
+			||  matrixWidget->divs().size() <= 0) {
 		return;
 	}
 
-	if (width() != matrixWidget->width()) {
+	if (width() != matrixWidget->width() && matrixWidget->width() != 0) {
 		setFixedWidth(matrixWidget->width());
 	}
-
-	// draw background
-	QPainter painter(this);
-	int updatemode = 0;
-	if (!event->region().isNull() && !event->region().isEmpty()) {
-		updatemode = 1;
-		painter.setClipping(true);
-		painter.setClipRegion(event->region());
-	} else if (!event->rect().isNull() && !event->rect().isEmpty()) {
-		updatemode = 2;
-		painter.setClipping(true);
-		painter.setClipRect(event->rect());
-	} else {
-		painter.setClipping(true);
-		painter.setClipRect(relativeRect());
-	}
-	if (MatrixWidget::antiAliasingEnabled) {
-		painter.setRenderHint(QPainter::Antialiasing);
-	}
-	QFont f = painter.font();
-	f.setPixelSize(9);
-	painter.setFont(f);
-
-	// divs
-	QPixmap notes;
-	QString notesId = "MiscWidget_" + QString::number(height()) + "_" +
-					  file->protocol()->currentStepId()
-					  + "_" + QString::number(mode);
-
-	// FIXME: Hacks
-	bool hackyMouseFullUpdate = mouseInRect(relativeRect());
-	bool hackyInvalidate = !QPixmapCache::find(notesId, notes);
-	if (hackyInvalidate || hackyMouseFullUpdate || dragging) {
-		QPixmap background;
-		if (!QPixmapCache::find("MiscWidget_" + QString::number(height()),
-								background)) {
-			background = QPixmap(1, height());
-			background.fill(Qt::transparent);
-			QPainter pixpainter(&background);
-			QColor c(234, 246, 255);
-			if (MatrixWidget::antiAliasingEnabled) {
-				pixpainter.setRenderHint(QPainter::Antialiasing);
-			}
-			pixpainter.setPen(c);
-			pixpainter.setBrush(c);
-			pixpainter.drawRect(qRectF(0, 0, 0, relativeRect().height() ));
-
-			pixpainter.setPen(QColor(194, 230, 255));
-			for (int i = 0; i < 8; i++) {
-				pixpainter.drawLine(qLineF(0, (i * height()) / 8, 1, (i * height()) / 8));
-			}
-			pixpainter.end();
-			QPixmapCache::insert("MiscWidget_" + QString::number(height()), background);
-			QPalette palette;
-			palette.setBrush(backgroundRole(), QBrush(background));
-			setPalette(palette);
+	QPixmap background;
+	if (!QPixmapCache::find("MiscWidget_" + QString::number(height()),
+							background)) {
+		background = QPixmap(1, height());
+		background.fill(Qt::transparent);
+		QPainter bgpainter(&background);
+		QColor c(234, 246, 255);
+		if (MatrixWidget::antiAliasingEnabled) {
+			bgpainter.setRenderHint(QPainter::Antialiasing);
 		}
+		bgpainter.setPen(c);
+		bgpainter.setBrush(c);
+		bgpainter.drawRect(qRectF(0, 0, 0, relativeRect().height() ));
 
-		notes = QPixmap(width(), height());
-		notes.fill(Qt::transparent);
-		QPainter pixpainter(&notes);
+		bgpainter.setPen(QColor(194, 230, 255));
+		for (int i = 0; i < 8; i++) {
+			bgpainter.drawLine(qLineF(0, (i * height()) / 8, 1, (i * height()) / 8));
+		}
+		bgpainter.end();
+		QPixmapCache::insert("MiscWidget_" + QString::number(height()), background);
+		//QPalette palette;
+		//palette.setBrush(backgroundRole(), QBrush(background));
+		//setPalette(palette);
+	}
+
+	QString notesId = "MiscWidgetNotes_" + QString::number(height()) + "_" +
+					  file->protocol()->currentStepId()
+					  + "_" + QString::number(mode) +
+					  "_" + QString::number(matrixWidget->div()) + "_" +
+						QString::number(matrixWidget->scaleX, 'f', 2);
+
+	// FIXME: Hacks.
+	bool totalRepaint = !inited || !pixmap || !QPixmapCache::find(notesId, pixmap);
+	if (totalRepaint || dragging) {
+
+		//qWarning(totalRepaint ? "totalRepaint" : "dragging");
+		pixmap = new QPixmap(width(), height());
+		pixmap->fill(Qt::transparent);
+		QPainter pixpainter(pixmap);
 		if (MatrixWidget::antiAliasingEnabled) {
 			pixpainter.setRenderHint(QPainter::Antialiasing);
 		}
-		//pixpainter.fillRect(0, 0, width(), height(), QBrush(background));
+		pixpainter.fillRect(0, 0, width(), height(), QBrush(background));
 		pixpainter.setBrush(QColor(234, 246, 255));
 		pixpainter.setPen(QColor(194, 230, 255));
 		typedef QPair<qreal, int> TMPPair;
 		foreach (TMPPair p, matrixWidget->divs()) {
-			pixpainter.drawLine(qLineF(p.first - LEFT_BORDER_MATRIX_WIDGET, 0,
-									   p.first - LEFT_BORDER_MATRIX_WIDGET, height()));
+			pixpainter.drawLine(qLineF(p.first , 0, p.first, height()));
 		}
 
 		// draw contents
 		if (mode == VelocityEditor) {
-
 			QList<MidiEvent *> *list = matrixWidget->velocityEvents();
 			foreach (MidiEvent *event, *list) {
 
@@ -339,7 +313,6 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 			}
 		}
 
-
 		// draw freehand track
 		if (edit_mode == MOUSE_MODE && isDrawingFreehand && freeHandCurve.size() > 0) {
 
@@ -363,7 +336,6 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 
 		// draw line
 		if (edit_mode == LINE_MODE && isDrawingLine) {
-
 			QPen pen(Qt::darkBlue);
 			pen.setWidth(3);
 			pixpainter.setPen(pen);
@@ -371,39 +343,12 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 			pixpainter.drawLine(qLineF(lineX, lineY, mouseX, mouseY));
 		}
 		pixpainter.end();
-		// FIXME: More hacks
-		if (hackyInvalidate) {
-			QPixmapCache::insert(notesId, notes);
-		}
-			QPalette palette = this->palette();
-			palette.setBrush(backgroundRole(), QBrush(notes));
-			setPalette(palette);
-		/*} else {
-			switch (updatemode) {
-				case 1: {
-					QPainter::PixmapFragment frags[event->region().rectCount()];
-					QVector<QRect> rects = event->region().rects();
-					for (int i = 0; i < event->region().rectCount(); i++) {
-						QRect rect = rects.at(i);
-						frags[i] = QPainter::PixmapFragment::create(rect.center(), rect, 1, 1, 0, 1);
-					}
-					painter.drawPixmapFragments(frags, event->region().rectCount(), notes);
-					break;
-				}
-				case 2: {
-					QPainter::PixmapFragment frag = QPainter::PixmapFragment::create(
-														event->rect().center(), event->rect());
-					painter.drawPixmapFragments(&frag, 1, notes);
-					break;
-				}
-				default:
-					QPainter::PixmapFragment frag = QPainter::PixmapFragment::create(
-														relativeRect().center(), relativeRect());
-					painter.drawPixmapFragments(&frag, 1, notes);
-			}
-		}*/
+			QPalette palette;
+		palette.setBrush(backgroundRole(), QBrush(*pixmap));
+		setPalette(palette);
+			QPixmapCache::insert(notesId, *pixmap);
+			inited = true;
 	}
-
 }
 
 void MiscWidget::mouseMoveEvent(QMouseEvent *event) {
@@ -1134,7 +1079,7 @@ void MiscWidget::keyPressEvent(QKeyEvent *event) {
 void MiscWidget::keyReleaseEvent(QKeyEvent *event) {
 	if (Tool::currentTool()) {
 		if (Tool::currentTool()->releaseKey(event->key())) {
-			update();
+			redraw();
 		}
 	}
 }

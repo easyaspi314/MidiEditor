@@ -26,6 +26,7 @@ class TimelineWidget : public PaintWidget
 	protected:
 		void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 		void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+		void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
 	private:
 		MatrixWidget *matrixWidget;
 		qreal timeHeight;

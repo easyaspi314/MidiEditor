@@ -25,7 +25,7 @@
 #include <QSettings>
 #include <QToolBar>
 #ifdef Q_OS_MAC
-#include <QtMacExtras>
+	#include <QtMacExtras>
 #endif
 
 class MatrixWidget;
@@ -42,7 +42,9 @@ class QTabWidget;
 class QMenu;
 class TrackListWidget;
 class QComboBox;
+#ifdef ENABLE_REMOTE
 class RemoteServer;
+#endif
 class MiscWidget;
 class QGridLayout;
 class MidiTrack;

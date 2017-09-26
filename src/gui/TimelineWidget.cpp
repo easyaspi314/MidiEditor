@@ -28,10 +28,17 @@ void TimelineWidget::mouseMoveEvent(QMouseEvent *event) {
 	if (oldXPos < xPos) {
 		matrixWidget->update(oldXPos -2, 0, qRound(mouseX) + 2,
 								matrixWidget->height());
+		update(oldXPos -2, 0, qRound(mouseX) + 2, height());
 	} else {
 		matrixWidget->update(xPos - 2, 0, oldXPos + 2,
 								matrixWidget->height());
+		update(xPos - 2, 0, oldXPos + 2, height());
 	}
+}
+void TimelineWidget::leaveEvent(QEvent *event) {
+	matrixWidget->update(qRound(mouseX - 2), 0, qRound(mouseX + 2),
+							matrixWidget->height());
+	update(qRound(mouseX - 2), 0, qRound(mouseX + 2), height());
 }
 void TimelineWidget::setMatrixWidget(MatrixWidget *widget) {
 	matrixWidget = widget;
@@ -103,7 +110,7 @@ void TimelineWidget::paintEvent(QPaintEvent *event) {
 							QApplication::palette().window());
 
 		// paint time (ms)
-		int numbers = (parentWidget()->width()) / 80;
+		int numbers = (relativeRect().width()) / 80;
 		if (numbers > 0) {
 			int step = file->endTick() / numbers;
 			int realstep = 1;
@@ -261,6 +268,11 @@ void TimelineWidget::paintEvent(QPaintEvent *event) {
 			painter.setBrush(QBrush(Qt::gray, Qt::SolidPattern));
 			painter.drawPolygon(points, 3);
 		}
+	}
+	qreal mousePos = mousePosition();
+	if (!MidiPlayer::instance()->isPlaying() && mousePos > -1) {
+		painter.setPen(Qt::red);
+		painter.drawLine(mousePos, 0, mousePos, height());
 	}
 }
 void TimelineWidget::mouseDoubleClickEvent(QMouseEvent *event) {

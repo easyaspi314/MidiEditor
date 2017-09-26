@@ -104,6 +104,8 @@ class MiscWidget : public PaintWidget {
 		bool isDrawingLine;
 
 		MidiFile *file;
+		QPixmap *pixmap;
+		bool inited;
 };
 
 #endif
