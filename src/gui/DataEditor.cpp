@@ -48,7 +48,7 @@ void DataLineEditor::changed(QString text){
 	bool ok;
 	int i = text.toInt(&ok, 16);
 	if(ok){
-		emit dataChanged(_line, byte(i));
+		emit dataChanged(_line, ubyte(i));
 	}
 }
 
