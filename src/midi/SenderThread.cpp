@@ -22,7 +22,6 @@
 #include "../MidiEvent/NoteOnEvent.h"
 #include "../MidiEvent/OffEvent.h"
 #include "MidiPlayer.h"
-#include "../gui/KeyListener.h"
 
 #include <QTimer>
 
@@ -34,26 +33,7 @@ SenderThread::SenderThread() {
 			_noteQueue = new AtomicQueue<QByteArray>();
 		}
 }
-
-/*void SenderThread::run(){
-
-	forever {
-		// First, send the misc events, such as control change and program change events.
-		while(!_eventQueue->isEmpty()){
-			// send command
-			MidiOutput::instance()->sendEnqueuedCommand(_eventQueue->dequeue());
-		}
-		// Now send the note events.
-		while(!_noteQueue->isEmpty()){
-			// send command
-			MidiOutput::instance()->sendEnqueuedCommand(_noteQueue->dequeue());
-		}
-		msleep(1);
-	}
-}*/
 void SenderThread::run() {
-	_listener = new KeyListener(this);
-	installEventFilter(_listener);
 	timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), this, SLOT(sendCommands()));
 	timer->start(1);
@@ -107,9 +87,6 @@ void SenderThread::enqueue(MidiEvent *event){
 		_noteQueue = new AtomicQueue<QByteArray>();
 		_eventQueue = new AtomicQueue<QByteArray>();
 	}
-	/*if (!_noteQueue || !_eventQueue) {
-			QMetaObject::invokeMethod(this, "initQueue", Qt::QueuedConnection);
-	}*/
 	// If it is a NoteOnEvent or an OffEvent, we put it in _noteQueue.
 	if (event->type() == MidiEvent::NoteOnEventType || event->type() == MidiEvent::OffEventType) {
 		_noteQueue->push(event->save());

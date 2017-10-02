@@ -27,12 +27,9 @@
 #include "MidiInput.h"
 #include <QTime>
 #include "MidiPlayer.h"
-#include "../gui/KeyListener.h"
 
 #define INTERVAL_TIME 15
 #define TIMEOUTS_PER_SIGNAL 1
-
-//KeyListener *PlayerThread::_listener = 0;
 
 PlayerThread::PlayerThread() : QThread() {
 

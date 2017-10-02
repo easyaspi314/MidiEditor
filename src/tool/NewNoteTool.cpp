@@ -80,7 +80,7 @@ void NewNoteTool::draw(QPainter *painter){
 	qreal currentX = rasteredX(mouseX);
 	if(inDrag){
 		if(line<=127) {
-			int y = matrixWidget->yPosOfLine(line);
+			qreal y = matrixWidget->yPosOfLine(line);
 			painter->fillRect(qRectF(xPos, y, currentX-xPos, matrixWidget->lineHeight()), Qt::black);
 			painter->setPen(Qt::gray);
 			painter->drawLine(qLineF(xPos, 0, xPos, matrixWidget->height()));
@@ -90,7 +90,7 @@ void NewNoteTool::draw(QPainter *painter){
 				// Hooray for overcomplicated-ness.
 
 				// Check the velocity
-				int vel = (-0.5 * (mouseY - y - matrixWidget->lineHeight() / 2)) + 100;
+				int vel = qRound(-0.5 * (mouseY - y - matrixWidget->lineHeight() / 2)) + 100;
 				if (vel > 127)
 					vel = 127;
 				if (vel < 0)
@@ -117,7 +117,7 @@ void NewNoteTool::draw(QPainter *painter){
 
 				// Create the QRect for the ToolTip dimensions (too lazy to read from a QStyle)
 				QRect tooltip = QRectF(velocityTxtX - 4, velocityTxtY, velocityTxtWidth + 8,
-									   velocityTxtHeight + 8).toRect();
+										velocityTxtHeight + 8).toRect();
 
 				// Get the right colors
 				QPalette palette = matrixWidget->palette();
@@ -156,7 +156,7 @@ bool NewNoteTool::press(bool leftClick){
 
 bool NewNoteTool::release(){
 	int startTick, endTick;
-	int currentX = rasteredX(mouseX);
+	qreal currentX = rasteredX(mouseX);
 	inDrag = false;
 	if(currentX<xPos || line>127){
 		qreal temp = currentX;

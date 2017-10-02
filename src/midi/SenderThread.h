@@ -25,8 +25,6 @@
 
 #include "MidiOutput.h"
 
-class KeyListener;
-
 class SenderThread : public QThread {
 
 	Q_OBJECT
@@ -46,7 +44,6 @@ class SenderThread : public QThread {
 		AtomicQueue<QByteArray> *_eventQueue;
 		AtomicQueue<QByteArray> *_noteQueue;
 		QTimer *timer;
-		KeyListener *_listener;
 };
 
 #endif
