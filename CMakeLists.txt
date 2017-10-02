@@ -157,6 +157,8 @@ source_group( "midi\\rtmidi"   FILES ${RTMidi} ${RTMidih} )
 # TODO: AutoRCC? It seems to work.
 include(ressources.cmake)
 
+include(${CMAKE_CURRENT_BINARY_DIR}/version.cmake)
+
 add_executable(MidiEditor midieditor.rc)
 target_sources(MidiEditor PRIVATE
    ${main} ${mainh}
@@ -170,6 +172,8 @@ if (ENABLE_REMOTE)
    target_sources(MidiEditor PRIVATE ${Remote} ${Remoteh})
    target_compile_definitions(MidiEditor PRIVATE ENABLE_REMOTE)
 endif()
+
+
 if (APPLE)
    # Generate Info.plist manually because we can get file association.
    set(BUNDLE_INFO_STRING "MidiEditor")
@@ -179,7 +183,7 @@ if (APPLE)
    set(BUNDLE_COPYRIGHT "© 2010-2017 Markus Schwenk")
    set(BUNDLE_SHORT_VERSION_STRING "3.1.1")
    set(BUNDLE_BUNDLE_VERSION "3.1.1")
-   set(BUNDLE_LONG_VERSION_STRING "3.1.1")
+   set(BUNDLE_LONG_VERSION_STRING "${GIT_TAG}")
    configure_file(${CMAKE_SOURCE_DIR}/Info.plist.cmake ${CMAKE_CURRENT_BINARY_DIR}/Info.plist)
    set_target_properties(MidiEditor PROPERTIES
                          MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_BINARY_DIR}/Info.plist)
@@ -291,7 +295,6 @@ else()
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 endif()
 
-include(${CMAKE_CURRENT_BINARY_DIR}/version.cmake)
 
 #file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/run_environment/midieditor.ico" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 #file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/run_environment/metronome/metronome-01.wav" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/metronome)
