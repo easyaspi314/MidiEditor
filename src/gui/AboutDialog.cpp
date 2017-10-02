@@ -29,7 +29,7 @@
 #include <QScrollArea>
 #include <QtGlobal>
 
-AboutDialog::AboutDialog(QWidget *parent):QDialog(parent) {
+AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent) {
 
 	setMinimumWidth(550);
 	setMaximumHeight(450);
@@ -51,7 +51,7 @@ AboutDialog::AboutDialog(QWidget *parent):QDialog(parent) {
 	version->setStyleSheet("color: black");
 
 	QScrollArea *a = new QScrollArea(this);
-	QLabel *content = new QLabel(
+	QLabel *content = new QLabel(tr(
 	"<html>"
 		"<body>"
 		"<p>"
@@ -109,8 +109,7 @@ AboutDialog::AboutDialog(QWidget *parent):QDialog(parent) {
 				"</p>"
 			"</p>"
 		"</body>"
-	"</html>"
-								 );
+	"</html>"));
 	a->setWidgetResizable(true);
 	a->setWidget(content);
 	a->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -128,7 +127,7 @@ AboutDialog::AboutDialog(QWidget *parent):QDialog(parent) {
 	f->setFrameStyle(QFrame::HLine | QFrame::Sunken);
 	layout->addWidget(f, 4, 0, 1, 3);
 
-	QPushButton *close = new QPushButton("Close");
+	QPushButton *close = new QPushButton(tr("Close"));
 	layout->addWidget(close, 5, 2, 1, 1);
 	connect(close, SIGNAL(clicked()), this, SLOT(hide()));
 }

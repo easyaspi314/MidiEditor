@@ -39,14 +39,14 @@
 #include "../midi/MidiChannel.h"
 
 ubyte MidiEvent::_startByte = 0;
-EventWidget *MidiEvent::_eventWidget = 0;
+EventWidget *MidiEvent::_eventWidget = Q_NULLPTR;
 
 MidiEvent::MidiEvent(int channel, MidiTrack *track) : ProtocolEntry(),
 	GraphicObject() {
 	_track = track;
 	numChannel = channel;
 	timePos = 0;
-	midiFile = 0;
+	midiFile = Q_NULLPTR;
 }
 
 MidiEvent::MidiEvent(const MidiEvent &other) : ProtocolEntry(other), GraphicObject() {
@@ -94,7 +94,7 @@ MidiEvent *MidiEvent::loadMidiEvent(QDataStream *content, bool *ok,
 			int note = tempByte;
 			if (note < 0 || note > 127) {
 				*ok = false;
-				return 0;
+				return Q_NULLPTR;
 			}
 			// skip byte (velocity)
 			(*content) >> tempByte;
@@ -114,7 +114,7 @@ MidiEvent *MidiEvent::loadMidiEvent(QDataStream *content, bool *ok,
 			int note = tempByte;
 			if (note < 0 || note > 127) {
 				*ok = false;
-				return 0;
+				return Q_NULLPTR;
 			}
 			(*content) >> tempByte;
 			int velocity = tempByte;
@@ -139,7 +139,7 @@ MidiEvent *MidiEvent::loadMidiEvent(QDataStream *content, bool *ok,
 			int note = tempByte;
 			if (note < 0 || note > 127) {
 				*ok = false;
-				return 0;
+				return Q_NULLPTR;
 			}
 			(*content) >> tempByte;
 			int value = tempByte;
@@ -249,7 +249,7 @@ MidiEvent *MidiEvent::loadMidiEvent(QDataStream *content, bool *ok,
 							(*content) >> tempByte;
 							if (tempByte != 4) {
 								*ok = false;
-								return 0;
+								return Q_NULLPTR;
 							}
 
 							(*content) >> tempByte;
@@ -267,7 +267,7 @@ MidiEvent *MidiEvent::loadMidiEvent(QDataStream *content, bool *ok,
 							(*content) >> tempByte;
 							if (tempByte != 2) {
 								*ok = false;
-								return 0;
+								return Q_NULLPTR;
 							}
 							qint8 t;
 							(*content) >> t;
@@ -283,7 +283,7 @@ MidiEvent *MidiEvent::loadMidiEvent(QDataStream *content, bool *ok,
 							// end Event
 							*endEvent = true;
 							*ok = true;
-							return 0;
+							return Q_NULLPTR;
 						}
 						default: {
 							if (tempByte >= 0x01 && tempByte <= 0x07) {

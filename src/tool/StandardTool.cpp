@@ -28,9 +28,6 @@
 #include "../protocol/Protocol.h"
 #include "Selection.h"
 
-#define NO_ACTION 0
-#define SIZE_CHANGE_ACTION 1
-#define MOVE_ACTION 2
 
 bool StandardTool::selectAndMoveEnabled = true;
 
@@ -42,7 +39,7 @@ StandardTool::StandardTool() : EventTool() {
 	moveTool->setStandardTool(this);
 	sizeChangeTool = new SizeChangeTool();
 	sizeChangeTool->setStandardTool(this);
-	selectTool = new SelectTool(SELECTION_TYPE_BOX);
+	selectTool = new SelectTool(SelectTool::SelectionTypeBox);
 	selectTool->setStandardTool(this);
 	newNoteTool = new NewNoteTool();
 	newNoteTool->setStandardTool(this);
@@ -68,10 +65,10 @@ bool StandardTool::press(bool leftClick) {
 
 	if (leftClick) {
 		// find event to handle
-		MidiEvent *event = 0;
+		MidiEvent *event = Q_NULLPTR;
 		bool onSelectedEvent = false;
 		int minDiffToMouse = 0;
-		int action = NO_ACTION;
+		int action = NoAction;
 		foreach (MidiEvent *ev, *(matrixWidget->activeEvents())) {
 			if (pointInRect(mouseX, mouseY, ev->x() - 2, ev->y(), ev->x() + ev->width() + 2,
 							ev->y() + ev->height())) {
@@ -81,20 +78,20 @@ bool StandardTool::press(bool leftClick) {
 				}
 
 				int diffToMousePos = 0;
-				int currentAction = NO_ACTION;
+				int currentAction = NoAction;
 
 				// left side means SizeChangeTool
 				if (pointInRect(mouseX, mouseY, ev->x() - 2, ev->y(), ev->x() + 2,
 								ev->y() + ev->height())) {
 					diffToMousePos = ev->x() - mouseX;
-					currentAction = SIZE_CHANGE_ACTION;
+					currentAction = SizeChangeAction;
 				}
 
 				// right side means SizeChangeTool
 				else if (pointInRect(mouseX, mouseY, ev->x() + ev->width() - 2, ev->y(),
 									 ev->x() + ev->width() + 2, ev->y() + ev->height())) {
 					diffToMousePos = ev->x() + ev->width() - mouseX;
-					currentAction = SIZE_CHANGE_ACTION;
+					currentAction = SizeChangeAction;
 				}
 
 				// in the event means EventMoveTool
@@ -112,7 +109,7 @@ bool StandardTool::press(bool leftClick) {
 					} else {
 						diffToMousePos = diffRight;
 					}
-					currentAction = MOVE_ACTION;
+					currentAction = MoveAction;
 				}
 
 				if (diffToMousePos < 0) {
@@ -131,7 +128,7 @@ bool StandardTool::press(bool leftClick) {
 
 			switch (action) {
 
-				case NO_ACTION: {
+				case NoAction: {
 					// no event means SelectTool
 					Tool::setCurrentTool(selectTool);
 					selectTool->move(mouseX, mouseY);
@@ -139,12 +136,12 @@ bool StandardTool::press(bool leftClick) {
 					return true;
 				}
 
-				case SIZE_CHANGE_ACTION: {
+				case SizeChangeAction: {
 					if (!onSelectedEvent) {
 						file()->protocol()->startNewAction("Selection changed", image(), false);
 						ProtocolEntry *toCopy = copy();
 						EventTool::selectEvent(event,
-											   !Selection::instance()->selectedEvents().contains(event));
+												!Selection::instance()->selectedEvents().contains(event));
 						protocol(toCopy, this);
 						file()->protocol()->endAction();
 					}
@@ -156,12 +153,12 @@ bool StandardTool::press(bool leftClick) {
 					return false;
 				}
 
-				case MOVE_ACTION: {
+				case MoveAction: {
 					if (!onSelectedEvent) {
 						file()->protocol()->startNewAction("Selection changed", image(), false);
 						ProtocolEntry *toCopy = copy();
 						EventTool::selectEvent(event,
-											   !Selection::instance()->selectedEvents().contains(event));
+												!Selection::instance()->selectedEvents().contains(event));
 						protocol(toCopy, this);
 						file()->protocol()->endAction();
 					}

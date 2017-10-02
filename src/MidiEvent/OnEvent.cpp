@@ -24,7 +24,7 @@
 #include "../midi/MidiTrack.h"
 
 OnEvent::OnEvent(int ch, MidiTrack *track) : MidiEvent(ch, track){
-	_offEvent = 0;
+	_offEvent = Q_NULLPTR;
 
 	return;
 }

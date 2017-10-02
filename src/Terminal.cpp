@@ -26,10 +26,10 @@
 #include "midi/MidiInput.h"
 #include "midi/MidiOutput.h"
 
-Terminal *Terminal::_terminal = 0;
+Terminal *Terminal::_terminal = Q_NULLPTR;
 
-Terminal::Terminal() {
-	_process = 0;
+Terminal::Terminal(QObject *parent) : QObject(parent) {
+	_process = Q_NULLPTR;
 	_textEdit = new QTextEdit();
 	_textEdit->setReadOnly(true);
 
@@ -55,7 +55,7 @@ void Terminal::writeString(QString message) {
 }
 
 void Terminal::execute(QString startString, QString inPort,
-					   QString outPort) {
+						QString outPort) {
 	_inPort = inPort;
 	_outPort = outPort;
 

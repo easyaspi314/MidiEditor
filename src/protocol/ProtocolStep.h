@@ -22,6 +22,8 @@
 #include <QStack>
 #include <QString>
 
+#include "../Utils.h"
+
 class ProtocolItem;
 class QImage;
 
@@ -46,7 +48,7 @@ class ProtocolStep {
 		/**
 		 * \brief creates a new ProtocolStep with the given description.
 		 */
-		ProtocolStep(QString description, QImage *img = 0, bool modified = true);
+		ProtocolStep(QString description, QImage *img = Q_NULLPTR, bool modified = true);
 
 		/**
 		 * \brief deletes the ProtocolStep.

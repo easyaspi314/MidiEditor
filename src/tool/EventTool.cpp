@@ -132,11 +132,11 @@ void EventTool::paintSelectedEvents(QPainter *painter){
 	}
 }
 
-void EventTool::changeTick(MidiEvent* event, int shiftX) {
+void EventTool::changeTick(MidiEvent* event, qreal shiftX) {
 	// TODO: if event is shown, use matrixWidget tick (more efficient)
 	//int newMs = matrixWidget->msOfXPos(event->x()-shiftX);
 
-	int newMs = file()->msOfTick(event->midiTime())-matrixWidget->timeMsOfWidth(shiftX);
+	int newMs = file()->msOfTick(event->midiTime())-matrixWidget->timeMsOfWidth(qRound(shiftX));
 	int tick = file()->tick(newMs);
 
 	if(tick < 0){
@@ -231,14 +231,14 @@ void EventTool::pasteAction(){
 
 		double tickscale = 1;
 		if(currentFile() != copiedEvents->first()->file()){
-			tickscale = ((double)(currentFile()->ticksPerQuarter()))/((double)copiedEvents->first()->file()->ticksPerQuarter());
+			tickscale = double(currentFile()->ticksPerQuarter()) / double(copiedEvents->first()->file()->ticksPerQuarter());
 		}
 
 		// get first Tick of the copied events
 		int firstTick = -1;
 		foreach(MidiEvent *event, copiedCopiedEvents){
-			if((int)(tickscale*event->midiTime())<firstTick || firstTick<0){
-				firstTick = (int)(tickscale*event->midiTime());
+			if(qRound(tickscale*event->midiTime())<firstTick || firstTick<0){
+				firstTick = qRound(tickscale*event->midiTime());
 			}
 		}
 

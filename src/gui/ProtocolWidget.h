@@ -30,7 +30,7 @@ class ProtocolWidget : public QListWidget {
 	Q_OBJECT
 
 	public:
-		ProtocolWidget(QWidget *parent = 0);
+		ProtocolWidget(QWidget *parent = Q_NULLPTR);
 		void setFile(MidiFile *f);
 
 	public slots:

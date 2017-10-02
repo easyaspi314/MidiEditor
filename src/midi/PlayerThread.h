@@ -27,6 +27,7 @@
 class MidiFile;
 class MidiEvent;
 class QTime;
+class KeyListener;
 
 class PlayerThread : public QThread {
 
@@ -61,6 +62,7 @@ class PlayerThread : public QThread {
 		volatile bool stopped;
 		QTimer *timer;
 		QTime *time;
+		//KeyListener *_listener;
 
 		int measure, posInMeasure;
 };

@@ -64,7 +64,7 @@ class TrackListWidget : public QListWidget {
 	Q_OBJECT
 
 	public:
-		TrackListWidget(QWidget *parent = 0);
+		TrackListWidget(QWidget *parent = Q_NULLPTR);
 		void setFile(MidiFile *f);
 		MidiFile *midiFile();
 
@@ -81,6 +81,8 @@ class TrackListWidget : public QListWidget {
 		MidiFile *file;
 		QMap<MidiTrack*, TrackListItem*> items;
 		QList<MidiTrack*> trackorder;
+
+		const int ROW_HEIGHT = 85;
 };
 
 #endif

@@ -105,17 +105,19 @@
 // Static instance
 MainWindow * MainWindow::_mainWindow;
 
-MainWindow::MainWindow(QString initFile) : QMainWindow(), _initFile(initFile) {
+MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags),
+	_initFile(initFile) {
 	_mainWindow = this;
 
 	inputIsReady = false;
 	outputIsReady = false;
-
-	file = 0;
+	// file may be set already.
+	if (!file)
+		file = Q_NULLPTR;
 	_settings = new QSettings(QString("MidiEditor"), QString("NONE"));
 
-	_moveSelectedEventsToChannelMenu = 0;
-	_moveSelectedEventsToTrackMenu = 0;
+	_moveSelectedEventsToChannelMenu = Q_NULLPTR;
+	_moveSelectedEventsToTrackMenu = Q_NULLPTR;
 
 #ifdef ENABLE_REMOTE
 	bool ok;
@@ -230,14 +232,10 @@ MainWindow::MainWindow(QString initFile) : QMainWindow(), _initFile(initFile) {
 	rightSplitter->addWidget(lowerTabWidget);
 
 	// MatrixArea
-	//QWidget *matrixAreaParent = new QWidget(leftSplitter);
-	//QGridLayout *matrixAreaParentLayout = new QGridLayout(matrixAreaParent);
 	QWidget *matrixAreaContainer = new QWidget(leftSplitter);
 	QGridLayout *matrixAreaLayout = new QGridLayout(matrixAreaContainer);
 	matrixAreaLayout->setSpacing(0);
 	matrixArea = new QScrollArea(matrixAreaContainer);
-	//matrixAreaParentLayout->addWidget(matrixArea, 0, 0, 0 ,0);
-	//matrixArea->setVisible(false);
 
 	matrixArea->setContentsMargins(0,0,0,0);
 	matrixArea->setWidgetResizable(true);
@@ -362,7 +360,7 @@ MainWindow::MainWindow(QString initFile) : QMainWindow(), _initFile(initFile) {
 	//_miscControlLayout->setContentsMargins(0,0,0,0);
 	_miscWidgetControl->setLayout(_miscControlLayout);
 	_miscMode = new QComboBox(_miscWidgetControl);
-	for(int i = 0; i<MiscModeEnd; i++){
+	for(int i = 0; i < MiscWidget::MiscModeEnd; i++){
 		_miscMode->addItem(MiscWidget::modeToString(i));
 	}
 	//_miscControlLayout->addWidget(new QLabel("Mode:", _miscWidgetControl), 0, 0, 1, 3);
@@ -587,6 +585,9 @@ MainWindow::MainWindow(QString initFile) : QMainWindow(), _initFile(initFile) {
 }
 
 void MainWindow::loadInitFile() {
+	// macOS does things differently.
+	if (file)
+		return;
 	if (_initFile != "")
 		loadFile(_initFile);
 	else
@@ -746,17 +747,19 @@ void MainWindow::play(){
 		eventWidget()->setEnabled(false);
 
 		MidiPlayer::instance()->play(file);
-		connect(MidiPlayer::player(),
-				SIGNAL(playerStopped()), this,	SLOT(stop()));
 
-		#ifdef Q_OS_WIN32
+		connect(MidiPlayer::player(),
+				SIGNAL(playerStopped()), this, SLOT(stop()));
+
+#ifdef Q_OS_WIN32
 		connect(MidiPlayer::player(),
 				SIGNAL(timeMsChanged(int)), mw_matrixWidget, SLOT(timeMsChanged(int)));
-		#endif
+#endif
 #ifdef ENABLE_REMOTE
 		_remoteServer->play();
 #endif
 	}
+
 }
 
 
@@ -989,7 +992,7 @@ void MainWindow::save(){
 		if(printMuteWarning){
 			QMessageBox::information(this, "Channels/Tracks mute",
 				"One or more channels/tracks are not audible. They will be audible in the saved file.",
-				"Save file", 0, 0);
+				"Save file", Q_NULLPTR, Q_NULLPTR);
 		}
 
 		if(!file->save(file->path())){
@@ -1044,11 +1047,12 @@ void MainWindow::saveas(){
 		if(printMuteWarning){
 			QMessageBox::information(this, "Channels/Tracks mute",
 					"One or more channels/tracks are not audible. They will be audible in the saved file.",
-					"Save file", 0, 0);
+					"Save file", Q_NULLPTR, Q_NULLPTR);
 		}
 
 		file->setPath(newPath);
-		setWindowTitle(QApplication::applicationName()+" - " +file->path()+"[*]");
+		//setWindowTitle(QApplication::applicationName()+" - " +file->path()+"[*]");
+		setWindowFilePath(file->path());
 		updateRecentPathsList();
 		setWindowModified(false);
 	} else {
@@ -1056,32 +1060,44 @@ void MainWindow::saveas(){
 	}
 }
 
+bool MainWindow::saveDialog() {
+	QMessageBox box(QMessageBox::Question,
+						 "Save file?",
+						 "Save changes to " + (file->path().isEmpty() ? "Untitled Document" : file->path()) + " before closing?",
+						 (QMessageBox::Save | QMessageBox::Cancel | QMessageBox::Discard),
+						 this);
+	// fancy slide-down dialogs on macOS
+	box.setWindowModality(Qt::WindowModal);
+	int result = box.exec();
+	switch(result)
+	{
+		case QMessageBox::Save: {
+			// save
+			if(QFile(file->path()).exists()){
+				file->save(file->path());
+			} else {
+				saveas();
+			}
+			return true;
+		}
+		case QMessageBox::Discard: {
+			// close
+			return true;
+		}
+		case QMessageBox::Cancel: {
+			// break
+			return false;
+		}
+	}
+	return false;
+}
 void MainWindow::load(){
 	QString oldPath = startDirectory;
 	if(file){
 		oldPath = file->path();
-		if(file->modified()){
-			switch(QMessageBox::question(this, "Save file?", "Save file "+
-					file->path()+
-				" before closing?", "Save","Close without saving", "Cancel",0,2))
-			{
-				case 0: {
-					// save
-					if(QFile(file->path()).exists()){
-						file->save(file->path());
-					} else {
-						saveas();
-					}
-					break;
-				}
-				case 1: {
-					// close
-					break;
-				}
-				case 2: {
-					// break
-					return;
-				}
+		if(file->modified()) {
+			if (!saveDialog()) {
+				return;
 			}
 		}
 	}
@@ -1176,7 +1192,7 @@ EventWidget *MainWindow::eventWidget(){
 
 void MainWindow::muteAllChannels(){
 	if(!file) return;
-	file->protocol()->startNewAction("Mute all channels", 0, false);
+	file->protocol()->startNewAction("Mute all channels", Q_NULLPTR, false);
 	for(int i=0; i<19; i++){
 		file->channel(i)->setMute(true);
 	}
@@ -1186,7 +1202,7 @@ void MainWindow::muteAllChannels(){
 
 void MainWindow::unmuteAllChannels(){
 	if(!file) return;
-	file->protocol()->startNewAction("All channels audible", 0, false);
+	file->protocol()->startNewAction("All channels audible", Q_NULLPTR, false);
 	for(int i=0; i<19; i++){
 		file->channel(i)->setMute(false);
 	}
@@ -1196,7 +1212,7 @@ void MainWindow::unmuteAllChannels(){
 
 void MainWindow::allChannelsVisible(){
 	if(!file) return;
-	file->protocol()->startNewAction("All channels visible", 0, false);
+	file->protocol()->startNewAction("All channels visible", Q_NULLPTR, false);
 	for(int i=0; i<19; i++){
 		file->channel(i)->setVisible(true);
 	}
@@ -1206,7 +1222,7 @@ void MainWindow::allChannelsVisible(){
 
 void MainWindow::allChannelsInvisible(){
 	if(!file) return;
-	file->protocol()->startNewAction("Hide all channels", 0, false);
+	file->protocol()->startNewAction("Hide all channels", Q_NULLPTR, false);
 	for(int i=0; i<19; i++){
 		file->channel(i)->setVisible(false);
 	}
@@ -1377,7 +1393,7 @@ void MainWindow::scaleSelection(){
 			}
 		}
 
-		file->protocol()->startNewAction("Scale events", 0);
+		file->protocol()->startNewAction("Scale events", Q_NULLPTR);
 		foreach(MidiEvent *e, Selection::instance()->selectedEvents()){
 			e->setMidiTime(qRound((e->midiTime()-minTime)*scale + minTime));
 			OnEvent *on = qobject_cast<OnEvent*>(e);
@@ -1742,7 +1758,7 @@ void MainWindow::updateTrackMenu() {
 void MainWindow::muteChannel(QAction *action){
 	int channel = action->data().toInt();
 	if(file){
-		file->protocol()->startNewAction("Mute channel", 0, false);
+		file->protocol()->startNewAction("Mute channel", Q_NULLPTR, false);
 		file->channel(channel)->setMute(action->isChecked());
 		updateChannelMenu();
 		channelWidget->update();
@@ -1752,7 +1768,7 @@ void MainWindow::muteChannel(QAction *action){
 void MainWindow::soloChannel(QAction *action){
 	int channel = action->data().toInt();
 	if(file){
-		file->protocol()->startNewAction("Select solo channel", 0, false);
+		file->protocol()->startNewAction("Select solo channel", Q_NULLPTR, false);
 		for(int i = 0; i<16; i++){
 			file->channel(i)->setSolo(i==channel && action->isChecked());
 		}
@@ -1765,7 +1781,7 @@ void MainWindow::soloChannel(QAction *action){
 void MainWindow::viewChannel(QAction *action){
 	int channel = action->data().toInt();
 	if(file){
-		file->protocol()->startNewAction("Channel visibility changed", 0, false);
+		file->protocol()->startNewAction("Channel visibility changed", Q_NULLPTR, false);
 		file->channel(channel)->setVisible(action->isChecked());
 		updateChannelMenu();
 		channelWidget->update();
@@ -1861,7 +1877,7 @@ void MainWindow::addTrack(){
 
 void MainWindow::muteAllTracks(){
 	if(!file) return;
-	file->protocol()->startNewAction("Mute all tracks", 0, false);
+	file->protocol()->startNewAction("Mute all tracks", Q_NULLPTR, false);
 	foreach(MidiTrack *track, *(file->tracks())){
 		track->setMuted(true);
 	}
@@ -1871,7 +1887,7 @@ void MainWindow::muteAllTracks(){
 
 void MainWindow::unmuteAllTracks(){
 	if(!file) return;
-	file->protocol()->startNewAction("All tracks audible", 0, false);
+	file->protocol()->startNewAction("All tracks audible", Q_NULLPTR, false);
 	foreach(MidiTrack *track, *(file->tracks())){
 		track->setMuted(false);
 	}
@@ -1881,7 +1897,7 @@ void MainWindow::unmuteAllTracks(){
 
 void MainWindow::allTracksVisible(){
 	if(!file) return;
-	file->protocol()->startNewAction("Show all tracks", 0, false);
+	file->protocol()->startNewAction("Show all tracks", Q_NULLPTR, false);
 	foreach(MidiTrack *track, *(file->tracks())){
 		track->setHidden(false);
 	}
@@ -1891,7 +1907,7 @@ void MainWindow::allTracksVisible(){
 
 void MainWindow::allTracksInvisible(){
 	if(!file) return;
-	file->protocol()->startNewAction("Hide all tracks", 0, false);
+	file->protocol()->startNewAction("Hide all tracks", Q_NULLPTR, false);
 	foreach(MidiTrack *track, *(file->tracks())){
 		track->setHidden(true);
 	}
@@ -1902,7 +1918,7 @@ void MainWindow::allTracksInvisible(){
 void MainWindow::showTrackMenuClicked(QAction *action){
 	int track = action->data().toInt();
 	if(file){
-		file->protocol()->startNewAction("Show track", 0, false);
+		file->protocol()->startNewAction("Show track", Q_NULLPTR, false);
 		file->track(track)->setHidden(!(action->isChecked()));
 		updateTrackMenu();
 		_trackWidget->update();
@@ -1913,7 +1929,7 @@ void MainWindow::showTrackMenuClicked(QAction *action){
 void MainWindow::muteTrackMenuClicked(QAction *action){
 	int track = action->data().toInt();
 	if(file){
-		file->protocol()->startNewAction("Mute track", 0, false);
+		file->protocol()->startNewAction("Mute track", Q_NULLPTR, false);
 		file->track(track)->setMuted(action->isChecked());
 		updateTrackMenu();
 		_trackWidget->update();
@@ -1928,7 +1944,7 @@ void MainWindow::selectAllFromChannel(QAction *action){
 		return;
 	}
 	int channel = action->data().toInt();
-	file->protocol()->startNewAction("Select all events from channel "+QString::number(channel), 0, false);
+	file->protocol()->startNewAction("Select all events from channel "+QString::number(channel), Q_NULLPTR, false);
 	EventTool::clearSelection();
 	file->channel(channel)->setVisible(true);
 	foreach(MidiEvent *e, file->channel(channel)->eventMap()->values()){
@@ -1948,7 +1964,7 @@ void MainWindow::selectAllFromTrack(QAction *action){
 	}
 
 	int track = action->data().toInt();
-	file->protocol()->startNewAction("Select all events from track "+QString::number(track), 0, false);
+	file->protocol()->startNewAction("Select all events from track "+QString::number(track), Q_NULLPTR, false);
 	EventTool::clearSelection();
 	file->track(track)->setHidden(false);
 	for(int channel = 0; channel<16; channel++){
@@ -1968,7 +1984,7 @@ void MainWindow::selectAll(){
 		return;
 	}
 
-	file->protocol()->startNewAction("Select all", 0, false);
+	file->protocol()->startNewAction("Select all", Q_NULLPTR, false);
 
 	for(int i = 0; i<16; i++){
 		foreach(MidiEvent *event, file->channel(i)->eventMap()->values()){
@@ -2178,16 +2194,16 @@ void MainWindow::manual(){
 
 void MainWindow::changeMiscMode(int mode){
 	_miscWidget->setMode(mode);
-	if(mode == VelocityEditor){
+	if(mode == MiscWidget::VelocityEditor){
 		_miscChannel->setEnabled(false);
 	} else {
 		_miscChannel->setEnabled(true);
 	}
-	if(mode == ControlEditor || mode == KeyPressureEditor){
+	if(mode == MiscWidget::ControlEditor || mode == MiscWidget::KeyPressureEditor){
 		_miscController->setEnabled(true);
 		_miscController->clear();
 
-		if(mode == ControlEditor){
+		if(mode == MiscWidget::ControlEditor){
 			for(int i = 0; i<128; i++){
 				_miscController->addItem(MidiFile::controlChangeName(i));
 			}
@@ -2203,13 +2219,13 @@ void MainWindow::changeMiscMode(int mode){
 
 void MainWindow::selectModeChanged(QAction *action){
 	if(action == setSingleMode){
-		_miscWidget->setEditMode(SINGLE_MODE);
+		_miscWidget->setEditMode(MiscWidget::SingleMode);
 	}
 	if(action == setLineMode){
-		_miscWidget->setEditMode(LINE_MODE);
+		_miscWidget->setEditMode(MiscWidget::LineMode);
 	}
 	if(action == setFreehandMode){
-		_miscWidget->setEditMode(MOUSE_MODE);
+		_miscWidget->setEditMode(MiscWidget::FreehandMode);
 	}
 }
 
@@ -2369,13 +2385,13 @@ QToolBar *MainWindow::setupActions(QWidget *parent){
 	toolsToolsMenu->addAction(stdToolAction);
 	tool->buttonClick();
 
-	QAction *selectSingleAction = new ToolButton(new SelectTool(SELECTION_TYPE_SINGLE), QKeySequence(Qt::Key_F2), toolsToolsMenu);
+	QAction *selectSingleAction = new ToolButton(new SelectTool(SelectTool::SelectionTypeSingle), QKeySequence(Qt::Key_F2), toolsToolsMenu);
 	toolsToolsMenu->addAction(selectSingleAction);
-	QAction *selectBoxAction = new ToolButton(new SelectTool(SELECTION_TYPE_BOX), QKeySequence(Qt::Key_F3), toolsToolsMenu);
+	QAction *selectBoxAction = new ToolButton(new SelectTool(SelectTool::SelectionTypeBox), QKeySequence(Qt::Key_F3), toolsToolsMenu);
 	toolsToolsMenu->addAction(selectBoxAction);
-	QAction *selectLeftAction = new ToolButton(new SelectTool(SELECTION_TYPE_LEFT), QKeySequence(Qt::Key_F4), toolsToolsMenu);
+	QAction *selectLeftAction = new ToolButton(new SelectTool(SelectTool::SelectionTypeLeft), QKeySequence(Qt::Key_F4), toolsToolsMenu);
 	toolsToolsMenu->addAction(selectLeftAction);
-	QAction *selectRightAction = new ToolButton(new SelectTool(SELECTION_TYPE_RIGHT), QKeySequence(Qt::Key_F5), toolsToolsMenu);
+	QAction *selectRightAction = new ToolButton(new SelectTool(SelectTool::SelectionTypeRight), QKeySequence(Qt::Key_F5), toolsToolsMenu);
 	toolsToolsMenu->addAction(selectRightAction);
 
 	toolsToolsMenu->addSeparator();
@@ -2682,8 +2698,8 @@ QToolBar *MainWindow::setupActions(QWidget *parent){
 	backToBeginAction->setIcon(QIcon(":/run_environment/graphics/tool/back_to_begin.png"));
 	QList<QKeySequence> backToBeginActionShortcuts;
 	backToBeginActionShortcuts << QKeySequence(Qt::Key_Home)
-							   << QKeySequence(Qt::Key_J + Qt::SHIFT)
-							   << QKeySequence(Qt::Key_Left + Qt:: SHIFT);
+								<< QKeySequence(Qt::Key_J + Qt::SHIFT)
+								<< QKeySequence(Qt::Key_Left + Qt:: SHIFT);
 	backToBeginAction->setShortcuts(backToBeginActionShortcuts);
 	connect(backToBeginAction, SIGNAL(triggered()), this, SLOT(backToBegin()));
 	playbackMB->addAction(backToBeginAction);
@@ -2729,7 +2745,7 @@ QToolBar *MainWindow::setupActions(QWidget *parent){
 		speedMenu->addAction(speedAction);
 		speedGroup->addAction(speedAction);
 		speedAction->setCheckable(true);
-		speedAction->setChecked(s==1);
+		speedAction->setChecked(qFuzzyCompare(s, 1));
 	}
 
 	playbackMB->addMenu(speedMenu);

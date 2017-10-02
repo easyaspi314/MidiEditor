@@ -138,8 +138,8 @@ bool SizeChangeTool::release(){
 	int currentX = rasteredX(mouseX);
 
 	inDrag = false;
-	int endEventShift = 0;
-	int startEventShift = 0;
+	qreal endEventShift = 0;
+	qreal startEventShift = 0;
 	if(dragsOnEvent){
 		startEventShift = currentX-xPos;
 	} else {
@@ -153,9 +153,9 @@ bool SizeChangeTool::release(){
 			OffEvent *off = qobject_cast<OffEvent*>(event);
 			if(on){
 				int onTick = file()->tick(file()->msOfTick(on->midiTime())-
-						matrixWidget->timeMsOfWidth(-startEventShift));
+						matrixWidget->timeMsOfWidth(qRound(-startEventShift)));
 				int offTick = file()->tick(file()->msOfTick(on->offEvent()->
-						midiTime())-matrixWidget->timeMsOfWidth(-endEventShift));
+						midiTime())-matrixWidget->timeMsOfWidth(qRound(-endEventShift)));
 				if(onTick<offTick){
 					if(dragsOnEvent){
 						changeTick(on, -startEventShift);

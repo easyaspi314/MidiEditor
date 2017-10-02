@@ -52,7 +52,7 @@ class MidiInput : public QObject {
 		QMultiMap<int, MidiEvent*> endInput(MidiTrack *track);
 
 		static void receiveMessage(double deltatime,
-					std::vector<ubyte> *message, void *userData = 0);
+					std::vector<ubyte> *message, void *userData = Q_NULLPTR);
 
 		void setTime(int ms);
 

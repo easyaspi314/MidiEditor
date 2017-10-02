@@ -33,12 +33,11 @@
 #include "../MidiEvent/NoteOnEvent.h"
 #include "../MidiEvent/OffEvent.h"
 
-#include "../Utils.h"
 #include "../Singleton.h"
 
 SenderThread *MidiOutput::_sender = new SenderThread();
 MidiOutput::MidiOutput() : QObject() {
-	_midiOut = 0;
+	_midiOut = Q_NULLPTR;
 	_outPort = "";
 	playedNotes = QMap<int, QList<int> >();
 	_alternativePlayer = false;
@@ -151,7 +150,7 @@ void MidiOutput::sendEnqueuedCommand(QByteArray array) {
 		std::vector<ubyte> message;
 
 		foreach (byte data, array) {
-			message.push_back(byte(data));
+			message.push_back(ubyte(data));
 		}
 		try {
 			_midiOut->sendMessage(&message);

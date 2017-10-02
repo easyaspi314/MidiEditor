@@ -25,11 +25,8 @@
 #include <QPainter>
 #include <QLinearGradient>
 
-#define LINE_HEIGHT 20
-#define BORDER 2
-
 ProtocolWidget::ProtocolWidget(QWidget *parent) : QListWidget(parent) {
-	file = 0;
+	file = Q_NULLPTR;
 	setSelectionMode(QAbstractItemView::NoSelection);
 	protocolHasChanged = false;
 	nextChangeFromList = false;
@@ -72,7 +69,7 @@ void ProtocolWidget::update(){
 		QFont currentFont;
 		currentFont.setBold(true);
 
-		QListWidgetItem *firstToRedo = 0;
+		QListWidgetItem *firstToRedo = Q_NULLPTR;
 
 		for(int i = 0; i<stepsBack+stepsForward; i++){
 			ProtocolStep *step;

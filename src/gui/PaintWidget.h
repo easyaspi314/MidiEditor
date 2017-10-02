@@ -35,7 +35,7 @@ class PaintWidget : public QWidget {
 	Q_OBJECT
 
 	public:
-		PaintWidget(QWidget *parent = 0);
+		PaintWidget(QWidget *parent = Q_NULLPTR);
 		void setRepaintOnMouseMove(bool b);
 		void setRepaintOnMousePress(bool b);
 		void setRepaintOnMouseRelease(bool b);

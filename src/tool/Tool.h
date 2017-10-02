@@ -23,6 +23,7 @@
 #include <QString>
 #include <QList>
 #include "../gui/GraphicObject.h"
+#include "../Utils.h"
 
 #include "../protocol/ProtocolEntry.h"
 
@@ -76,7 +77,7 @@ class Tool : public ProtocolEntry {
 		/**
 		 * \brief creates a new Tool.
 		 */
-		Tool();
+		Tool(QObject *parent = Q_NULLPTR);
 
 		/**
 		 * \brief creates a new Tool copying all data from &other.

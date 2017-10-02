@@ -33,13 +33,15 @@ class QLabel;
 
 class ChannelListWidget;
 
+const int ROW_HEIGHT = 85;
+
 class ColoredWidget : public QWidget {
 
 	Q_OBJECT
 
 	public:
-		ColoredWidget(QColor color, QWidget *parent = 0);
-		void setColor(QColor c) {_color = c; update(); }
+		ColoredWidget(QColor color, QWidget *parent = Q_NULLPTR);
+		void setColor(QColor c) { _color = c; update(); }
 
 	protected:
 		void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
@@ -47,6 +49,7 @@ class ColoredWidget : public QWidget {
 	private:
 		QColor _color;
 };
+
 
 class ChannelListItem : public QWidget {
 
@@ -79,7 +82,7 @@ class ChannelListWidget : public QListWidget {
 	Q_OBJECT
 
 	public:
-		ChannelListWidget(QWidget *parent = 0);
+		ChannelListWidget(QWidget *parent = Q_NULLPTR);
 		void setFile(MidiFile *f);
 		MidiFile *midiFile();
 

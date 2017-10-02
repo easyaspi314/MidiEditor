@@ -21,10 +21,10 @@
 #include "../gui/MatrixWidget.h"
 #include "../gui/MainWindow.h"
 
-MatrixWidget *EditorTool::matrixWidget = 0;
-MainWindow *EditorTool::_mainWindow = 0;
+MatrixWidget *EditorTool::matrixWidget = Q_NULLPTR;
+MainWindow *EditorTool::_mainWindow = Q_NULLPTR;
 
-EditorTool::EditorTool():Tool(){
+EditorTool::EditorTool() : Tool(){
 	etool_selected = false;
 	mouseIn = false;
 }

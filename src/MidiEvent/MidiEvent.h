@@ -81,9 +81,9 @@ class MidiEvent : public ProtocolEntry, public GraphicObject {
 			SYSEX_LINE,
 			UNKNOWN_LINE
 		};
-		void setTrack(MidiTrack *track, bool toProtocol=true);
+		void setTrack(MidiTrack *track, bool toProtocol = true);
 		MidiTrack *track();
-		void setChannel(int channel, bool toProtocol=true);
+		void setChannel(int channel, bool toProtocol = true);
 		int channel();
 		virtual void setMidiTime(int t, bool toProtocol = true);
 		int midiTime();

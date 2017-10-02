@@ -35,7 +35,7 @@ class MidiSettingsWidget : public SettingsWidget {
 
 	public:
 
-		MidiSettingsWidget(QWidget *parent = 0);
+		MidiSettingsWidget(QWidget *parent = Q_NULLPTR);
 
 	public slots:
 

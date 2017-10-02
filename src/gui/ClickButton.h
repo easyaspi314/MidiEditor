@@ -29,7 +29,7 @@ class ClickButton  : public QPushButton {
 	Q_OBJECT
 
 	public:
-		ClickButton(QString imageName, QWidget *parent = 0);
+		ClickButton(QString imageName, QWidget *parent = Q_NULLPTR);
 		void setImageName(QString imageName);
 
 	public slots:

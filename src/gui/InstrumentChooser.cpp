@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "InstrumentChooser.h"
 
 #include <QLabel>
@@ -76,7 +75,7 @@ void InstrumentChooser::accept(){
 
 	int program = _box->currentIndex();
 	bool removeOthers = _removeOthers->isChecked();
-	MidiTrack *track = 0;
+	MidiTrack *track = Q_NULLPTR;
 
 	// get events
 	QList<ProgChangeEvent*> events;
@@ -91,7 +90,7 @@ void InstrumentChooser::accept(){
 		track = _file->track(0);
 	}
 
-	ProgChangeEvent *event = 0;
+	ProgChangeEvent *event = Q_NULLPTR;
 
 	_file->protocol()->startNewAction("Edited instrument for channel");
 	if(events.size()>0 && events.first()->midiTime() == 0){

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef INSTRUMENTCHOOSER_H_
 #define INSTRUMENTCHOOSER_H_
 
@@ -31,7 +30,7 @@ class InstrumentChooser : public QDialog {
 	Q_OBJECT
 
 	public:
-		InstrumentChooser(MidiFile *f, int channel, QWidget *parent=0);
+		InstrumentChooser(MidiFile *f, int channel, QWidget *parent = Q_NULLPTR);
 
 	public slots:
 		void accept() Q_DECL_OVERRIDE;

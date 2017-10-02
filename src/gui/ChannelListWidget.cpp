@@ -31,8 +31,6 @@
 #include "../midi/MidiChannel.h"
 #include "../protocol/Protocol.h"
 
-#define ROW_HEIGHT 85
-
 ChannelListItem::ChannelListItem(int ch, ChannelListWidget *parent) : QWidget(parent){
 
 	channelList = parent;
@@ -60,7 +58,7 @@ ChannelListItem::ChannelListItem(int ch, ChannelListWidget *parent) : QWidget(pa
 	toolBar->setIconSize(QSize(12, 12));
 
 	// macOS hack to remove unwanted gradients so we can set the background to what we want.
-	toolBar->setStyleSheet("QToolBar { border: none; }");
+	toolBar->setStyleSheet("QToolBar { border: none; spacing: 0; }");
 
 	QPalette palette = toolBar->palette();
 	palette.setColor(QPalette::Background, Qt::transparent);
@@ -71,6 +69,7 @@ ChannelListItem::ChannelListItem(int ch, ChannelListWidget *parent) : QWidget(pa
 	visibleAction->setCheckable(true);
 	visibleAction->setChecked(true);
 	toolBar->addAction(visibleAction);
+	toolBar->widgetForAction(visibleAction)->setProperty("SegmentedMacButton", "left");
 	connect(visibleAction, SIGNAL(toggled(bool)), this, SLOT(toggleVisibility(bool)));
 
 	// audibility
@@ -79,6 +78,8 @@ ChannelListItem::ChannelListItem(int ch, ChannelListWidget *parent) : QWidget(pa
 		loudAction->setCheckable(true);
 		loudAction->setChecked(true);
 		toolBar->addAction(loudAction);
+		toolBar->widgetForAction(loudAction)->setProperty("SegmentedMacButton", "center");
+
 		connect(loudAction, SIGNAL(toggled(bool)), this, SLOT(toggleAudibility(bool)));
 
 		// solo
@@ -86,6 +87,8 @@ ChannelListItem::ChannelListItem(int ch, ChannelListWidget *parent) : QWidget(pa
 		soloAction->setCheckable(true);
 		soloAction->setChecked(false);
 		toolBar->addAction(soloAction);
+		toolBar->widgetForAction(soloAction)->setProperty("SegmentedMacButton", "right");
+
 		connect(soloAction, SIGNAL(toggled(bool)), this, SLOT(toggleSolo(bool)));
 
 		toolBar->addSeparator();
@@ -109,7 +112,7 @@ void ChannelListItem::toggleVisibility(bool visible){
 	if(visible){
 		text = "Show channel";
 	}
-	channelList->midiFile()->protocol()->startNewAction(text, 0, false);
+	channelList->midiFile()->protocol()->startNewAction(text, Q_NULLPTR, false);
 	channelList->midiFile()->channel(channel)->setVisible(visible);
 	channelList->midiFile()->protocol()->endAction();
 	emit channelStateChanged();
@@ -120,7 +123,7 @@ void ChannelListItem::toggleAudibility(bool audible){
 	if(audible){
 		text = "Channel audible";
 	}
-	channelList->midiFile()->protocol()->startNewAction(text, 0, false);
+	channelList->midiFile()->protocol()->startNewAction(text, Q_NULLPTR, false);
 	channelList->midiFile()->channel(channel)->setMute(!audible);
 	channelList->midiFile()->protocol()->endAction();
 	emit channelStateChanged();
@@ -131,7 +134,7 @@ void ChannelListItem::toggleSolo(bool solo){
 	if(!solo){
 		text = "Exited solo mode";
 	}
-	channelList->midiFile()->protocol()->startNewAction(text, 0, false);
+	channelList->midiFile()->protocol()->startNewAction(text, Q_NULLPTR, false);
 	channelList->midiFile()->channel(channel)->setSolo(solo);
 	channelList->midiFile()->protocol()->endAction();
 	emit channelStateChanged();
@@ -195,7 +198,7 @@ ChannelListWidget::ChannelListWidget(QWidget *parent) : QListWidget(parent) {
 		connect(widget, SIGNAL(selectInstrumentClicked(int)), this, SIGNAL(selectInstrumentClicked(int)));
 	}
 
-	file = 0;
+	file = Q_NULLPTR;
 }
 
 void ChannelListWidget::setFile(MidiFile *f){

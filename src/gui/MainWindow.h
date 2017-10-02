@@ -57,7 +57,7 @@ class MainWindow : public QMainWindow {
 	Q_OBJECT
 
 	public:
-		MainWindow(QString initFile="");
+		MainWindow(QString initFile="", QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
 		void setFile(MidiFile *f);
 		EventWidget *eventWidget();
 		void setStartDir(QString dir);
@@ -233,6 +233,8 @@ class MainWindow : public QMainWindow {
 		int quantize(int t, QList<int> ticks);
 		QList<QAction*> _activateWithSelections;
 		bool inputIsReady, outputIsReady;
+
+		bool saveDialog();
 };
 
 #endif

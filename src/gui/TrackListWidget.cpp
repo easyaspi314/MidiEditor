@@ -33,8 +33,6 @@
 #include <QToolBar>
 #include <QPainter>
 
-#define ROW_HEIGHT 85
-
 TrackListItem::TrackListItem(MidiTrack *track, TrackListWidget *parent) : QWidget(parent){
 
 	trackList = parent;
@@ -59,13 +57,14 @@ TrackListItem::TrackListItem(MidiTrack *track, TrackListWidget *parent) : QWidge
 	QToolBar *toolBar = new QToolBar(this);
 	toolBar->setIconSize(QSize(12, 12));
 	// Stylesheet needed to hide macOS gradient.
-	toolBar->setStyleSheet("QToolBar{ background-color: rgb(255, 255, 255); border: none; }");
+	toolBar->setStyleSheet("QToolBar{ border: none; spacing: 0; }");
 
 	// visibility
 	visibleAction = new QAction(QIcon(":/run_environment/graphics/trackwidget/visible.png"), "Track visible", toolBar);
 	visibleAction->setCheckable(true);
 	visibleAction->setChecked(true);
 	toolBar->addAction(visibleAction);
+	toolBar->widgetForAction(visibleAction)->setProperty("SegmentedMacButton", "left");
 	connect(visibleAction, SIGNAL(toggled(bool)), this, SLOT(toggleVisibility(bool)));
 
 	// audibility
@@ -73,6 +72,7 @@ TrackListItem::TrackListItem(MidiTrack *track, TrackListWidget *parent) : QWidge
 	loudAction->setCheckable(true);
 	loudAction->setChecked(true);
 	toolBar->addAction(loudAction);
+	toolBar->widgetForAction(loudAction)->setProperty("SegmentedMacButton", "right");
 	connect(loudAction, SIGNAL(toggled(bool)), this, SLOT(toggleAudibility(bool)));
 
 	toolBar->addSeparator();
@@ -99,7 +99,7 @@ void TrackListItem::toggleVisibility(bool visible){
 	if(visible){
 		text = "Show track";
 	}
-	trackList->midiFile()->protocol()->startNewAction(text, 0, false);
+	trackList->midiFile()->protocol()->startNewAction(text, Q_NULLPTR, false);
 	track->setHidden(!visible);
 	trackList->midiFile()->protocol()->endAction();
 }
@@ -109,7 +109,7 @@ void TrackListItem::toggleAudibility(bool audible){
 	if(audible){
 		text = "Track audible";
 	}
-	trackList->midiFile()->protocol()->startNewAction(text, 0, false);
+	trackList->midiFile()->protocol()->startNewAction(text, Q_NULLPTR, false);
 	track->setMuted(!audible);
 	trackList->midiFile()->protocol()->endAction();
 }
@@ -143,7 +143,7 @@ TrackListWidget::TrackListWidget(QWidget *parent) : QListWidget(parent) {
 
 	setSelectionMode(QAbstractItemView::SingleSelection);
 	setStyleSheet( "QListWidget::item { border-bottom: 1px solid lightGray; }" );
-	file = 0;
+	file = Q_NULLPTR;
 	connect(this, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(chooseTrack(QListWidgetItem*)));
 }
 

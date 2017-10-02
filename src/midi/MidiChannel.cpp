@@ -180,7 +180,7 @@ bool MidiChannel::removeEvent(MidiEvent *event){
 
 	// remove from track if its the trackname
 	if(number() == 16 && (MidiEvent*)(event->track()->nameEvent()) == event){
-		event->track()->setNameEvent(0);
+		event->track()->setNameEvent(Q_NULLPTR);
 	}
 
 	ProtocolEntry *toCopy = copy();

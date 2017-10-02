@@ -16,40 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RECORDDIALOG_H_
-#define RECORDDIALOG_H_
+#include "KeyListener.h"
 
-#include <QDialog>
-#include <QMultiMap>
+#include <QKeyEvent>
+#include <QEvent>
 
-class MidiFile;
-class MidiEvent;
-class QCheckBox;
-class QComboBox;
-class QListWidget;
-class QSettings;
-
-class RecordDialog : public QDialog {
-
-	Q_OBJECT
-
-	public:
-		RecordDialog(MidiFile *file, QMultiMap<int, MidiEvent*> data, QSettings *settings,
-				QWidget *parent = Q_NULLPTR);
-
-	public slots:
-		void enter();
-		void cancel();
-
-	private:
-		MidiFile *_file;
-		QMultiMap<int, MidiEvent*> _data;
-		QComboBox *_channelBox;
-		QComboBox *_trackBox;
-		QListWidget *addTypes;
-		QSettings *_settings;
-		void addListItem(QListWidget *w, QString title, int line, bool enabled);
-
-};
-
-#endif
+#include "../midi/MidiPlayer.h"
+KeyListener::KeyListener(QObject *parent) : QObject(parent) {
+//	if (parent) {
+//		moveToThread(parent->thread());
+//	}
+	qWarning("KeyListener start");
+}
+bool KeyListener::eventFilter(QObject *obj, QEvent *event) {
+	Q_UNUSED(obj)
+	if (event->type() == QEvent::KeyPress) {
+		qWarning("KeyListener press");
+		QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+		if (keyEvent->modifiers() == (Qt::ALT | Qt::CTRL)) {
+			if (keyEvent->key() == Qt::Key_P) {
+				qWarning("Panic signal");
+				MidiPlayer::instance()->panic();
+				return true;
+			}
+		}
+		return false;
+	} else {
+		return false;
+	}
+}

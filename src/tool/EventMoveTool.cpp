@@ -78,26 +78,26 @@ void EventMoveTool::reloadState(ProtocolEntry *entry) {
 
 void EventMoveTool::draw(QPainter *painter) {
 	paintSelectedEvents(painter);
-	int currentX = computeRaster();
+	qreal currentX = computeRaster();
 
 	if(inDrag){
-		int shiftX = startX-currentX;
+		qreal shiftX = startX-currentX;
 		if(!moveLeftRight){
 			shiftX = 0;
 		}
-		int shiftY = startY - mouseY;
+		qreal shiftY = startY - mouseY;
 		if(!moveUpDown){
 			shiftY = 0;
 		}
 		double lineHeight = matrixWidget->lineHeight();
-		int nLines = qAbs(shiftY)/lineHeight;
+		int nLines = qFloor(qAbs(shiftY)/lineHeight);
 		if(shiftY<0){
 			shiftY = -nLines*lineHeight;
 		} else {
 			shiftY = nLines*lineHeight;
 		}
 		foreach(MidiEvent *event, Selection::instance()->selectedEvents()){
-			int customShiftY = shiftY;
+			qreal customShiftY = shiftY;
 			if(event->line()>127){
 				customShiftY = 0;
 			}
@@ -147,7 +147,7 @@ bool EventMoveTool::release(){
 		shiftY = 0;
 	}
 	double lineHeight = matrixWidget->lineHeight();
-	int numLines = shiftY/lineHeight;
+	int numLines = qFloor(shiftY/lineHeight);
 
 	// return when there shiftX/shiftY is too small or there are no selected
 	// events
@@ -250,14 +250,16 @@ qreal EventMoveTool::computeRaster(){
 		return mouseX;
 	}
 
-	qreal firstX, distFirst;
-	qreal lastX, distLast;
+	qreal firstX = 0.0;
+	qreal distFirst = 0.0;
+	qreal lastX = 0.0;
+	qreal distLast = 0.0;
 
 	if(useFirst){
 		qreal firstXReal = matrixWidget->xPosOfMs(file()->msOfTick(firstTick))+mouseX-startX;
 		firstX = rasteredX(firstXReal);
 		distFirst = firstX - firstXReal;
-		if(distFirst == 0){
+		if(qFuzzyIsNull(distFirst)){
 			useFirst = false;
 		}
 	}
@@ -265,7 +267,7 @@ qreal EventMoveTool::computeRaster(){
 		qreal lastXReal = matrixWidget->xPosOfMs(file()->msOfTick(lastTick))+mouseX-startX;
 		lastX = rasteredX(lastXReal);
 		distLast = lastX-lastXReal;
-		if(distLast == 0){
+		if(qFuzzyIsNull(distLast)){
 			useLast = false;
 		}
 	}
@@ -278,7 +280,7 @@ qreal EventMoveTool::computeRaster(){
 		}
 	}
 
-	int dist;
+	qreal dist;
 	if(useFirst){
 		dist = distFirst;
 	} else if(useLast){

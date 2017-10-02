@@ -23,17 +23,17 @@
 #include "EditorTool.h"
 #include "../gui/GraphicObject.h"
 
-EditorTool *Tool::_currentTool = 0;
-MidiFile *Tool::_currentFile = 0;
+EditorTool *Tool::_currentTool = Q_NULLPTR;
+MidiFile *Tool::_currentFile = Q_NULLPTR;
 
-Tool::Tool(){
-	_image = 0;
-	_button = 0;
+Tool::Tool(QObject *parent) : ProtocolEntry(parent) {
+	_image = Q_NULLPTR;
+	_button = Q_NULLPTR;
 	_toolTip = "";
-	_standardTool = 0;
+	_standardTool = Q_NULLPTR;
 }
 
-Tool::Tool(Tool &other) {
+Tool::Tool(Tool &other) : ProtocolEntry(other) {
 	_image = other._image;
 	_button = other._button;
 	_toolTip = other._toolTip;
@@ -101,7 +101,7 @@ Protocol *Tool::currentProtocol(){
 	if(currentFile()){
 		return currentFile()->protocol();
 	}
-	return 0;
+	return Q_NULLPTR;
 }
 
 void Tool::setButton(ToolButton *b){

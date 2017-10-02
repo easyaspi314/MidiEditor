@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+   <key>CFBundleDevelopmentRegion</key>
+   <string>English</string>
+   <key>CFBundleExecutable</key>
+   <string>MidiEditor</string>
+   <key>CFBundleGetInfoString</key>
+   <string>${BUNDLE_INFO_STRING}</string>
+   <key>CFBundleIconFile</key>
+   <string>${BUNDLE_ICON_FILE}</string>
+   <key>CFBundleIdentifier</key>
+   <string>${BUNDLE_GUI_IDENTIFIER}</string>
+   <key>CFBundleInfoDictionaryVersion</key>
+   <string>6.0</string>
+   <key>CFBundleLongVersionString</key>
+   <string>${BUNDLE_LONG_VERSION_STRING}</string>
+   <key>CFBundleName</key>
+   <string>${BUNDLE_BUNDLE_NAME}</string>
+   <key>CFBundlePackageType</key>
+   <string>APPL</string>
+   <key>CFBundleShortVersionString</key>
+   <string>${BUNDLE_SHORT_VERSION_STRING}</string>
+   <key>CFBundleSignature</key>
+   <string>????</string>
+   <key>CFBundleVersion</key>
+   <string>${BUNDLE_BUNDLE_VERSION}</string>
+   <key>CSResourcesFileMapped</key>
+   <true/>
+   <key>NSHumanReadableCopyright</key>
+   <string>${BUNDLE_COPYRIGHT}</string>
+   <key>CFBundleDocumentTypes</key>
+   <array>
+      <dict>
+         <key>CFBundleTypeExtensions</key>
+         <array>
+            <string>mid</string>
+            <string>midi</string>
+         </array>
+         <key>CFBundleTypeMIMETypes</key>
+         <array>
+            <string>audio/midi</string>
+         </array>
+         <key>CFBundleTypeName</key>
+         <string>${BUNDLE_BUNDLE_NAME} Midi File</string>
+         <key>CFBundleTypeRole</key>
+         <string>Editor</string>
+         <key>LSIsAppleDefaultForType</key>
+         <false/>
+         <key>LSTypeIsPackage</key>
+         <false/>
+         <key>CFBundleTypeIconFile</key>
+         <string>MIDI</string>
+      </dict>
+   </array>
+</dict>
+</plist>

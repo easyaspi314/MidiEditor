@@ -49,7 +49,7 @@ class MatrixWidget : public PaintWidget {
 	Q_OBJECT
 
 	public:
-		MatrixWidget(QWidget *parent = 0);
+		MatrixWidget(QWidget *parent = Q_NULLPTR);
 		void setFile(MidiFile *file);
 		MidiFile *midiFile();
 		QList<MidiEvent*> *activeEvents();
@@ -150,6 +150,13 @@ class MatrixWidget : public PaintWidget {
 
 		TimelineWidget *timelineWidget;
 		PianoWidget *pianoWidget;
+
+		const int NUM_LINES = 139;
+		const int PIXEL_PER_S = 100;
+		const int PIXEL_PER_LINE = 11;
+		const int PIXEL_PER_EVENT = 15;
+		const int MAX_HORIZ_ZOOM = 10;
+		const int MAX_VERT_ZOOM = 3;
 };
 
 #endif

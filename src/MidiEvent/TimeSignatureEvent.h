@@ -35,7 +35,7 @@ class TimeSignatureEvent : public MidiEvent {
 		int denom();
 		int midiClocks();
 		int num32In4();
-		int measures(int tick, int *ticksLeft = 0);
+		int measures(int tick, int *ticksLeft = Q_NULLPTR);
 		int ticksPerMeasure();
 
 		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;

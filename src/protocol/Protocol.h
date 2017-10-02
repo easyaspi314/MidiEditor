@@ -21,6 +21,7 @@
 
 #include <QObject>
 #include <QList>
+#include "../Utils.h"
 
 class ProtocolItem;
 class ProtocolStep;

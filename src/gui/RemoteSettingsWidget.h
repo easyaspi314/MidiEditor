@@ -32,7 +32,7 @@ class RemoteSettingsWidget : public SettingsWidget {
 
 	public:
 
-		RemoteSettingsWidget(RemoteServer *server, QWidget *parent = 0);
+		RemoteSettingsWidget(RemoteServer *server, QWidget *parent = Q_NULLPTR);
 
 		bool accept() Q_DECL_OVERRIDE;
 

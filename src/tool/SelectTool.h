@@ -21,11 +21,6 @@
 
 #include "EventTool.h"
 
-#define SELECTION_TYPE_RIGHT 0
-#define SELECTION_TYPE_LEFT 1
-#define SELECTION_TYPE_BOX 2
-#define SELECTION_TYPE_SINGLE 3
-
 class MidiEvent;
 
 class SelectTool: public EventTool {
@@ -33,6 +28,12 @@ class SelectTool: public EventTool {
 	Q_OBJECT
 
 	public:
+		enum SelectionType {
+			SelectionTypeRight = 0,
+			SelectionTypeLeft,
+			SelectionTypeBox,
+			SelectionTypeSingle
+		};
 		SelectTool(int type);
 		SelectTool(SelectTool &other);
 		Tool::ToolType type() const Q_DECL_OVERRIDE;

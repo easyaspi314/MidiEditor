@@ -28,7 +28,7 @@ class DonateDialog : public QDialog {
 	Q_OBJECT
 
 	public:
-		DonateDialog(QWidget *parent=0);
+		DonateDialog(QWidget *parent = Q_NULLPTR);
 };
 
 #endif

@@ -41,7 +41,7 @@ class EventTool: public EditorTool {
 		static void clearSelection();
 		void paintSelectedEvents(QPainter *painter);
 
-		void changeTick(MidiEvent* event, int shiftX);
+		void changeTick(MidiEvent* event, qreal shiftX);
 
 		static void copyAction();
 		static void pasteAction();
@@ -53,7 +53,7 @@ class EventTool: public EditorTool {
 		static void setPasteChannel(int channel);
 		static int pasteChannel();
 
-		int rasteredX(qreal x, int *tick = 0);
+		int rasteredX(qreal x, int *tick = Q_NULLPTR);
 
 		static void enableMagnet(bool enable);
 		static bool magnetEnabled();

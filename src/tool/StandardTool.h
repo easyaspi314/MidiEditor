@@ -31,6 +31,11 @@ class StandardTool :public EventTool {
 	Q_OBJECT
 
 	public:
+		enum StandardActionType {
+			NoAction = 0,
+			SizeChangeAction,
+			MoveAction
+		};
 		StandardTool();
 		StandardTool(StandardTool &other);
 		Tool::ToolType type() const Q_DECL_OVERRIDE;

@@ -19,7 +19,8 @@
 #ifndef PROTOCOLENTRY_H
 #define PROTOCOLENTRY_H
 
-#include <QtCore/qobject.h>
+#include <QObject>
+
 class MidiFile;
 
 /**
@@ -57,7 +58,7 @@ class ProtocolEntry : public QObject {
 		 */
 		virtual ProtocolEntry *copy();
 
-		ProtocolEntry(QObject *parent = 0);
+		ProtocolEntry(QObject *parent = Q_NULLPTR);
 		ProtocolEntry(const ProtocolEntry &other);
 
 		/**

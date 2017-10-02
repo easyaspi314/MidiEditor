@@ -43,7 +43,7 @@ class SizeChangeTool : public EventTool {
 
 	private:
 		bool inDrag, dragsOnEvent;
-		int xPos;
+		qreal xPos;
 };
 
 #endif

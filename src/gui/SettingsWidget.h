@@ -22,6 +22,8 @@
 #include <QWidget>
 #include <QIcon>
 
+#include "../Utils.h"
+
 class QString;
 
 class SettingsWidget : public QWidget {
@@ -30,7 +32,7 @@ class SettingsWidget : public QWidget {
 
 	public:
 
-		SettingsWidget(QString title, QWidget *parent = 0);
+		SettingsWidget(QString title, QWidget *parent = Q_NULLPTR);
 		QString title();
 		virtual bool accept();
 		QWidget *createInfoBox(QString info);

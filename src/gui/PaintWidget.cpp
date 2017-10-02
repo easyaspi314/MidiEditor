@@ -81,6 +81,8 @@ void PaintWidget::enterEvent(QEvent *event){
 }
 
 void PaintWidget::wheelEvent(QWheelEvent *event) {
+	Q_UNUSED(event)
+
 	if (repaintOnScroll)
 		update();
 }
@@ -146,7 +148,7 @@ QRect PaintWidget::relativeRect() {
 	QScrollArea *scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parentWidget());
 	if (scrollArea) {
 		return QRect(mapFrom(parentWidget(), parentWidget()->frameGeometry().topLeft()),
-			   mapFrom(parentWidget(), parentWidget()->frameGeometry().bottomRight()));
+				mapFrom(parentWidget(), parentWidget()->frameGeometry().bottomRight()));
 	}
 	return rect();
 }

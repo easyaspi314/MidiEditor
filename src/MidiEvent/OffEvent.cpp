@@ -23,7 +23,7 @@ QMultiMap<int, OnEvent*> *OffEvent::onEvents = new QMultiMap<int, OnEvent*>();
 
 OffEvent::OffEvent(int ch, int l, MidiTrack *track) : MidiEvent(ch, track) {
 	_line = l;
-	_onEvent = 0;
+	_onEvent = Q_NULLPTR;
 	QList<OnEvent*> eventsToClose = onEvents->values(line());
 	for(int i = 0; i<eventsToClose.length(); i++){
 		if(eventsToClose.at(i)->channel() == channel()){

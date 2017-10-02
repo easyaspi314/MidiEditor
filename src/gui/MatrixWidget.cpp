@@ -41,13 +41,6 @@
 #include <QBuffer>
 #include <QTime>
 
-#define NUM_LINES 139
-#define PIXEL_PER_S 100
-#define PIXEL_PER_LINE 11
-#define PIXEL_PER_EVENT 15
-#define MAX_HORIZ_ZOOM 10
-#define MAX_VERT_ZOOM 3
-
 /*
  * TODO:
  * - Remove old variables that we don't need
@@ -56,6 +49,9 @@
  *     > Hardware acceleration?
  *     > Decrease update frequency
  *     > Only repaint areas that are updated.
+ *     > Render in chunks?
+ *     > Set backgrounds when appropriate
+ *     > Maybe get rid of QPixmap entirely?
  * - Remove unnecessary checks
  * - Make sure everything that should be
  *   changed...changes, and everything that
@@ -77,10 +73,10 @@ MatrixWidget::MatrixWidget(QWidget *parent) : PaintWidget(parent) {
 	scrollDir = NONE;
 	// Double the cache space as we use it a lot.
 	QPixmapCache::setCacheLimit(20480);
-	pixmap = 0;
-	file = 0;
+	pixmap = Q_NULLPTR;
+	file = Q_NULLPTR;
 	scaleX = 1;
-	pianoEvent = new NoteOnEvent(0, 100, 0, 0);
+	pianoEvent = new NoteOnEvent(0, 100, 0, Q_NULLPTR);
 	scaleY = 1;
 	timeHeight = 0;
 	currentTempoEvents = new QList<MidiEvent *>;
@@ -97,7 +93,7 @@ MatrixWidget::MatrixWidget(QWidget *parent) : PaintWidget(parent) {
 	setRepaintOnMouseRelease(false);
 
 	connect(MidiPlayer::player(), SIGNAL(timeMsChanged(int)),
-			this, SLOT(timeMsChanged(int)));
+			  this, SLOT(timeMsChanged(int)));
 	_div = 2;
 }
 
@@ -118,7 +114,8 @@ void MatrixWidget::timeMsChanged(int ms, bool ignoreLocked) {
 	int endTimeXTemp = msOfXPos(relativeRect().right());
 
 	if ((!screen_locked || ignoreLocked) && (x < 0 || ms < startTimeXTemp
-			|| ms > endTimeXTemp || x > (relativeRect().left() + relativeRect().width() + 100))) {
+			  || ms > endTimeXTemp
+			  || x > (relativeRect().left() + relativeRect().width() + 100))) {
 
 		// return if the last tick is already shown
 		if (file->maxTime() <= endTimeXTemp && ms >= startTimeXTemp) {
@@ -127,7 +124,8 @@ void MatrixWidget::timeMsChanged(int ms, bool ignoreLocked) {
 		}
 
 		// sets the new position and repaints
-		emit scrollChanged(qRound(relativeRect().right() + (relativeRect().width() * 0.9)), relativeRect().top());
+		emit scrollChanged(qRound(relativeRect().right() + (relativeRect().width() *
+										  0.9)), relativeRect().top());
 	} else {
 		update();
 	}
@@ -137,14 +135,7 @@ void MatrixWidget::timeMsChanged(int ms, bool ignoreLocked) {
  * FIXME: Divs don't update after undo/redo
  */
 void MatrixWidget::paintEvent(QPaintEvent *event) {
-	if (!file) {
-		return;
-	}
-	if (height() <= 0) {
-		return;
-	}
-	if (paintingActive()) {
-		qWarning("MatrixWidget::paintEvent: Painting active!");
+	if (!file || !file->protocol() || height() <= 0 || paintingActive()) {
 		return;
 	}
 	QPainter painter(this);
@@ -161,11 +152,11 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 	 * when scrolling.
 	 */
 	int updatemode = 0;
-	if (!event->region().isNull() && !event->region().isEmpty() ) {
+	if (pixmap && !event->region().isNull() && !event->region().isEmpty()) {
 		updatemode = 1;
 		painter.setClipping(true);
 		painter.setClipRegion(event->region());
-	} else if (!event->rect().isNull()) {
+	} else if (pixmap && !event->rect().isNull() && !event->rect().isEmpty()) {
 		updatemode = 2;
 		painter.setClipping(true);
 		painter.setClipRect(event->rect());
@@ -174,7 +165,8 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 		painter.setClipRect(viewport);
 	}
 	QPixmap linesTexture;
-	if (!QPixmapCache::find("MatrixWidget_" + QString::number(scaleY, 'f', 2), linesTexture)) {
+	if (!QPixmapCache::find("MatrixWidget_" + QString::number(scaleY, 'f', 2),
+									linesTexture)) {
 		linesTexture = QPixmap(1, height());
 		//linesTexture.fill(Qt::transparent);
 
@@ -198,7 +190,8 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 
 		}
 		linesPainter.end();
-		QPixmapCache::insert("MatrixWidget_" + QString::number(scaleY, 'f', 2), linesTexture);
+		QPixmapCache::insert("MatrixWidget_" + QString::number(scaleY, 'f', 2),
+									linesTexture);
 		QPalette palette;
 		palette.setBrush(backgroundRole(), QBrush(linesTexture));
 		setPalette(palette);
@@ -206,11 +199,10 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 	// This complex QString serves as the ID of the events pixmap.
 	// It stores the zoom level, measure division, and the UUID of the current ProtocolStep.
 	QString pixmapId = "ProtocolStep_"
-			+ QString::number(scaleX, 'f', 2) + "_"
-			+ QString::number(scaleY, 'f', 2) + "_"
-			+ QString::number(div()) + "_"
-			+ file->protocol()->currentStepId();
-	//QPixmap notesPixmap;
+							 + QString::number(scaleX, 'f', 2) + "_"
+							 + QString::number(scaleY, 'f', 2) + "_"
+							 + QString::number(div()) + "_"
+							 + file->protocol()->currentStepId();
 	bool totalRepaint = !pixmap && !QPixmapCache::find(pixmapId, pixmap);
 
 	if (totalRepaint) {
@@ -222,7 +214,7 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 		}
 		pixmap->fill(Qt::transparent);
 		QPainter pixpainter(pixmap);
-		//pixpainter.set
+
 		pixpainter.setBrush(Qt::transparent);
 		if (antiAliasingEnabled) {
 			pixpainter.setRenderHint(QPainter::Antialiasing);
@@ -247,9 +239,10 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 		currentDivs.clear();
 
 		startTick = file->tick(startTimeX, endTimeX, &currentTempoEvents,
-							   &endTick, &msOfFirstEventInList);
+									  &endTick, &msOfFirstEventInList);
 
-		TempoChangeEvent *ev = qobject_cast<TempoChangeEvent *>(currentTempoEvents->at(0));
+		TempoChangeEvent *ev = qobject_cast<TempoChangeEvent *>(currentTempoEvents->at(
+											0));
 		if (!ev) {
 			return;
 		}
@@ -307,7 +300,7 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 		pixpainter.setPen(Qt::gray);
 		pixpainter.drawLine(QLineF(0, 0, width(), 0));
 		pixpainter.drawLine(qLineF(0, 0, 0,
-									height()));
+											height()));
 
 		pixpainter.setPen(Qt::black);
 
@@ -327,20 +320,25 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 		palette.setBrush(backgroundRole(), QBrush(notesPixmap));
 		setPalette(palette);*/
 
-	// TODO: I don't think we need this.
+		// TODO: I don't think we need this.
+
+	}
 	switch (updatemode) {
 		case 1: {
-			QPainter::PixmapFragment frags[event->region().rectCount()];
+			QPainter::PixmapFragment *frags = new
+			QPainter::PixmapFragment[event->region().rectCount()];
 			QVector<QRect> rects = event->region().rects();
-			for(int i = 0; i < event->region().rectCount(); i++) {
+			for (int i = 0; i < event->region().rectCount(); i++) {
 				QRect rect = rects.at(i);
 				frags[i] = QPainter::PixmapFragment::create(rect.center(), rect, 1, 1, 0, 1);
 			}
 			painter.drawPixmapFragments(frags, event->region().rectCount(), *pixmap);
+			delete[] frags;
 			break;
 		}
 		case 2: {
-			QPainter::PixmapFragment frag = QPainter::PixmapFragment::create(event->rect().center(), event->rect());
+			QPainter::PixmapFragment frag = QPainter::PixmapFragment::create(
+															event->rect().center(), event->rect());
 			painter.drawPixmapFragments(&frag, 1, *pixmap);
 			break;
 		}
@@ -348,8 +346,8 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 			QPainter::PixmapFragment frag = QPainter::PixmapFragment::create(viewport.center(), viewport);
 
 			painter.drawPixmapFragments(&frag, 1, *pixmap);
+			//painter.drawPixmap(0, 0, *pixmap);
 	}
-}
 	if (antiAliasingEnabled) {
 		painter.setRenderHint(QPainter::Antialiasing);
 	}
@@ -378,10 +376,10 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 	}
 
 	// border
-//	painter.setPen(Qt::gray);
-//	painter.drawLine(qLineF(width() - 1, height() - 1, 0,
-//							 height() - 1));
-//	painter.drawLine(qLineF(width() - 1, height() - 1, width() - 1, 2));
+	//	painter.setPen(Qt::gray);
+	//	painter.drawLine(qLineF(width() - 1, height() - 1, 0,
+	//							 height() - 1));
+	//	painter.drawLine(qLineF(width() - 1, height() - 1, width() - 1, 2));
 
 	// if the recorder is recording, show red circle
 	if (MidiInput::instance()->recording()) {
@@ -431,7 +429,7 @@ void MatrixWidget::paintChannel(QPainter *painter, int channel) {
 				}
 
 				width = xPosOfMs(msOfTick(offEvent->midiTime())) -
-						xPosOfMs(msOfTick(onEvent->midiTime()));
+						  xPosOfMs(msOfTick(onEvent->midiTime()));
 				x = xPosOfMs(msOfTick(onEvent->midiTime()));
 				event = onEvent;
 				if (objects->contains(event)) {
@@ -470,8 +468,8 @@ void MatrixWidget::paintChannel(QPainter *painter, int channel) {
 			// is in the x-Area
 			OffEvent *offEvent = qobject_cast<OffEvent *>(event);
 			if (!offEvent && event->midiTime() >= startTick &&
-					event->midiTime() <= endTick &&
-					!velocityObjects->contains(event)) {
+					  event->midiTime() <= endTick &&
+					  !velocityObjects->contains(event)) {
 				qreal mX = xPosOfMs(msOfTick(event->midiTime()));
 				event->setX(mX);
 
@@ -495,10 +493,11 @@ void MatrixWidget::setFile(MidiFile *f) {
 	startLineY = 0;
 	int widthNew = qRound((endTimeX / 1000) * (PIXEL_PER_S * scaleX));
 	if (parentWidget()->width()
-			&& widthNew < parentWidget()->width()
-			&& parentWidget()->width()> 0) {
-		if (widthNew != 0)
-			scaleX =parentWidget()->width() / widthNew;
+			  && widthNew < parentWidget()->width()
+			  && parentWidget()->width() > 0) {
+		if (widthNew != 0) {
+			scaleX = parentWidget()->width() / widthNew;
+		}
 		widthNew = parentWidget()->width();
 	}
 	endLineY = NUM_LINES;
@@ -507,7 +506,7 @@ void MatrixWidget::setFile(MidiFile *f) {
 
 	setFixedWidth(widthNew);
 	connect(file->protocol(), SIGNAL(actionFinished()), this,
-			SLOT(redraw()));
+			  SLOT(redraw()));
 
 	calcSizes();
 
@@ -551,12 +550,13 @@ void MatrixWidget::calcSizes() {
 	int widthOld = width();
 	int heightOld = height();
 	int widthNew = qRound((endTimeX / 1000) * (PIXEL_PER_S * scaleX));
-	if (parentWidget()->width ()
-			&& widthNew < parentWidget()->width ()
-			&& parentWidget()->width () > 0) {
-		if (widthNew != 0)
-			scaleX = parentWidget()->width () / widthNew;
-		widthNew = parentWidget()->width ();
+	if (parentWidget()->width()
+			  && widthNew < parentWidget()->width()
+			  && parentWidget()->width() > 0) {
+		if (widthNew != 0) {
+			scaleX = parentWidget()->width() / widthNew;
+		}
+		widthNew = parentWidget()->width();
 	}
 	setFixedHeight(qRound(NUM_LINES * PIXEL_PER_LINE * scaleY));
 	setFixedWidth(widthNew);
@@ -568,8 +568,8 @@ void MatrixWidget::calcSizes() {
 	if (widthOld != widthNew || heightOld != height()) {
 		update();
 		emit sizeChanged(0, NUM_LINES - (endLineY + startLineY),
-						 startTimeX,
-						 startLineY);
+							  startTimeX,
+							  startLineY);
 	}
 }
 QSize MatrixWidget::sizeHint() const {
@@ -620,7 +620,7 @@ void MatrixWidget::enterEvent(QEvent *event) {
 	if (Tool::currentTool()) {
 		Tool::currentTool()->enter();
 		if (enabled) {
-			update();
+			update(relativeRect());
 		}
 	}
 }
@@ -629,7 +629,7 @@ void MatrixWidget::leaveEvent(QEvent *event) {
 	if (Tool::currentTool()) {
 		Tool::currentTool()->exit();
 		if (enabled) {
-			update();
+			update(relativeRect());
 		}
 	}
 }
@@ -638,7 +638,7 @@ void MatrixWidget::mousePressEvent(QMouseEvent *event) {
 	if (!MidiPlayer::instance()->isPlaying() && Tool::currentTool()) {
 		if (Tool::currentTool()->press(event->buttons() == Qt::LeftButton)) {
 			if (enabled) {
-				update();
+				update(relativeRect());
 			}
 		}
 	} /*else if (enabled && (!MidiPlayer::instance()->isPlaying()) && (mouseInRect(PianoArea))) {
@@ -651,7 +651,6 @@ void MatrixWidget::mousePressEvent(QMouseEvent *event) {
 			}
 		}
 	}*/
-
 }
 void MatrixWidget::mouseReleaseEvent(QMouseEvent *event) {
 	PaintWidget::mouseReleaseEvent(event);
@@ -724,11 +723,11 @@ bool MatrixWidget::eventInWidget(MidiEvent *event) {
 		int line = off->line();
 		int tick = off->midiTime();
 		bool offIn =  line >= startLineY && line <= endLineY && tick >= startTick &&
-					  tick <= endTick;
+						  tick <= endTick;
 		line = on->line();
 		tick = on->midiTime();
 		bool onIn = line >= startLineY && line <= endLineY && tick >= startTick &&
-					tick <= endTick;
+						tick <= endTick;
 
 		off->setShown(offIn);
 		on->setShown(onIn);
@@ -739,7 +738,7 @@ bool MatrixWidget::eventInWidget(MidiEvent *event) {
 		int line = event->line();
 		int tick = event->midiTime();
 		bool shown = line >= startLineY && line <= endLineY && tick >= startTick &&
-					 tick <= endTick;
+						 tick <= endTick;
 		event->setShown(shown);
 
 		return shown;
@@ -764,7 +763,7 @@ void MatrixWidget::zoomHorIn() {
 }
 
 void MatrixWidget::zoomHorOut() {
-	if (width() * (scaleX - 0.1) >= parentWidget()->width () && scaleX >= 0.2) {
+	if (width() * (scaleX - 0.1) >= parentWidget()->width() && scaleX >= 0.2) {
 		scaleX -= 0.1;
 		calcSizes();
 	}
@@ -778,9 +777,9 @@ void MatrixWidget::zoomVerIn() {
 }
 
 void MatrixWidget::zoomVerOut() {
-	if (height() * (scaleY - 0.1) >= parentWidget()->width () && scaleY >= 0.2) {
+	if (height() * (scaleY - 0.1) >= parentWidget()->width() && scaleY >= 0.2) {
 		scaleY -= 0.1;
-			calcSizes();
+		calcSizes();
 
 	}
 }
@@ -813,7 +812,7 @@ bool MatrixWidget::colorsByChannel() {
 
 void MatrixWidget::setDiv(int div) {
 	_div = div;
-	update();
+	redraw();
 }
 
 QList<QPair<qreal, int> > MatrixWidget::divs() {
@@ -825,6 +824,6 @@ int MatrixWidget::div() {
 }
 void MatrixWidget::redraw() {
 	delete pixmap;
-	pixmap = 0;
-	update(relativeRect());
+	pixmap = Q_NULLPTR;
+	update();
 }

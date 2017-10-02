@@ -1,4 +1,8 @@
-// call_once.h
+/*
+ * Qt Thread-safe Singleton
+ *
+ * https://wiki.qt.io/Qt_thread-safe_singleton
+ */
 
 #ifndef CALL_ONCE_H
 #define CALL_ONCE_H
@@ -34,7 +38,7 @@ inline static void qCallOnce(Function func, QBasicAtomicInt& flag)
 	if (protectFlag == CO_Finished)
 		return;
 	if (protectFlag == CO_Request && flag.testAndSetRelaxed(protectFlag,
-	                                                       CO_InProgress)) {
+																			 CO_InProgress)) {
 		func();
 		flag.fetchAndStoreRelease(CO_Finished);
 	}

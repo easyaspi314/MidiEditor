@@ -21,8 +21,11 @@
 #include "gui/MainWindow.h"
 #include "midi/MidiOutput.h"
 #include "midi/MidiInput.h"
+#include "Utils.h"
+#include "main.h"
 
 #include <QFile>
+#include <QMessageBox>
 #include <QTextStream>
 #include <QTimer>
 
@@ -31,7 +34,7 @@
 #include <QResource>
 
 int main(int argc, char *argv[]) {
-	QApplication a(argc, argv);
+	MyApplication a(argc, argv);
 #ifdef Q_OS_MAC
 	// macOS registers resources in a separate location because of .app packaging.
 	bool ok = QResource::registerResource(a.applicationDirPath() +
@@ -53,10 +56,16 @@ int main(int argc, char *argv[]) {
 	a.setApplicationName("MidiEditor");
 	a.setQuitOnLastWindowClosed(true);
 	a.setProperty("date_published", UpdateManager::instance()->date());
-
 #ifdef Q_OS_MAC
 	// Don't show menu icons on macOS.
 	a.setAttribute(Qt::AA_DontShowIconsInMenus, true);
+	// Load styles for macOS to style buttons.
+	QFile styleFile(":/run_environment/macos.qss");
+	styleFile.open(QFile::ReadOnly);
+
+	// Apply the loaded stylesheet
+	QString style(styleFile.readAll());
+	a.setStyleSheet(style);
 #endif
 
 #ifdef Q_PROCESSOR_X86_64
@@ -65,7 +74,7 @@ int main(int argc, char *argv[]) {
 	a.setProperty("arch", "32");
 #endif
 
-	MainWindow w(argc == 2 ? argv[1] : 0);
+	MainWindow w(a.arguments().size() >= 2 ? a.arguments().at(1) : Q_NULLPTR, Q_NULLPTR, Qt::Window);
 #ifdef Q_OS_MAC
 	w.setUnifiedTitleAndToolBarOnMac(true);
 #endif
@@ -77,3 +86,5 @@ int main(int argc, char *argv[]) {
 
 	return a.exec();
 }
+
+

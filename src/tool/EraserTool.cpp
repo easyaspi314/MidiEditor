@@ -25,7 +25,7 @@
 #include "../protocol/Protocol.h"
 #include "Selection.h"
 
-EraserTool::EraserTool()  : EventTool(){
+EraserTool::EraserTool() : EventTool(){
 	setImage(":/run_environment/graphics/tool/eraser.png");
 	setToolTipText("Eraser (remove Events)");
 }
@@ -55,7 +55,7 @@ void EraserTool::draw(QPainter *painter){
 		if(pointInRect( mouseX, mouseY, ev->x(), ev->y(), ev->x()+ev->width(),
 				ev->y()+ev->height()))
 		{
-			painter->fillRect(ev->x(), ev->y(), ev->width(), ev->height(), Qt::black);
+			painter->fillRect(qRectF(ev->x(), ev->y(), ev->width(), ev->height()), Qt::black);
 		}
 	}
 }

@@ -1,4 +1,8 @@
-// singleton.h
+/*
+ * Qt Thread-safe Singleton
+ *
+ * https://wiki.qt.io/Qt_thread-safe_singleton
+ */
 
 #ifndef SINGLETON_H
 #define SINGLETON_H

@@ -31,7 +31,7 @@ class EventWidgetDelegate : public QStyledItemDelegate {
 	Q_OBJECT
 
 	public:
-		EventWidgetDelegate(EventWidget *w, QWidget *parent = 0) : QStyledItemDelegate(parent) {eventWidget = w; }
+		EventWidgetDelegate(EventWidget *w, QWidget *parent = Q_NULLPTR) : QStyledItemDelegate(parent) { eventWidget = w; }
 		QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
 		QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
 		void setEditorData(QWidget *editor, const QModelIndex &index) const Q_DECL_OVERRIDE;
@@ -47,7 +47,7 @@ class EventWidget : public QTableWidget {
 	Q_OBJECT
 
 	public:
-		EventWidget(QWidget *parent = 0);
+		EventWidget(QWidget *parent = Q_NULLPTR);
 
 		void setEvents(QList<MidiEvent*> events);
 		QList<MidiEvent*> events();

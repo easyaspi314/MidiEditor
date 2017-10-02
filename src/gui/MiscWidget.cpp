@@ -1,3 +1,21 @@
+/*
+ * MidiEditor
+ * Copyright (C) 2010  Markus Schwenk
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "MiscWidget.h"
 #include "MatrixWidget.h"
 #include "../midi/MidiFile.h"
@@ -18,12 +36,10 @@
 #include "../MidiEvent/KeyPressureEvent.h"
 #include "../MidiEvent/ChannelPressureEvent.h"
 
-#define LEFT_BORDER_MATRIX_WIDGET 0
-#define WIDTH 7
-
 /*
  * FIXME:
  * - Kill all the repaint hacks
+ * - Notes when created k
  * TODO:
  * - Set everything that doesn't need to be
  *   repainted to the background, and what does
@@ -43,20 +59,20 @@ MiscWidget::MiscWidget(MatrixWidget *mw, QWidget *parent) : PaintWidget(parent) 
 	setRepaintOnMouseRelease(true);
 	setMouseTracking(true);
 	matrixWidget = mw;
-	edit_mode = SINGLE_MODE;
+	edit_mode = SingleMode;
 	mode = VelocityEditor;
 	channel = 0;
 	QPixmapCache::setCacheLimit(20480);
-	pixmap = 0;
+	pixmap = Q_NULLPTR;
 	controller = 0;
-	file = 0;
+	file = Q_NULLPTR;
 	dragY = 0;
 	isDrawingFreehand = false;
 	isDrawingLine = false;
 	resetState();
 	computeMinMax();
 	setFixedWidth(matrixWidget->width());
-	_dummyTool = new SelectTool(SELECTION_TYPE_SINGLE);
+	_dummyTool = new SelectTool(SelectTool::SelectionTypeSingle);
 	setFocusPolicy(Qt::ClickFocus);
 }
 
@@ -64,7 +80,7 @@ MiscWidget::MiscWidget(MatrixWidget *mw, QWidget *parent) : PaintWidget(parent) 
  * TODO: Hopefully get rid of this
  */
 void MiscWidget::redraw() {
-	pixmap = 0;
+	pixmap = Q_NULLPTR;
 	update();
 }
 
@@ -114,6 +130,8 @@ void MiscWidget::setControl(int ctrl) {
 }
 
 void MiscWidget::paintEvent(QPaintEvent *event) {
+	Q_UNUSED(event)
+
 	if (!matrixWidget || !file || !file->protocol() || paintingActive() || matrixWidget->divs().isEmpty()
 			||  matrixWidget->divs().size() <= 0) {
 		return;
@@ -199,7 +217,7 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 						int h = (height() * velocity) / 128;
 						pixpainter.setBrush(c);
 						pixpainter.setPen(Qt::lightGray);
-						pixpainter.drawRoundedRect(qRectF(event->x() - LEFT_BORDER_MATRIX_WIDGET,
+						pixpainter.drawRoundedRect(qRectF(event->x(),
 														  height() - h, WIDTH, h), 1, 1);
 					}
 				}
@@ -232,12 +250,12 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 
 						if (velocity > 0) {
 							int h = (height() * velocity) / 128;
-							if (edit_mode == SINGLE_MODE && dragging) {
+							if (edit_mode == SingleMode && dragging) {
 								h = velocityMultiplier * (h + (dragY - mouseY));
 							}
 							pixpainter.setBrush(Qt::darkBlue);
 							pixpainter.setPen(Qt::lightGray);
-							pixpainter.drawRoundedRect(qRectF(event->x() - LEFT_BORDER_MATRIX_WIDGET,
+							pixpainter.drawRoundedRect(qRectF(event->x(),
 															  height() - h, WIDTH, h), 1, 1);
 						}
 					}
@@ -267,7 +285,7 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 
 				qreal xPix = track.at(i).first;
 				qreal yPix = height() - ((double)track.at(i).second / (double)_max) * height();
-				if (edit_mode == SINGLE_MODE) {
+				if (edit_mode == SingleMode) {
 					if (i == trackIndex) {
 						if (dragging) {
 							yPix = yPix + mouseY - dragY;
@@ -288,7 +306,7 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 
 				qreal xPix = track.at(i).first;
 				qreal yPix = height() - ((double)track.at(i).second / (double)_max) * height();
-				if (edit_mode == SINGLE_MODE) {
+				if (edit_mode == SingleMode) {
 					if (i == trackIndex) {
 						if (dragging) {
 							yPix = yPix + mouseY - dragY;
@@ -296,7 +314,7 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 					}
 				}
 
-				if (edit_mode == SINGLE_MODE && (dragging || mouseOver)) {
+				if (edit_mode == SingleMode && (dragging || mouseOver)) {
 
 					if (accordingEvents.at(i)
 							&& Selection::instance()->selectedEvents().contains(accordingEvents.at(i))) {
@@ -314,7 +332,7 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 		}
 
 		// draw freehand track
-		if (edit_mode == MOUSE_MODE && isDrawingFreehand && freeHandCurve.size() > 0) {
+		if (edit_mode == FreehandMode && isDrawingFreehand && freeHandCurve.size() > 0) {
 
 			qreal xOld;
 			qreal yOld;
@@ -335,7 +353,7 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 		}
 
 		// draw line
-		if (edit_mode == LINE_MODE && isDrawingLine) {
+		if (edit_mode == LineMode && isDrawingLine) {
 			QPen pen(Qt::darkBlue);
 			pen.setWidth(3);
 			pixpainter.setPen(pen);
@@ -352,7 +370,7 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 }
 
 void MiscWidget::mouseMoveEvent(QMouseEvent *event) {
-	if (edit_mode == SINGLE_MODE) {
+	if (edit_mode == SingleMode) {
 		if (mode == VelocityEditor) {
 			bool above = dragging;
 			if (!above) {
@@ -375,8 +393,8 @@ void MiscWidget::mouseMoveEvent(QMouseEvent *event) {
 						if (velocity > 0) {
 							int h = (height() * velocity) / 128;
 							if (!dragging
-									&& mouseInRect(qRectF(event->x() - LEFT_BORDER_MATRIX_WIDGET, height() - h - 5, WIDTH,
-												   10))) {
+									&& mouseInRect(qRectF(event->x(), height() - h - 5, WIDTH,
+													10))) {
 								above = true;
 								aboveEvent = noteOn;
 								break;
@@ -418,7 +436,7 @@ void MiscWidget::mouseMoveEvent(QMouseEvent *event) {
 			}
 		}
 	}
-	if (edit_mode == MOUSE_MODE) {
+	if (edit_mode == FreehandMode) {
 		if (isDrawingFreehand) {
 			bool ok = true;
 			for (int i = 0; i < freeHandCurve.size(); i++) {
@@ -437,7 +455,7 @@ void MiscWidget::mouseMoveEvent(QMouseEvent *event) {
 
 void MiscWidget::mousePressEvent(QMouseEvent *event) {
 
-	if (edit_mode == SINGLE_MODE) {
+	if (edit_mode == SingleMode) {
 
 		if (mode == VelocityEditor) {
 
@@ -455,8 +473,8 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
 				if (velocity > 0) {
 					int h = (height() * velocity) / 128;
 					if (!dragging
-							&& mouseInRect(qRectF(event->x() - LEFT_BORDER_MATRIX_WIDGET, height() - h - 5, WIDTH,
-										   10))) {
+							&& mouseInRect(qRectF(event->x(), height() - h - 5, WIDTH,
+											10))) {
 						clickHandlesSelected = true;
 						break;
 					}
@@ -485,11 +503,11 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
 					if (velocity > 0) {
 						qreal h = (height() * velocity) / 128;
 						if (!dragging
-								&& mouseInRect(qRectF(event->x() - LEFT_BORDER_MATRIX_WIDGET, height() - h - 5, WIDTH,
-											   10))) {
+								&& mouseInRect(qRectF(event->x(), height() - h - 5, WIDTH,
+												10))) {
 							file->protocol()->
 							startNewAction("Selection changed",
-										   new QImage(":/run_environment/graphics/tool/select_single.png"), false);
+											new QImage(":/run_environment/graphics/tool/select_single.png"), false);
 							ProtocolEntry *toCopy = _dummyTool->copy();
 							EventTool::selectEvent(event, true);
 							//matrixWidget->update();
@@ -506,7 +524,7 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
 			if (Selection::instance()->selectedEvents().size() > 0 && !clickHandlesSelected
 					&& !selectedNew) {
 				file->protocol()->
-				startNewAction("Cleared selection", 0, false);
+				startNewAction("Cleared selection", Q_NULLPTR, false);
 				ProtocolEntry *toCopy = _dummyTool->copy();
 				EventTool::clearSelection();
 				_dummyTool->protocol(toCopy, _dummyTool);
@@ -536,7 +554,7 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
 					if (accordingEvents.at(i)) {
 						file->protocol()->
 						startNewAction("Selection changed",
-									   new QImage(":/run_environment/graphics/tool/select_single.png"), false);
+										new QImage(":/run_environment/graphics/tool/select_single.png"), false);
 						ProtocolEntry *toCopy = _dummyTool->copy();
 						EventTool::clearSelection();
 						EventTool::selectEvent(accordingEvents.at(i), true, true);
@@ -554,10 +572,10 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
 			}
 		}
 
-	} else if (edit_mode == MOUSE_MODE) {
+	} else if (edit_mode == FreehandMode) {
 		freeHandCurve.clear();
 		isDrawingFreehand = true;
-	} else if (edit_mode == LINE_MODE) {
+	} else if (edit_mode == LineMode) {
 		lineX = qPointF(event->localPos()).x();
 		lineY = qPointF(event->localPos()).y();
 		isDrawingLine = true;
@@ -575,7 +593,7 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 		PaintWidget::mouseReleaseEvent(event);
 	}
 
-	if (edit_mode == SINGLE_MODE) {
+	if (edit_mode == SingleMode) {
 		if (mode == VelocityEditor) {
 			if (dragging) {
 
@@ -763,8 +781,7 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 			} else {
 
 				// insert new event
-				int tick = file->tick(matrixWidget->msOfXPos(
-							   mouseX + LEFT_BORDER_MATRIX_WIDGET));
+				int tick = file->tick(matrixWidget->msOfXPos(mouseX));
 				int v = qRound(value(mouseY));
 
 				QString text = "";
@@ -842,17 +859,17 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 
 	QList<QPair<qreal, qreal> > toAlign;
 
-	if (edit_mode == MOUSE_MODE || edit_mode == LINE_MODE) {
+	if (edit_mode == FreehandMode || edit_mode == LineMode) {
 
 		// get track data
-		if (edit_mode == MOUSE_MODE) {
+		if (edit_mode == FreehandMode) {
 			if (isDrawingFreehand) {
 				isDrawingFreehand = false;
 				// process data
 				toAlign = freeHandCurve;
 				freeHandCurve.clear();
 			}
-		} else if (edit_mode == LINE_MODE) {
+		} else if (edit_mode == LineMode) {
 			if (isDrawingLine) {
 				// process data
 				isDrawingLine = false;
@@ -868,10 +885,8 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 
 		if (toAlign.size() > 0) {
 
-			int minTick = file->tick(matrixWidget->msOfXPos(
-							  toAlign.first().first + LEFT_BORDER_MATRIX_WIDGET));
-			int maxTick = file->tick(matrixWidget->msOfXPos(
-							  toAlign.last().first + LEFT_BORDER_MATRIX_WIDGET));
+			int minTick = file->tick(matrixWidget->msOfXPos(toAlign.first().first));
+			int maxTick = file->tick(matrixWidget->msOfXPos(toAlign.last().first));
 
 			// process data
 			if (mode == VelocityEditor) {
@@ -920,8 +935,7 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 						if (noteOn) {
 
 							int tick = noteOn->midiTime();
-							int x = matrixWidget->xPosOfMs(file->msOfTick(
-															   tick)) - LEFT_BORDER_MATRIX_WIDGET;
+							int x = matrixWidget->xPosOfMs(file->msOfTick(tick));
 							qreal y = interpolate(toAlign, x);
 
 							qreal v = 127 * (height() - y) / height();
@@ -976,7 +990,7 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 				for (int tick = minTick; tick <= maxTick; tick += stepSize) {
 
 					qreal x = matrixWidget->xPosOfMs(file->msOfTick(
-														 tick)) - LEFT_BORDER_MATRIX_WIDGET;
+														 tick));
 					qreal y = interpolate(toAlign, int(x));
 					int v = qRound(value(y));
 					if ((lastValue != -1) && (lastValue == v)) {
@@ -1042,8 +1056,8 @@ qreal MiscWidget::interpolate(QList<QPair<qreal, qreal> > track, qreal x) {
 			} else {
 
 				return qreal(track.at(i - 1).second) +
-					   qreal(track.at(i).second - track.at(i - 1).second) * qreal(x - track.at(
-								   i - 1).first) / qreal(track.at(i).first - track.at(i - 1).first);
+						qreal(track.at(i).second - track.at(i - 1).second) * qreal(x - track.at(
+									i - 1).first) / qreal(track.at(i).first - track.at(i - 1).first);
 			}
 		}
 	}
@@ -1100,7 +1114,7 @@ QList<QPair<int, int> > MiscWidget::getTrack(QList<MidiEvent *>
 
 	bool ok = false;
 	int valueBefore = _default;
-	MidiEvent *evBef = 0;
+	MidiEvent *evBef = Q_NULLPTR;
 
 	if (channelEvents->size() > 0) {
 		bool atEnd = false;
@@ -1193,7 +1207,7 @@ QPair<int, int> MiscWidget::processEvent(MidiEvent *e, bool *isOk) {
 		case ControlEditor: {
 			ControlChangeEvent *ctrl = qobject_cast<ControlChangeEvent *>(e);
 			if (ctrl && ctrl->control() == controller) {
-				int x = ctrl->x() - LEFT_BORDER_MATRIX_WIDGET;
+				int x = ctrl->x();
 				int y = ctrl->value();
 				pair.first = x;
 				pair.second = y;
@@ -1204,7 +1218,7 @@ QPair<int, int> MiscWidget::processEvent(MidiEvent *e, bool *isOk) {
 		case PitchBendEditor: {
 			PitchBendEvent *pitch = qobject_cast<PitchBendEvent *>(e);
 			if (pitch) {
-				int x = pitch->x() - LEFT_BORDER_MATRIX_WIDGET;
+				int x = pitch->x();
 				int y = pitch->value();
 				pair.first = x;
 				pair.second = y;
@@ -1215,7 +1229,7 @@ QPair<int, int> MiscWidget::processEvent(MidiEvent *e, bool *isOk) {
 		case KeyPressureEditor: {
 			KeyPressureEvent *pressure = qobject_cast<KeyPressureEvent *>(e);
 			if (pressure && pressure->note() == controller) {
-				int x = pressure->x() - LEFT_BORDER_MATRIX_WIDGET;
+				int x = pressure->x();
 				int y = pressure->value();
 				pair.first = x;
 				pair.second = y;
@@ -1226,7 +1240,7 @@ QPair<int, int> MiscWidget::processEvent(MidiEvent *e, bool *isOk) {
 		case ChannelPressureEditor: {
 			ChannelPressureEvent *pressure = qobject_cast<ChannelPressureEvent *>(e);
 			if (pressure) {
-				int x = pressure->x() - LEFT_BORDER_MATRIX_WIDGET;
+				int x = pressure->x();
 				int y = pressure->value();
 				pair.first = x;
 				pair.second = y;

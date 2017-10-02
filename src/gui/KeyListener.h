@@ -16,40 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RECORDDIALOG_H_
-#define RECORDDIALOG_H_
+#ifndef KEYLISTENER_H
+#define KEYLISTENER_H
 
-#include <QDialog>
-#include <QMultiMap>
+#include <QObject>
 
-class MidiFile;
-class MidiEvent;
-class QCheckBox;
-class QComboBox;
-class QListWidget;
-class QSettings;
+class QEvent;
 
-class RecordDialog : public QDialog {
-
-	Q_OBJECT
-
+class KeyListener : public QObject
+{
+		Q_OBJECT
 	public:
-		RecordDialog(MidiFile *file, QMultiMap<int, MidiEvent*> data, QSettings *settings,
-				QWidget *parent = Q_NULLPTR);
-
-	public slots:
-		void enter();
-		void cancel();
-
-	private:
-		MidiFile *_file;
-		QMultiMap<int, MidiEvent*> _data;
-		QComboBox *_channelBox;
-		QComboBox *_trackBox;
-		QListWidget *addTypes;
-		QSettings *_settings;
-		void addListItem(QListWidget *w, QString title, int line, bool enabled);
-
+		KeyListener(QObject *parent = Q_NULLPTR);
+	protected:
+		bool eventFilter(QObject *obj, QEvent *event);
 };
 
-#endif
+#endif // KEYLISTENER_H

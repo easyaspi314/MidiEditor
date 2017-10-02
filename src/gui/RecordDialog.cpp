@@ -128,7 +128,7 @@ void RecordDialog::enter(){
 		channel = channel-2;
 	}
 
-	MidiTrack *track = 0;
+	MidiTrack *track = Q_NULLPTR;
 	int trackIndex = _trackBox->currentIndex();
 	if(trackIndex == 0){
 		track = _file->track(NewNoteTool::editTrack());

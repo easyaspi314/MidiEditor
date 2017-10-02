@@ -30,7 +30,7 @@ class UpdateDialog : public QDialog {
 	Q_OBJECT
 
 	public:
-		UpdateDialog(Update *update, QWidget *parent=0);
+		UpdateDialog(Update *update, QWidget *parent = Q_NULLPTR);
 };
 
 #endif

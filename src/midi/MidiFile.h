@@ -26,6 +26,8 @@
 #include <QObject>
 #include <QList>
 
+#include "../Utils.h"
+
 class MidiEvent;
 class TimeSignatureEvent;
 class TempoChangeEvent;
@@ -53,8 +55,8 @@ class MidiFile : public ProtocolEntry {
 		void calcMaxTime();
 		int tick(int ms);
 		int tick(int startms, int endms, QList<MidiEvent*> **events, int *endTick, int *msOfFirstEvent);
-		int measure(int startTick, int endTick, QList<TimeSignatureEvent*> **eventList, int *tickInMeasure = 0);
-		int msOfTick(int tick, QList<MidiEvent*> *events = 0, int msOfFirstEventInList = 0);
+		int measure(int startTick, int endTick, QList<TimeSignatureEvent*> **eventList, int *tickInMeasure = Q_NULLPTR);
+		int msOfTick(int tick, QList<MidiEvent*> *events = Q_NULLPTR, int msOfFirstEventInList = 0);
 
 		QList<MidiEvent*> *eventsBetween(int start, int end);
 		int ticksPerQuarter();

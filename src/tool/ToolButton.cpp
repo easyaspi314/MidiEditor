@@ -19,7 +19,7 @@
 #include "ToolButton.h"
 #include "Tool.h"
 
-ToolButton::ToolButton(Tool *tool, QKeySequence sequence, QWidget *parent) : QAction(parent){
+ToolButton::ToolButton(Tool *tool, QKeySequence sequence, QWidget *parent) : QAction(parent) {
 	button_tool = tool;
 	tool->setButton(this);
 	setText(button_tool->toolTip());

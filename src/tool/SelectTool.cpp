@@ -29,22 +29,22 @@ SelectTool::SelectTool(int type) : EventTool() {
 	x_rect = 0;
 	y_rect = 0;
 	switch(stool_type){
-		case SELECTION_TYPE_BOX: {
+		case SelectionTypeBox: {
 			setImage(":/run_environment/graphics/tool/select_box.png");
 			setToolTipText("Select Events (Box)");
 			break;
 		}
-		case SELECTION_TYPE_SINGLE: {
+		case SelectionTypeSingle: {
 			setImage(":/run_environment/graphics/tool/select_single.png");
 			setToolTipText("Select single Events");
 			break;
 		}
-		case SELECTION_TYPE_LEFT: {
+		case SelectionTypeLeft: {
 			setImage(":/run_environment/graphics/tool/select_left.png");
 			setToolTipText("Select all Events on the left side");
 			break;
 		}
-		case SELECTION_TYPE_RIGHT: {
+		case SelectionTypeRight: {
 			setImage(":/run_environment/graphics/tool/select_right.png");
 			setToolTipText("Select all Events on the right side");
 			break;
@@ -64,30 +64,27 @@ Tool::ToolType SelectTool::type() const {
 
 void SelectTool::draw(QPainter *painter){
 	paintSelectedEvents(painter);
-	if(SELECTION_TYPE_BOX && (qRound(x_rect) || qRound(y_rect))){
+	if(stool_type == SelectionTypeBox && (qRound(x_rect) || qRound(y_rect))) {
 		painter->setPen(Qt::gray);
 		painter->setBrush(QColor(0,0,0,100));
 		painter->drawRect(qRectF(x_rect, y_rect, mouseX-x_rect, mouseY-y_rect));
-	} else if(stool_type == SELECTION_TYPE_RIGHT ||
-			stool_type == SELECTION_TYPE_LEFT)
-	{
+	} else if (stool_type == SelectionTypeRight || stool_type == SelectionTypeLeft) {
 		if(mouseIn){
 			painter->setPen(Qt::black);
 			painter->setPen(Qt::gray);
 			painter->setBrush(QColor(0,0,0,100));
-			if(stool_type == SELECTION_TYPE_LEFT){
+			if(stool_type == SelectionTypeLeft){
 				painter->drawRect(qRectF(0, 0, mouseX, matrixWidget->height()-1));
 			} else {
 				painter->drawRect(qRectF(mouseX, 0, matrixWidget->width()-1, matrixWidget->height()-1));
 			}
-
 		}
 	}
 }
 
 bool SelectTool::press(bool leftClick){
 	Q_UNUSED(leftClick);
-	if(stool_type == SELECTION_TYPE_BOX){
+	if(stool_type == SelectionTypeBox){
 		y_rect = mouseY;
 		x_rect = mouseX;
 	}
@@ -107,9 +104,9 @@ bool SelectTool::release(){
 		clearSelection();
 	}
 
-	if(stool_type==SELECTION_TYPE_BOX || stool_type == SELECTION_TYPE_SINGLE){
-		qreal x_start, y_start, x_end, y_end;
-		if(stool_type == SELECTION_TYPE_BOX) {
+	if(stool_type == SelectionTypeBox || stool_type == SelectionTypeSingle){
+		qreal x_start = 0.0, y_start = 0.0, x_end = 0.0, y_end = 0.0;
+		if(stool_type == SelectionTypeBox) {
 			x_start = x_rect;
 			y_start = y_rect;
 			x_end = mouseX;
@@ -124,7 +121,7 @@ bool SelectTool::release(){
 				y_start = y_end;
 				y_end = tmp;
 			}
-		} else if(stool_type == SELECTION_TYPE_SINGLE) {
+		} else if(stool_type == SelectionTypeSingle) {
 			x_start = mouseX;
 			y_start = mouseY;
 			x_end = mouseX+1;
@@ -135,12 +132,12 @@ bool SelectTool::release(){
 				selectEvent(event, false);
 			}
 		}
-	} else if(stool_type == SELECTION_TYPE_RIGHT ||
-			stool_type == SELECTION_TYPE_LEFT)
+	} else if(stool_type == SelectionTypeLeft ||
+			stool_type == SelectionTypeLeft)
 	{
 		int tick = file()->tick(matrixWidget->msOfXPos(mouseX));
 		int start, end;
-		if(stool_type == SELECTION_TYPE_LEFT){
+		if(stool_type == SelectionTypeLeft){
 			start = 0;
 			end = tick;
 		} else {

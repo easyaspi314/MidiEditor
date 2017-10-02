@@ -30,7 +30,7 @@ class Terminal : public QObject {
 
 	public:
 
-		Terminal();
+		Terminal(QObject *parent = Q_NULLPTR);
 
 		/**
 		 * \brief creates the terminal.
@@ -62,7 +62,7 @@ class Terminal : public QObject {
 				QString outPort);
 
 		/**
-		 * \the console.
+		 * \brief the console.
 		 */
 		QTextEdit *console();
 
@@ -93,7 +93,7 @@ class Terminal : public QObject {
 
 		QString _inPort, _outPort;
 
-        static int retries;
+		  static int retries;
 };
 
 #endif

@@ -12,7 +12,7 @@ class GuiSettingsWidget : public SettingsWidget {
 	Q_OBJECT
 
 public:
-	GuiSettingsWidget(QSettings *settings, QWidget *parent = 0);
+	GuiSettingsWidget(QSettings *settings, QWidget *parent = Q_NULLPTR);
 
 public slots:
 	void setAntiAliasing(bool enable);

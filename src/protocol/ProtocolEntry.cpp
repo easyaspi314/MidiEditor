@@ -31,7 +31,7 @@ void ProtocolEntry::protocol(ProtocolEntry *oldObj, ProtocolEntry *newObj) {
 
 MidiFile *ProtocolEntry::file(){
 	// This has to be implemented in the Subclasses
-	return 0;
+	return Q_NULLPTR;
 }
 
 void ProtocolEntry::reloadState(ProtocolEntry *entry) {
@@ -52,7 +52,7 @@ ProtocolEntry::ProtocolEntry(const ProtocolEntry &other) {
 ProtocolEntry *ProtocolEntry::copy() {
 
 	// This has to be implemented in the Subclasses
-	return 0;
+	return Q_NULLPTR;
 }
 
 ProtocolEntry::~ProtocolEntry() {

@@ -24,7 +24,7 @@
 MidiTrack::MidiTrack(MidiFile *file) : ProtocolEntry() {
 
 	_number = 0;
-	_nameEvent = 0;
+	_nameEvent = Q_NULLPTR;
 	_file = file;
 	_hidden = false;
 	_muted = false;

@@ -1,3 +1,21 @@
+/*
+ * MidiEditor
+ * Copyright (C) 2010  Markus Schwenk
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "TimelineWidget.h"
 
 #include <QPainter>
@@ -36,6 +54,7 @@ void TimelineWidget::mouseMoveEvent(QMouseEvent *event) {
 	}
 }
 void TimelineWidget::leaveEvent(QEvent *event) {
+	Q_UNUSED(event)
 	matrixWidget->update(qRound(mouseX - 2), 0, qRound(mouseX + 2),
 							matrixWidget->height());
 	update(qRound(mouseX - 2), 0, qRound(mouseX + 2), height());
@@ -83,7 +102,7 @@ void TimelineWidget::paintEvent(QPaintEvent *event) {
 	painter.setClipping(false);
 	QPixmap pixmap;
 	QString pixmapId = "TimelineWidget_" + QString::number(matrixWidget->scaleX, 'f', 2) + "_"
-					   + file->protocol()->currentStepId();
+						+ file->protocol()->currentStepId();
 	bool totalRepaint = !QPixmapCache::find(pixmapId, pixmap);
 	if (totalRepaint) {
 		pixmap = QPixmap(width(), height());
@@ -276,6 +295,7 @@ void TimelineWidget::paintEvent(QPaintEvent *event) {
 	}
 }
 void TimelineWidget::mouseDoubleClickEvent(QMouseEvent *event) {
+	Q_UNUSED(event)
 	if (!matrixWidget) {
 		return;
 	}

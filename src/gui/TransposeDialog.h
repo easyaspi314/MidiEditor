@@ -33,7 +33,7 @@ class TransposeDialog : public QDialog {
 	Q_OBJECT
 
 	public:
-		TransposeDialog(QList<NoteOnEvent*> toTranspose, MidiFile *file, QWidget *parent=0);
+		TransposeDialog(QList<NoteOnEvent*> toTranspose, MidiFile *file, QWidget *parent = Q_NULLPTR);
 
 	public slots:
 		void accept() Q_DECL_OVERRIDE;

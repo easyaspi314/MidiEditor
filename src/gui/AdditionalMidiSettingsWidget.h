@@ -33,7 +33,7 @@ class AdditionalMidiSettingsWidget : public SettingsWidget {
 	Q_OBJECT
 
 	public:
-		AdditionalMidiSettingsWidget(QSettings *settings, QWidget *parent = 0);
+		AdditionalMidiSettingsWidget(QSettings *settings, QWidget *parent = Q_NULLPTR);
 
 	public slots:
 		void manualModeToggled(bool enable);

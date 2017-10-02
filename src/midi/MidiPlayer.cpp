@@ -41,9 +41,9 @@ void MidiPlayer::play(MidiFile *file) {
 		stop();
 	}
 // I don't know why we are reinstancing this.
-/*#ifdef Q_OS_WIN32
-	delete filePlayer;
-	filePlayer = new PlayerThread();
+#ifdef Q_OS_WIN32
+	delete _playerThread;
+	_playerThread = new PlayerThread();
 
 	connect(_playerThread,
 			SIGNAL(measureChanged(int, int)), Metronome::instance(), SLOT(measureUpdate(int,
@@ -58,7 +58,7 @@ void MidiPlayer::play(MidiFile *file) {
 			SIGNAL(playerStopped()), Metronome::instance(), SLOT(playbackStopped()));
 	connect(_playerThread,
 			SIGNAL(playerStarted()), Metronome::instance(), SLOT(playbackStarted()));
-#endif*/
+#endif
 
 	int tickFrom = file->cursorTick();
 	if (file->pauseTick() >= 0) {
@@ -111,6 +111,7 @@ MidiPlayer *MidiPlayer::instance() {
 }
 
 void MidiPlayer::panic() {
+	qWarning("panic");
 	if (isPlaying()){
 		stop();
 	}

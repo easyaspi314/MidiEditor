@@ -1,3 +1,21 @@
+/*
+ * MidiEditor
+ * Copyright (C) 2010  Markus Schwenk
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "PianoWidget.h"
 
 #include <QPainter>
@@ -141,7 +159,7 @@ void PianoWidget::paintEvent(QPaintEvent *event) {
 				// Don't draw text if zoomed too far out.
 				if (textHeight < (matrixWidget->lineHeight() + 1)) {
 					pixpainter.drawText(qPointF(95 - textlength, startLine +
-										   matrixWidget->lineHeight() - 1), text);
+											matrixWidget->lineHeight() - 1), text);
 				}
 			}
 		}
@@ -185,7 +203,7 @@ void PianoWidget::paintPianoKey(QPainter *painter, int number, qreal x,
 		double scaleHeightBlack = 0.5;
 		double scaleWidthBlack = 0.6;
 
-		PianoKeyShape shape;
+		PianoKeyShape shape = WhiteOnly;
 		QString name = "";
 
 		switch (number % 12) {

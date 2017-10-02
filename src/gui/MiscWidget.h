@@ -30,23 +30,26 @@ class NoteOnEvent;
 #include <QPair>
 #include <QList>
 
-#define SINGLE_MODE 0
-#define LINE_MODE 1
-#define MOUSE_MODE 2
-
-#define VelocityEditor 0
-#define ControlEditor 1
-#define PitchBendEditor 2
-#define KeyPressureEditor 3
-#define ChannelPressureEditor 4
-#define MiscModeEnd 5
-
 class MiscWidget : public PaintWidget {
 
 	Q_OBJECT
 
 	public:
-		MiscWidget(MatrixWidget *mw, QWidget *parent = 0);
+		enum MiscWidgetEditMode {
+			SingleMode = 0,
+			LineMode,
+			FreehandMode
+		};
+		enum MiscWidgetMode {
+			VelocityEditor = 0,
+			ControlEditor,
+			PitchBendEditor,
+			KeyPressureEditor,
+			ChannelPressureEditor,
+			MiscModeEnd,
+		};
+
+		MiscWidget(MatrixWidget *mw, QWidget *parent = Q_NULLPTR);
 
 		static QString modeToString(int mode);
 		void setMode(int mode);
@@ -79,7 +82,7 @@ class MiscWidget : public PaintWidget {
 
 		void resetState();
 
-		QList<QPair<int, int> > getTrack(QList<MidiEvent*> *accordingEvents = 0);
+		QList<QPair<int, int> > getTrack(QList<MidiEvent*> *accordingEvents = Q_NULLPTR);
 		void computeMinMax();
 		QPair<int, int> processEvent(MidiEvent *e, bool *ok);
 		qreal interpolate(QList<QPair<qreal, qreal> > track, qreal x);
@@ -106,6 +109,8 @@ class MiscWidget : public PaintWidget {
 		MidiFile *file;
 		QPixmap *pixmap;
 		bool inited;
+
+		const int WIDTH = 7;
 };
 
 #endif

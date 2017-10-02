@@ -28,7 +28,7 @@ class FileLengthDialog : public QDialog {
 	Q_OBJECT
 
 	public:
-		FileLengthDialog(MidiFile *f, QWidget *parent=0);
+		FileLengthDialog(MidiFile *f, QWidget *parent = Q_NULLPTR);
 
 	public slots:
 		void accept() Q_DECL_OVERRIDE;

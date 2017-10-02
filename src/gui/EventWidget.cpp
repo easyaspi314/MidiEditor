@@ -353,7 +353,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
 				TextEvent *text = qobject_cast<TextEvent*>(event);
 				if(text){
 					if(text->textType() == TextEvent::TrackNameTextEventType){
-						oldTrack->setNameEvent(0);
+						oldTrack->setNameEvent(Q_NULLPTR);
 						text->track()->setNameEvent(text);
 					}
 				}
@@ -501,7 +501,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
 					TextEvent::TextType newType = TextEvent::TextType(box->currentIndex()+1);
 					c->setTextType(newType);
 					if((oldType == TextEvent::TrackNameTextEventType) && (oldType != newType)){
-						event->track()->setNameEvent(0);
+						event->track()->setNameEvent(Q_NULLPTR);
 					}
 					if((newType == TextEvent::TrackNameTextEventType) && (oldType != newType)){
 						event->track()->setNameEvent(c);
@@ -543,7 +543,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
 			DataEditor *edit = qobject_cast<DataEditor*>(editor);
 			QByteArray data = edit->data();
 			if(eventWidget->type() == MidiEvent::SystemExclusiveEventType){
-				if(data.contains(ubyte(0xF7))){
+				if(data.contains(byte(0xF7))){
 					QMessageBox::warning(eventWidget, "Error", QString("The data must not contain byte 0xF7 (End of SysEx)"));
 					return;
 				}
@@ -577,7 +577,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
 
 EventWidget::EventWidget(QWidget *parent) : QTableWidget(0, 2, parent) {
 
-	_file = 0;
+	_file = Q_NULLPTR;
 
 	QHeaderView *headerView = new QHeaderView(Qt::Horizontal, this);
 	setHorizontalHeader(headerView);
@@ -735,8 +735,6 @@ QString EventWidget::eventType(){
 			return "Midi Event";
 		}
 	}
-
-	return "Midi Event";
 }
 
 QList<QPair<QString, EventWidget::EditorField> > EventWidget::getFields(){
@@ -831,7 +829,7 @@ QVariant EventWidget::fieldContent(EditorField field){
 			return QVariant(tick);
 		}
 		case MidiEventTrack: {
-			MidiTrack *track = 0;
+			MidiTrack *track = Q_NULLPTR;
 			foreach(MidiEvent *event, _events){
 				if(!track){
 					track = event->track();

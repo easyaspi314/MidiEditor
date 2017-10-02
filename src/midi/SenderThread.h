@@ -19,11 +19,13 @@
 #ifndef SENDERTHREAD_H_
 #define SENDERTHREAD_H_
 
-#include <QQueue>
+#include "../AtomicQueue.h"
 #include <QThread>
 #include <QTimer>
 
 #include "MidiOutput.h"
+
+class KeyListener;
 
 class SenderThread : public QThread {
 
@@ -34,13 +36,17 @@ class SenderThread : public QThread {
 		void run() Q_DECL_OVERRIDE;
 		void enqueue(MidiEvent *event);
 
+
 	public slots:
 		void stop();
+		void initQueue();
 		void sendCommands();
+	protected:
 	private:
-		QQueue<QByteArray> *_eventQueue;
-		QQueue<QByteArray> *_noteQueue;
+		AtomicQueue<QByteArray> *_eventQueue;
+		AtomicQueue<QByteArray> *_noteQueue;
 		QTimer *timer;
+		KeyListener *_listener;
 };
 
 #endif

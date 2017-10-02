@@ -1,0 +1,73 @@
+/*
+ * macOS uses white text on segmented buttons when selected.
+ *
+ * It was this way since Lion.
+ *
+ * Qt, for some strange reason, hasn't realized it, and uses black text.
+ */
+QTabWidget > QTabBar::tab:selected {
+   color: white;
+}
+/*
+ * Toolbar buttons. Unused for now.
+ */
+QAbstractButton[WhiteMacButton="true"] {
+   background: qlineargradient(x1: 0, x2: 0, y1: 0, y2:1, stop:0 rgba(255, 255, 255, 0.9), stop:1 rgba(245, 245, 245, 0.9));
+   border-radius: 5px;
+   height: 22px;
+   border-top: 1px solid rgba(0, 0, 0, 0.07);
+   border-left: 1px solid rgba(0, 0, 0, 0.07);
+   border-right: 1px solid rgba(0, 0, 0, 0.07);
+   border-bottom: 1px solid rgba(0, 0, 0, 0.17);
+   color: #737373;
+}
+QAbstractButton[WhiteMacButton="true"]:pressed {
+   background: qlineargradient(x1: 0, x2: 0, y1: 0, y2:1, stop:0 rgba(230, 230, 230, 0.9), stop:1 rgba(221, 221, 221, 0.9));
+}
+/*
+ * Until we actually use NSSegmentedButton, we are using this.
+ */
+QAbstractButton[SegmentedMacButton] {
+   background: white;
+   height: 16px;
+   width: 22px;
+   margin: 0;
+   border-radius: 5px;
+   border-top: 1px solid rgba(0, 0, 0, 0.14);
+   border-left: 1px solid rgba(0, 0, 0, 0.17);
+   border-right: 1px solid rgba(0, 0, 0, 0.17);
+   border-bottom: 1px solid rgba(0, 0, 0, 0.27);
+   color: #737373;
+}
+QAbstractButton[SegmentedMacButton]:pressed {
+   background: #f0f0f0;
+}
+QAbstractButton[SegmentedMacButton]:checked {
+   background: qlineargradient(x1: 0, x2: 0, y1: 0, y2:1, stop:0 #69b2fa, stop:1 #0d81ff);
+   border-top-color: #4aa0f9;
+   border-left-color: #267ffc;
+   border-right-color: #267ffc;
+   border-bottom-color: #055fff;
+   color: white;
+}
+QAbstractButton[SegmentedMacButton]:checked:pressed {
+   background: qlineargradient(x1: 0, x2: 0, y1: 0, y2:1, stop:0 #4a96fd, stop:1 #0867e4);
+   border-top-color: #237dfe;
+   border-left-color: #135fee;
+   border-right-color: #135fee;
+   border-bottom-color: #0240dd;
+   color: white;
+}
+QAbstractButton[SegmentedMacButton="left"] {
+   border-top-right-radius: 0px;
+   border-bottom-right-radius: 0px;
+   margin-right: -1px;
+}
+QAbstractButton[SegmentedMacButton="center"] {
+   border-radius: 0px;
+   margin-right: -1px;
+}
+QAbstractButton[SegmentedMacButton="right"] {
+   border-top-left-radius: 0px;
+   border-bottom-left-radius: 0px;
+}

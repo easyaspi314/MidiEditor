@@ -42,7 +42,7 @@ AdditionalMidiSettingsWidget::AdditionalMidiSettingsWidget(QSettings *settings, 
 
 	int row = 0;
 
-	layout->addWidget(new QLabel("Default ticks per quarter note:", this), row, 0, 1, 2);
+	layout->addWidget(new QLabel(tr("Default ticks per quarter note:"), this), row, 0, 1, 2);
 	_tpqBox = new QSpinBox(this);
 	_tpqBox->setMinimum(1);
 	_tpqBox->setMaximum(1024);
@@ -50,22 +50,27 @@ AdditionalMidiSettingsWidget::AdditionalMidiSettingsWidget(QSettings *settings, 
 	connect(_tpqBox, SIGNAL(valueChanged(int)), this, SLOT(setDefaultTimePerQuarter(int)));
 	layout->addWidget(_tpqBox, row++, 2, 1, 4);
 
-	QWidget *tpqInfo = createInfoBox("Note: There aren't many reasons to change this. MIDI files have a resolution for how many ticks can fit in a quarter note. Higher values = more detail. Lower values may be required for compatibility. Only affects new files.");
+	QWidget *tpqInfo = createInfoBox(tr("Note: There aren't many reasons to change this. "
+					    "MIDI files have a resolution for how many ticks can fit in a quarter note. "
+					    "Higher values = more detail. Lower values may be required for compatibility. "
+					    "Only affects new files."));
 	layout->addWidget(tpqInfo, row++, 0, 1, 6);
 
 	layout->addWidget(separator(), row++, 0, 1, 6);
 
-	_alternativePlayerModeBox = new QCheckBox("Manually stop notes", this);
+	_alternativePlayerModeBox = new QCheckBox(tr("Manually stop notes"), this);
 	_alternativePlayerModeBox->setChecked(MidiOutput::isAlternativePlayer());
 	connect(_alternativePlayerModeBox, SIGNAL(toggled(bool)), this, SLOT(manualModeToggled(bool)));
 	layout->addWidget(_alternativePlayerModeBox, row++, 0, 1, 6);
 
-	QWidget *playerModeInfo = createInfoBox("Note: the above option should not be enabled in general. It is only required if the stop button does not stop playback as expected (e.g. when some notes are not stopped correctly).");
+	QWidget *playerModeInfo = createInfoBox(tr("Note: the above option should not be enabled in general. "
+						   "It is only required if the stop button does not stop playback as expected "
+						   "(e.g. when some notes are not stopped correctly)."));
 	layout->addWidget(playerModeInfo, row++, 0, 1, 6);
 
 	layout->addWidget(separator(), row++, 0, 1, 6);
 
-	layout->addWidget(new QLabel("Start command:", this), row, 0, 1, 2);
+	layout->addWidget(new QLabel(tr("Start command:"), this), row, 0, 1, 2);
 	startCmd = new QLineEdit(this);
 	layout->addWidget(startCmd, row++, 2, 1, 4);
 

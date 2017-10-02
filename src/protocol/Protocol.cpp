@@ -27,7 +27,7 @@
 
 Protocol::Protocol(MidiFile *f){
 
-	_currentStep = 0;
+	_currentStep = Q_NULLPTR;
 
 	_file = f;
 
@@ -119,7 +119,7 @@ void Protocol::endAction(){
 	}
 
 	// the action is ended so there is no currentStep
-	_currentStep = 0;
+	_currentStep = Q_NULLPTR;
 
 	if (modified) {
 		// the file has been changed
@@ -168,7 +168,7 @@ void Protocol::goTo(ProtocolStep *toGo){
 }
 
 void Protocol::addEmptyAction(QString name){
-	_undoSteps->push(new ProtocolStep(name, 0, false));
+	_undoSteps->push(new ProtocolStep(name, Q_NULLPTR, false));
 }
 
 QString Protocol::currentStepId() {

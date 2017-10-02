@@ -27,16 +27,22 @@
 #include "MidiInput.h"
 #include <QTime>
 #include "MidiPlayer.h"
+#include "../gui/KeyListener.h"
 
 #define INTERVAL_TIME 15
 #define TIMEOUTS_PER_SIGNAL 1
 
+//KeyListener *PlayerThread::_listener = 0;
+
 PlayerThread::PlayerThread() : QThread() {
+
 	moveToThread(this);
-	file = 0;
-	timer = 0;
+
+	file = Q_NULLPTR;
+	timer = Q_NULLPTR;
 	timeoutSinceLastSignal = 0;
-	time = 0;
+	time = Q_NULLPTR;
+
 }
 
 void PlayerThread::setFile(MidiFile *f) {
@@ -58,7 +64,7 @@ void PlayerThread::run() {
 	}
 	if(time){
 		delete time;
-		time = 0;
+		time = Q_NULLPTR;
 	}
 
 	events = file->playerData();
@@ -98,7 +104,7 @@ void PlayerThread::run() {
 
 	stopped = false;
 
-	QList<TimeSignatureEvent*> *list = 0;
+	QList<TimeSignatureEvent*> *list = Q_NULLPTR;
 
 	int tickInMeasure = 0;
 	measure = file->measure(file->cursorTick(), file->cursorTick(), &list, &tickInMeasure);
@@ -151,7 +157,7 @@ void PlayerThread::timeout() {
 
 		int newPos = qRound(position + time->elapsed()*MidiPlayer::instance()->speedScale());
 		int tick = file->tick(newPos);
-		QList<TimeSignatureEvent*> *list = 0;
+		QList<TimeSignatureEvent*> *list = Q_NULLPTR;
 		int ickInMeasure = 0;
 
 		int new_measure = file->measure(tick, tick, &list, &ickInMeasure);
