@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#ifdef ENABLE_REMOTE
 #ifndef REMOTEDIALOG_H_
 #define REMOTEDIALOG_H_
+#ifdef ENABLE_REMOTE
+
 
 #include "SettingsWidget.h"
 
@@ -41,6 +41,11 @@ class RemoteSettingsWidget : public SettingsWidget {
 
 		QLineEdit *_ipField, *_portField;
 };
+#else
+class RemoteSettingsWidget {
+	private:
+		RemoteSettingsWidget();
+};
+#endif
+#endif
 
-#endif
-#endif

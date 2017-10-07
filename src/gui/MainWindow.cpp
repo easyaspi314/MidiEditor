@@ -45,6 +45,7 @@
 
 #ifdef Q_OS_MAC
 #include <QtMacExtras>
+#include "MacGlue.h"
 #endif
 
 #include "DonateDialog.h"
@@ -554,12 +555,15 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 			SLOT(scrollPositionsChanged(int, int)));
 
 	setCentralWidget(central);
-//#ifdef Q_OS_MAC
-	//setupMacActions();
-//#else
+
+	// TODO: finish this
 	QToolBar *buttons = setupActions(this);
+#ifdef Q_OS_MAC
+	this->window()->winId();
+	setupMacActions(this)->attachToWindow(this->window()->windowHandle());
+#endif
 	addToolBar(buttons);
-//#endif
+
 	rightSplitter->setStretchFactor(0, 5);
 	rightSplitter->setStretchFactor(1, 5);
 
@@ -2779,8 +2783,8 @@ QToolBar *MainWindow::setupActions(QWidget *parent){
 	connect(configAction2, SIGNAL(triggered()), this, SLOT(openConfig()));
 	midiMB->addAction(configAction2);
 
-	QAction *thruAction = new QAction("Connect Midi In/Out", this);
-	thruAction->setIcon(QIcon(":/run_environment/graphics/tool/connection.png"));
+	QAction *thruAction = addToolbarAction("Connect Midi In/Out",
+														":/run_environment/graphics/tool/connection.png", "enableThru", true);
 	thruAction->setCheckable(true);
 	thruAction->setChecked(MidiInput::instance()->thru());
 	connect(thruAction, SIGNAL(toggled(bool)), this, SLOT(enableThru(bool)));
@@ -2826,9 +2830,9 @@ QToolBar *MainWindow::setupActions(QWidget *parent){
 	fileTB->setIconSize(QSize(35,35));
 	fileTB->addAction(newAction);
 	fileTB->setStyleSheet("QToolBar { border: 0px }");
-	QAction *loadAction2 = new QAction("Open...", this);
-	loadAction2->setIcon(QIcon(":/run_environment/graphics/tool/load.png"));
-	connect(loadAction2, SIGNAL(triggered()), this, SLOT(load()));
+	QAction *loadAction2 = addToolbarAction("Open...",
+														 ":/run_environment/graphics/tool/load.png",
+														 "load", false);
 	loadAction2->setMenu(_recentPathsMenu);
 	fileTB->addAction(loadAction2);
 
@@ -2879,10 +2883,8 @@ QToolBar *MainWindow::setupActions(QWidget *parent){
 
 	lowerTB->addAction(copyAction);
 
-	pasteActionTB = new QAction("Paste events", this);
+	pasteActionTB = addToolbarAction("Paste events", ":/run_environment/graphics/tool/paste.png", "paste", false);
 	pasteActionTB->setToolTip("Paste events at cursor position");
-	pasteActionTB->setIcon(QIcon(":/run_environment/graphics/tool/paste.png"));
-	connect(pasteActionTB, SIGNAL(triggered()), this, SLOT(paste()));
 	pasteActionTB->setMenu(pasteOptionsMenu);
 
 	lowerTB->addAction(pasteActionTB);
@@ -2952,14 +2954,42 @@ QToolBar *MainWindow::setupActions(QWidget *parent){
 return out;
 }
 
+QAction *MainWindow::addToolbarAction(QString title, QString iconPath, QString functionName, bool isToggleable) {
+	if (!macToolbarActions) {
+		macToolbarActions = new QList<QString*>();
+	}
+	QChar per('%');
+	macToolbarActions->append(new QString(title + per +
+													  iconPath + per +
+													  functionName + per +
+													  (isToggleable ? "1" : "0")));
+
+	QAction *action = new QAction(QIcon(iconPath), title, this);
+	// TODO: Some checking.
+	// https://stackoverflow.com/questions/23159810/qt-connect-without-slot-macro
+	if (isToggleable) {
+		connect(action, SIGNAL(toggled(bool)), this, ("1" + functionName + "(bool)").toUtf8());
+	} else {
+		connect(action, SIGNAL(triggered()), this, ("1" + functionName + "()").toUtf8());
+	}
+	return action;
+}
+QList<QString*> *MainWindow::toolbarActions() {
+	if (!macToolbarActions) {
+		qWarning("called toolbarActions early");
+		macToolbarActions = new QList<QString*>();
+	}
+
+	return macToolbarActions;
+}
 #ifdef Q_OS_MAC
 
-/*QMacToolBar *MainWindow::setupMacActions() {
-	QMacToolBar *toolBar = new QMacToolBar(this);
-	QMacToolBarItem *item2 = new QMacToolBarItem(toolBar);
-	item2->setIcon(
-	return 0;
-}*/
+// QMacToolBar *MainWindow::setupMacActions() {
+	/*QMacToolBar *toolBar = new QMacToolBar(this);
+	QMacToolBarItem *item2 = toolBar->addItem(QIcon(":/run_environment/graphics/tool/new.png"), "New");
+	NSToolbarItem *item = item2->nativeToolBarItem();*/
+//	return MacStuff::setupMacActions(this);
+// }
 #endif
 void MainWindow::pasteToChannel(QAction *action){
 	EventTool::setPasteChannel(action->data().toInt());

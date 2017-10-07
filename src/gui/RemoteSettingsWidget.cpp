@@ -74,4 +74,7 @@ bool RemoteSettingsWidget::accept(){
 	QMessageBox::information(this, "Restart", QString("You have to restart MidiEditor to connect!"));
 	return true;
 }
+#else
+#include "RemoteSettingsWidget.h"
+RemoteSettingsWidget::RemoteSettingsWidget() {}
 #endif

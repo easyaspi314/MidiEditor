@@ -26,6 +26,7 @@
 #include <QToolBar>
 #ifdef Q_OS_MAC
 	#include <QtMacExtras>
+	#include "MacGlue.h"
 #endif
 
 class MatrixWidget;
@@ -60,6 +61,7 @@ class MainWindow : public QMainWindow {
 		MainWindow(QString initFile="", QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
 		void setFile(MidiFile *f);
 		EventWidget *eventWidget();
+		QList<QString*> *toolbarActions();
 		void setStartDir(QString dir);
 		void setInitFile(const char * file);
 		static MainWindow *_mainWindow;
@@ -227,13 +229,14 @@ class MainWindow : public QMainWindow {
 
 		QToolBar *setupActions(QWidget *parent);
 #ifdef Q_OS_MAC
-//		QMacToolBar *setupMacActions();
+	//	QMacToolBar *setupMacActions();
 #endif
 		int _quantizationGrid;
 		int quantize(int t, QList<int> ticks);
 		QList<QAction*> _activateWithSelections;
 		bool inputIsReady, outputIsReady;
-
+		QList<QString*> *macToolbarActions;
+		QAction *addToolbarAction(QString title, QString iconPath, QString functionName, bool isToggle);
 		bool saveDialog();
 };
 

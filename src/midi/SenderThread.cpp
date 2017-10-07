@@ -28,6 +28,8 @@
 // Credit to http://thesmithfam.org/blog/2010/02/07/talking-to-qt-threads/
 SenderThread::SenderThread() {
 	moveToThread(this);
+	// We actually call this on the main thread; despite being called
+	// after moveToThread().
 	if (!_eventQueue || !_noteQueue) {
 			_eventQueue = new AtomicQueue<QByteArray>();
 			_noteQueue = new AtomicQueue<QByteArray>();
@@ -63,6 +65,7 @@ void SenderThread::stop() {
 		QMetaObject::invokeMethod(this, "stop",
 						Qt::QueuedConnection);
 	} else {
+		// TODO: I think this would theoretically crash.
 		if (_noteQueue && _eventQueue) {
 			delete _noteQueue;
 			delete _eventQueue;
