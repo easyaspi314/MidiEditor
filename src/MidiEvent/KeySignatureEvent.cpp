@@ -28,7 +28,7 @@ KeySignatureEvent::KeySignatureEvent(const KeySignatureEvent &other) : MidiEvent
 	_minor = other._minor;
 }
 
-MidiEvent::EventType KeySignatureEvent::type() const {
+MidiEvent::EventType KeySignatureEvent::eventType() {
 	return KeySignatureEventType;
 }
 
@@ -83,13 +83,13 @@ bool KeySignatureEvent::minor(){
 void KeySignatureEvent::setTonality(int t){
 	ProtocolEntry *toCopy = copy();
 	_tonality = t;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 void KeySignatureEvent::setMinor(bool minor){
 	ProtocolEntry *toCopy = copy();
 	_minor = minor;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 QString KeySignatureEvent::toString(int tonality, bool minor){

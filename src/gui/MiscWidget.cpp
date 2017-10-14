@@ -71,7 +71,7 @@ MiscWidget::MiscWidget(MatrixWidget *mw, QWidget *parent) : PaintWidget(parent) 
 	isDrawingLine = false;
 	resetState();
 	computeMinMax();
-	setFixedWidth(matrixWidget->width());
+	setFixedWidth(qRound(matrixWidget->sceneRect().width()));
 	_dummyTool = new SelectTool(SelectTool::SelectionTypeSingle);
 	setFocusPolicy(Qt::ClickFocus);
 }
@@ -137,8 +137,8 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 		return;
 	}
 
-	if (width() != matrixWidget->width() && matrixWidget->width() != 0) {
-		setFixedWidth(matrixWidget->width());
+	if (width() != qRound(matrixWidget->sceneRect().width()) && !qFuzzyIsNull(matrixWidget->sceneRect().width())) {
+		setFixedWidth(qRound(matrixWidget->sceneRect().width()));
 	}
 	QPixmap background;
 	if (!QPixmapCache::find("MiscWidget_" + QString::number(height()),
@@ -512,7 +512,7 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
 							EventTool::selectEvent(event, true);
 							//matrixWidget->update();
 							selectedNew = true;
-							_dummyTool->protocol(toCopy, _dummyTool);
+							_dummyTool->addProtocolEntry(toCopy, _dummyTool);
 							file->protocol()->endAction();
 							break;
 						}
@@ -527,9 +527,9 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
 				startNewAction("Cleared selection", Q_NULLPTR, false);
 				ProtocolEntry *toCopy = _dummyTool->copy();
 				EventTool::clearSelection();
-				_dummyTool->protocol(toCopy, _dummyTool);
+				_dummyTool->addProtocolEntry(toCopy, _dummyTool);
 				file->protocol()->endAction();
-				matrixWidget->update();
+				//matrixWidget->update();
 			}
 
 			// start drag
@@ -558,8 +558,8 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
 						ProtocolEntry *toCopy = _dummyTool->copy();
 						EventTool::clearSelection();
 						EventTool::selectEvent(accordingEvents.at(i), true, true);
-						matrixWidget->update();
-						_dummyTool->protocol(toCopy, _dummyTool);
+						//matrixWidget->update();
+						_dummyTool->addProtocolEntry(toCopy, _dummyTool);
 						file->protocol()->endAction();
 					}
 					break;

@@ -21,40 +21,34 @@
 
 #include <QPainter>
 #include <QColor>
+#include <QGraphicsRectItem>
+class QGraphicsItem;
 
-class GraphicObject {
+class GraphicObject : public QGraphicsRectItem {
 
 
 	public:
-		GraphicObject();
+		GraphicObject(QGraphicsItem *parent = Q_NULLPTR);
 
-		qreal x();
+/*		qreal x();
 		qreal y();
-		qreal width();
-		qreal height();
+
 
 		void setX(qreal x);
-		void setY(qreal y);
+		void setY(qreal y);*/
 		void setWidth(qreal w);
 		void setHeight(qreal h);
+		qreal width() const;
+		qreal height() const;
+		QRectF boundingRect() const Q_DECL_OVERRIDE;
 
-		virtual void draw(QPainter *p, QColor c);
+		virtual void paint(QPainter *painter,
+			   const QStyleOptionGraphicsItem *option,
+			   QWidget *widget = Q_NULLPTR) Q_DECL_OVERRIDE;
 
 		bool shown();
 		void setShown(bool b);
 
-		/**
-		 * \brief These helpers will return pixel-aligned values
-		 * when antialiasing is disabled and precise valeus
-		 * when it isn't.
-		 */
-		static QRectF qRectF(QRectF other);
-		static QRectF qRectF(qreal x, qreal y, qreal w, qreal h);
-		static QLineF qLineF(QLineF other);
-		static QLineF qLineF(qreal x1, qreal y1, qreal x2, qreal y2);
-		static QPolygonF qPolygonF(QPolygonF other);
-		static QPointF qPointF(QPointF other);
-		static QPointF qPointF(qreal x, qreal y);
 
 	private:
 		qreal _x, _y, _width, _height;

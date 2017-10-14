@@ -32,7 +32,7 @@ KeyPressureEvent::KeyPressureEvent(const KeyPressureEvent &other) :
 	_note = other._note;
 }
 
-MidiEvent::EventType KeyPressureEvent::type() const {
+MidiEvent::EventType KeyPressureEvent::eventType() {
 	return KeyPressureEventType;
 }
 
@@ -69,13 +69,13 @@ void KeyPressureEvent::reloadState(ProtocolEntry *entry) {
 void KeyPressureEvent::setValue(int v){
 	ProtocolEntry *toCopy = copy();
 	_value = v;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 void KeyPressureEvent::setNote(int n){
 	ProtocolEntry *toCopy = copy();
 	_note = n;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 QString KeyPressureEvent::typeString(){

@@ -28,7 +28,7 @@ class KeySignatureEvent  : public MidiEvent {
 	public:
 		KeySignatureEvent(int channel, int tonality, bool minor, MidiTrack *track);
 		KeySignatureEvent(const KeySignatureEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+		MidiEvent::EventType eventType() Q_DECL_OVERRIDE;
 
 		virtual int line() Q_DECL_OVERRIDE;
 

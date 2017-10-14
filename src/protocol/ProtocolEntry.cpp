@@ -21,7 +21,7 @@
 #include "Protocol.h"
 #include "../midi/MidiFile.h"
 
-void ProtocolEntry::protocol(ProtocolEntry *oldObj, ProtocolEntry *newObj) {
+void ProtocolEntry::addProtocolEntry(ProtocolEntry *oldObj, ProtocolEntry *newObj) {
 
 	if(oldObj->file() && oldObj->file()->protocol()){
 		oldObj->file()->protocol()->enterUndoStep(
@@ -29,7 +29,7 @@ void ProtocolEntry::protocol(ProtocolEntry *oldObj, ProtocolEntry *newObj) {
 	}
 }
 
-MidiFile *ProtocolEntry::file(){
+/*MidiFile *ProtocolEntry::file(){
 	// This has to be implemented in the Subclasses
 	return Q_NULLPTR;
 }
@@ -40,7 +40,7 @@ void ProtocolEntry::reloadState(ProtocolEntry *entry) {
 
 	// This has to be implemented in the Subclasses
 	return;
-}
+}*/
 
 ProtocolEntry::ProtocolEntry(QObject *parent) : QObject(parent) {
 }

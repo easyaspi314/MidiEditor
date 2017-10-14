@@ -22,6 +22,7 @@
 #include "PaintWidget.h"
 #include "TimelineWidget.h"
 #include "PianoWidget.h"
+#include <QGraphicsView>
 
 #include <QWidget>
 #include <QPaintEvent>
@@ -44,7 +45,7 @@ class NoteOnEvent;
 class TimelineWidget;
 class PianoWidget;
 
-class MatrixWidget : public PaintWidget {
+class MatrixWidget : public QGraphicsView {
 
 	Q_OBJECT
 
@@ -81,10 +82,12 @@ class MatrixWidget : public PaintWidget {
 
 		static bool antiAliasingEnabled;
 		QMap<int, QRectF> pianoKeys;
-		QSize sizeHint() const  Q_DECL_OVERRIDE;
 
 		void setPianoWidget(PianoWidget *widget);
 		void setTimelineWidget(TimelineWidget *widget);
+		QRectF relativeRect();
+
+		void addChannel(int channel);
 	public slots:
 		void zoomHorIn();
 		void zoomHorOut();
@@ -98,6 +101,7 @@ class MatrixWidget : public PaintWidget {
 		void setDiv(int div);
 		int div();
 		void redraw();
+		bool mouseInWidget();
 	signals:
 		void sizeChanged(int maxScrollTime, double maxScrollLine, int valueX,
 				double valueY);
@@ -105,7 +109,9 @@ class MatrixWidget : public PaintWidget {
 		void scrollChanged(int x, int y);
 
 	protected:
+#ifdef OLD
 		void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+#endif
 		void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 		void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
 		void enterEvent(QEvent *event) Q_DECL_OVERRIDE;
@@ -116,16 +122,19 @@ class MatrixWidget : public PaintWidget {
 		void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
 
 	private:
+#ifdef OLD
 		void paintChannel(QPainter *painter, int channel);
+
 		void paintPianoKey(QPainter *painter, int number, qreal x, qreal y,
 				qreal width, qreal height);
-
+#endif
 		int startTick, endTick, startTimeX, endTimeX, timeHeight,
 				msOfFirstEventInList, visibleStartTick, visibleEndTick;
 
 		enum VerticalScrollDir {NONE, UP, DOWN};
 		VerticalScrollDir scrollDir = NONE;
 		MidiFile *file;
+		void setupLines();
 
 		QRectF ToolArea, PianoArea, TimeLineArea;
 		bool screen_locked;
@@ -150,6 +159,9 @@ class MatrixWidget : public PaintWidget {
 
 		TimelineWidget *timelineWidget;
 		PianoWidget *pianoWidget;
+		QGraphicsScene *matrixScene;
+
+		bool _mouseInWidget;
 
 		const int NUM_LINES = 139;
 		const int PIXEL_PER_S = 100;

@@ -118,7 +118,7 @@ bool MidiChannel::visible(){
 void MidiChannel::setVisible(bool b){
 	ProtocolEntry *toCopy = copy();
 	_visible = b;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 bool MidiChannel::mute(){
@@ -128,7 +128,7 @@ bool MidiChannel::mute(){
 void MidiChannel::setMute(bool b){
 	ProtocolEntry *toCopy = copy();
 	_mute = b;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 bool MidiChannel::solo(){
@@ -138,7 +138,7 @@ bool MidiChannel::solo(){
 void MidiChannel::setSolo(bool b){
 	ProtocolEntry *toCopy = copy();
 	_solo = b;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 int MidiChannel::number(){
@@ -164,7 +164,7 @@ NoteOnEvent* MidiChannel::insertNote(int note, int startTick, int endTick,int ve
 	onEvent->setFile(file());
 	onEvent->setMidiTime(startTick, false);
 
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 
 	return onEvent;
 }
@@ -189,7 +189,7 @@ bool MidiChannel::removeEvent(MidiEvent *event){
 	if(on && on->offEvent()){
 		_events->remove(on->offEvent()->midiTime(), on->offEvent());
 	}
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 
 	//if(MidiEvent::eventWidget()->events().contains(event)){
 	//	MidiEvent::eventWidget()->removeEvent(event);
@@ -201,13 +201,13 @@ void MidiChannel::insertEvent(MidiEvent *event, int tick){
 	//ProtocolEntry *toCopy = copy();
 	event->setFile(file());
 	event->setMidiTime(tick, false);
-	protocol(copy(), this);
+	addProtocolEntry(copy(), this);
 }
 
 void MidiChannel::deleteAllEvents(){
 	ProtocolEntry *toCopy = copy();
 	_events->clear();
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 int MidiChannel::progAtTick(int tick){

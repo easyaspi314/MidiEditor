@@ -142,7 +142,7 @@ bool StandardTool::press(bool leftClick) {
 						ProtocolEntry *toCopy = copy();
 						EventTool::selectEvent(event,
 												!Selection::instance()->selectedEvents().contains(event));
-						protocol(toCopy, this);
+						addProtocolEntry(toCopy, this);
 						file()->protocol()->endAction();
 					}
 					if (onSelectedEvent || selectAndMoveEnabled) {
@@ -159,7 +159,7 @@ bool StandardTool::press(bool leftClick) {
 						ProtocolEntry *toCopy = copy();
 						EventTool::selectEvent(event,
 												!Selection::instance()->selectedEvents().contains(event));
-						protocol(toCopy, this);
+						addProtocolEntry(toCopy, this);
 						file()->protocol()->endAction();
 					}
 					if (onSelectedEvent || selectAndMoveEnabled) {

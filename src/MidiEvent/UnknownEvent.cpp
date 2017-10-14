@@ -30,7 +30,7 @@ UnknownEvent::UnknownEvent(const UnknownEvent &other) : MidiEvent(other) {
 	_type = other._type;
 }
 
-MidiEvent::EventType UnknownEvent::type() const {
+MidiEvent::EventType UnknownEvent::eventType()  {
 	return UnknownEventType;
 }
 
@@ -71,10 +71,10 @@ int UnknownEvent::unknownType(){
 
 void UnknownEvent::setUnknownType(int type){
 	_type = type;
-	protocol(copy(), this);
+	addProtocolEntry(copy(), this);
 }
 
 void UnknownEvent::setData(QByteArray d){
 	_data = d;
-	protocol(copy(), this);
+	addProtocolEntry(copy(), this);
 }

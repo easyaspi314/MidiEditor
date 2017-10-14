@@ -36,7 +36,7 @@ OffEvent::OffEvent(int ch, int l, MidiTrack *track) : MidiEvent(ch, track) {
 	}
 }
 
-MidiEvent::EventType OffEvent::type() const {
+MidiEvent::EventType OffEvent::eventType() {
 	return OffEventType;
 }
 
@@ -79,9 +79,11 @@ void OffEvent::clearOnEvents(){
 	onEvents->clear();
 }
 
-void OffEvent::draw(QPainter *p, QColor c){
+void OffEvent::paint(QPainter *painter,
+			   const QStyleOptionGraphicsItem *option,
+			   QWidget *widget) {
 	if(onEvent() && !onEvent()->shown()){
-		onEvent()->draw(p, c);
+		onEvent()->paint(painter, option, widget);
 	}
 }
 

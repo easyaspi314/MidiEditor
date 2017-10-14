@@ -31,7 +31,7 @@ TextEvent::TextEvent(const TextEvent &other) : MidiEvent(other) {
 	_text = other._text;
 }
 
-MidiEvent::EventType TextEvent::type() const {
+MidiEvent::EventType TextEvent::eventType() {
 	return TextEventType;
 }
 
@@ -41,7 +41,7 @@ QString TextEvent::text(){
 
 void TextEvent::setText(QString text){
 	_text = text;
-	protocol(copy(), this);
+	addProtocolEntry(copy(), this);
 }
 
 TextEvent::TextType TextEvent::textType(){
@@ -50,7 +50,7 @@ TextEvent::TextType TextEvent::textType(){
 
 void TextEvent::setTextType(TextEvent::TextType type){
 	_type = type;
-	protocol(copy(), this);
+	addProtocolEntry(copy(), this);
 }
 
 int TextEvent::line(){

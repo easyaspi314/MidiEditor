@@ -59,7 +59,7 @@ class MidiEvent : public ProtocolEntry, public GraphicObject {
 
 		MidiEvent(int channel, MidiTrack *track);
 		MidiEvent(const MidiEvent &other);
-		virtual MidiEvent::EventType type() const;
+		virtual MidiEvent::EventType eventType();
 
 		static MidiEvent *loadMidiEvent(QDataStream *content,
 				bool *ok, bool *endEvent, MidiTrack *track, quint8 startByte = 0,
@@ -94,7 +94,10 @@ class MidiEvent : public ProtocolEntry, public GraphicObject {
 		virtual int line();
 		virtual QString toMessage();
 		virtual QByteArray save();
-		virtual void draw(QPainter *p, QColor c) Q_DECL_OVERRIDE;
+
+		virtual void paint(QPainter *painter,
+			   const QStyleOptionGraphicsItem *option,
+			   QWidget *widget = Q_NULLPTR) Q_DECL_OVERRIDE;
 
 		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;
 		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;

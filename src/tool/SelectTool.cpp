@@ -74,9 +74,9 @@ void SelectTool::draw(QPainter *painter){
 			painter->setPen(Qt::gray);
 			painter->setBrush(QColor(0,0,0,100));
 			if(stool_type == SelectionTypeLeft){
-				painter->drawRect(qRectF(0, 0, mouseX, matrixWidget->height()-1));
+				painter->drawRect(qRectF(0, 0, mouseX, matrixWidget->sceneRect().height()-1));
 			} else {
-				painter->drawRect(qRectF(mouseX, 0, matrixWidget->width()-1, matrixWidget->height()-1));
+				painter->drawRect(qRectF(mouseX, 0, matrixWidget->sceneRect().width()-1, matrixWidget->sceneRect().height()-1));
 			}
 		}
 	}
@@ -152,7 +152,7 @@ bool SelectTool::release(){
 	x_rect = 0;
 	y_rect = 0;
 
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 	file()->protocol()->endAction();
 	if(_standardTool){
 		Tool::setCurrentTool(_standardTool);

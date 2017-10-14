@@ -28,7 +28,7 @@ ProgChangeEvent::ProgChangeEvent(const ProgChangeEvent &other) : MidiEvent(other
 	_program = other._program;
 }
 
-MidiEvent::EventType ProgChangeEvent::type() const {
+MidiEvent::EventType ProgChangeEvent::eventType() {
 	return ProgramChangeEventType;
 }
 
@@ -71,5 +71,5 @@ int ProgChangeEvent::program(){
 void ProgChangeEvent::setProgram(int p){
 	ProtocolEntry *toCopy = copy();
 	_program = p;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }

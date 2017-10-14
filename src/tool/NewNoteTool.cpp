@@ -83,8 +83,8 @@ void NewNoteTool::draw(QPainter *painter){
 			qreal y = matrixWidget->yPosOfLine(line);
 			painter->fillRect(qRectF(xPos, y, currentX-xPos, matrixWidget->lineHeight()), Qt::black);
 			painter->setPen(Qt::gray);
-			painter->drawLine(qLineF(xPos, 0, xPos, matrixWidget->height()));
-			painter->drawLine(qLineF(currentX, 0, currentX, matrixWidget->height()));
+			painter->drawLine(qLineF(xPos, 0, xPos, matrixWidget->sceneRect().height()));
+			painter->drawLine(qLineF(currentX, 0, currentX, matrixWidget->sceneRect().height()));
 			if (enableVelocityDragging) {
 				// Show a fake ToolTip that allows the velocity to be changed vertically.
 				// Hooray for overcomplicated-ness.
@@ -108,8 +108,8 @@ void NewNoteTool::draw(QPainter *painter){
 
 				// Reposition the fake ToolTip near the edge of the MatrixWidget.
 				// I'm sure that there is a better way to do this.
-				if (mouseX + velocityTxtWidth + 10 > matrixWidget->width())
-					velocityTxtX = matrixWidget->width() - velocityTxtWidth - 10;
+				if (mouseX + velocityTxtWidth + 10 > matrixWidget->sceneRect().width())
+					velocityTxtX = matrixWidget->sceneRect().width() - velocityTxtWidth - 10;
 				else if (mouseX < 10)
 					velocityTxtX = 10;
 				if (velocityTxtY - matrixWidget->startLineY < 10)
@@ -139,8 +139,8 @@ void NewNoteTool::draw(QPainter *painter){
 			qreal y = matrixWidget->yPosOfLine(line);
 			painter->fillRect(qRectF(currentX, y, 15, matrixWidget->lineHeight()), Qt::black);
 			painter->setPen(Qt::gray);
-			painter->drawLine(qLineF(currentX, 0, currentX, matrixWidget->height()));
-			painter->drawLine(qLineF(currentX+15, 0, currentX+15, matrixWidget->height()));
+			painter->drawLine(qLineF(currentX, 0, currentX, matrixWidget->sceneRect().height()));
+			painter->drawLine(qLineF(currentX+15, 0, currentX+15, matrixWidget->sceneRect().height()));
 			painter->setPen(Qt::black);
 		}
 	}

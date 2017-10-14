@@ -29,7 +29,7 @@ class TimeSignatureEvent : public MidiEvent {
 		TimeSignatureEvent(int channel, int num, int denom, int midiClocks,
 				int num32In4, MidiTrack *track);
 		TimeSignatureEvent(const TimeSignatureEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+		MidiEvent::EventType eventType() Q_DECL_OVERRIDE;
 
 		int num();
 		int denom();

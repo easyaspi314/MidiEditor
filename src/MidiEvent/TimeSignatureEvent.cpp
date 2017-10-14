@@ -38,7 +38,7 @@ TimeSignatureEvent::TimeSignatureEvent(const TimeSignatureEvent &other):
 	num32In4th = other.num32In4th;
 }
 
-MidiEvent::EventType TimeSignatureEvent::type() const {
+MidiEvent::EventType TimeSignatureEvent::eventType() {
 	return TimeSignatureEventType;
 }
 int TimeSignatureEvent::num(){
@@ -90,12 +90,12 @@ int TimeSignatureEvent::line(){
 
 void TimeSignatureEvent::setNumerator(int n){
 	numerator = n;
-	protocol(copy(), this);
+	addProtocolEntry(copy(), this);
 }
 
 void TimeSignatureEvent::setDenominator(int d){
 	denominator = d;
-	protocol(copy(), this);
+	addProtocolEntry(copy(), this);
 }
 
 QByteArray TimeSignatureEvent::save(){

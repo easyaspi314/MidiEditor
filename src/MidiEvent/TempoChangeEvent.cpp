@@ -27,7 +27,7 @@ TempoChangeEvent::TempoChangeEvent(const TempoChangeEvent &other) : MidiEvent(ot
 	_beats = other._beats;
 }
 
-MidiEvent::EventType TempoChangeEvent::type() const {
+MidiEvent::EventType TempoChangeEvent::eventType() {
 	return TempoChangeEventType;
 }
 
@@ -77,7 +77,7 @@ void TempoChangeEvent::setBeats(int beats){
 	ProtocolEntry *toCopy = copy();
 	_beats = beats;
 	file()->calcMaxTime();
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 QString TempoChangeEvent::typeString(){

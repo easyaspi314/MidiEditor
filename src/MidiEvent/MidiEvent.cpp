@@ -54,10 +54,14 @@ MidiEvent::MidiEvent(const MidiEvent &other) : ProtocolEntry(other), GraphicObje
 	numChannel = other.numChannel;
 	timePos = other.timePos;
 	midiFile = other.midiFile;
+	setX(other.x());
+	setY(other.y());
+	setWidth(other.width());
+	setHeight(other.height());
 }
 
-MidiEvent::EventType MidiEvent::type() const {
-	return MidiEvent::MidiEventType;
+MidiEvent::EventType MidiEvent::eventType()  {
+	return MidiEventType;
 }
 
 MidiEvent *MidiEvent::loadMidiEvent(QDataStream *content, bool *ok,
@@ -338,7 +342,7 @@ void MidiEvent::setTrack(MidiTrack *track, bool toProtocol) {
 
 	_track = track;
 	if (toProtocol) {
-		protocol(toCopy, this);
+		addProtocolEntry(toCopy, this);
 	} else {
 		delete toCopy;
 	}
@@ -353,7 +357,7 @@ void MidiEvent::setChannel(int ch, bool toProtocol) {
 	ProtocolEntry *toCopy = copy();
 	numChannel = ch;
 	if (toProtocol) {
-		protocol(toCopy, this);
+		addProtocolEntry(toCopy, this);
 		file()->channelEvents(oldChannel)->remove(midiTime(), this);
 		// tells the new channel to add this event
 		setMidiTime(midiTime(), toProtocol);
@@ -391,7 +395,7 @@ void MidiEvent::setMidiTime(int t, bool toProtocol) {
 		file()->setMaxLengthMs(file()->msOfTick(timePos) + 100);
 	}
 	if (toProtocol) {
-		protocol(toCopy, this);
+		addProtocolEntry(toCopy, this);
 	} else {
 		delete toCopy;
 	}
@@ -415,10 +419,15 @@ int MidiEvent::line() {
 	return 0;
 }
 
-void MidiEvent::draw(QPainter *p, QColor c) {
-	p->setPen(Qt::gray);
-	p->setBrush(c);
-	p->drawRoundedRect(qRectF(x(), y(), width(), height()), 1, 1);
+void MidiEvent::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+	if (isSelected()) {
+		painter->setPen(Qt::black);
+		painter->setBrush(Qt::blue);
+	} else {
+		painter->setPen(Qt::gray);
+		painter->setBrush(colorByChannel ? midiFile->channel(channel())->color() : *(_track->color()));
+	}
+	painter->drawRoundedRect(qRectF(rect()), 1, 1);
 }
 
 ProtocolEntry *MidiEvent::copy() {
@@ -501,7 +510,7 @@ void MidiEvent::moveToChannel(int ch) {
 
 	numChannel = ch;
 
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 
 	midiFile->insertEventInChannel(ch, this, midiTime());
 }

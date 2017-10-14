@@ -236,11 +236,6 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 	QWidget *matrixAreaContainer = new QWidget(leftSplitter);
 	QGridLayout *matrixAreaLayout = new QGridLayout(matrixAreaContainer);
 	matrixAreaLayout->setSpacing(0);
-	matrixArea = new QScrollArea(matrixAreaContainer);
-
-	matrixArea->setContentsMargins(0,0,0,0);
-	matrixArea->setWidgetResizable(true);
-
 
 	//matrixAreaLayout->setHorizontalSpacing(6);
 	timelineArea = new QScrollArea(matrixAreaContainer);
@@ -264,7 +259,7 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 	pianoArea->setFixedWidth(110);
 	pianoArea->setMinimumHeight(1);
 
-	mw_matrixWidget = new MatrixWidget(matrixArea);
+	mw_matrixWidget = new MatrixWidget(matrixAreaContainer);
 	mw_timelineWidget = new TimelineWidget(timelineArea);
 	mw_timelineWidget->setFixedHeight(50);
 	mw_timelineWidget->setMinimumWidth(50);
@@ -274,7 +269,7 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 	mw_pianoWidget->setMinimumHeight(1);
 
 	matrixAreaLayout->setContentsMargins(0,0,0,0);
-	matrixAreaLayout->addWidget(matrixArea, 1, 1, 2, 2);
+	matrixAreaLayout->addWidget(mw_matrixWidget, 1, 1, 2, 2);
 	matrixAreaLayout->addWidget(timelineArea, 0, 1, 1, 2);
 	matrixAreaLayout->addWidget(pianoArea, 1, 0, 2, 1);
 
@@ -282,20 +277,18 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 	matrixAreaContainer->setLayout(matrixAreaLayout);
 	//mw_matrixWidget->setFixedHeight(1529);
 	//mw_matrixWidget->setFixedWidth(1529);
-	mw_matrixWidget->setMinimumSize(QSize(150,150));
-	matrixArea->setWidget(mw_matrixWidget);
-
+	//mw_matrixWidget->setMinimumSize(QSize(150,150));
 
 	timelineArea->setWidget(mw_timelineWidget);
 	pianoArea->setWidget(mw_pianoWidget);
-	matrixArea->setFrameShape(QFrame::NoFrame);
+	mw_matrixWidget->setFrameShape(QFrame::NoFrame);
 	pianoArea->setFrameShape(QFrame::NoFrame);
 	timelineArea->setFrameShape(QFrame::NoFrame);
 
 	//timelineArea->verticalScrollBar()->setEnabled(false);
 	//timelineArea->horizontalScrollBar()->setEnabled(false);
-	vert = matrixArea->verticalScrollBar();//new QScrollBar(Qt::Vertical, matrixArea);
-	hori = matrixArea->horizontalScrollBar();
+	vert = mw_matrixWidget->verticalScrollBar();//new QScrollBar(Qt::Vertical, matrixArea);
+	hori = mw_matrixWidget->horizontalScrollBar();
 
 	//mw_matrixWidget->show();
 	//matrixArea->setVisible(true);
@@ -546,8 +539,8 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 	connect(_chooseEditTrack, SIGNAL(activated(int)), this, SLOT(editTrack(int)));
 	chooserLayout->setColumnStretch(1, 1);
 
-	connect(channelWidget, SIGNAL(channelStateChanged()), mw_matrixWidget,
-			SLOT(repaint()));
+//	connect(channelWidget, SIGNAL(channelStateChanged()), mw_matrixWidget,
+//			SLOT(repaint()));
 	connect(mw_matrixWidget, SIGNAL(sizeChanged(int, double, int, double)), this,
 			SLOT(matrixSizeChanged(int, double, int, double)));
 
@@ -558,10 +551,10 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 
 	// TODO: finish this
 	QToolBar *buttons = setupActions(this);
-#ifdef Q_OS_MAC
-	this->window()->winId();
-	setupMacActions(this)->attachToWindow(this->window()->windowHandle());
-#endif
+//#ifdef Q_OS_MAC
+//	this->window()->winId();
+//	setupMacActions(this)->attachToWindow(this->window()->windowHandle());
+//#endif
 	addToolBar(buttons);
 
 	rightSplitter->setStretchFactor(0, 5);
@@ -636,7 +629,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *ev)
 
 void MainWindow::scrollPositionsChanged(int x,int y)
 {
-	matrixArea->ensureVisible(x, y, 50, 0);
+	mw_matrixWidget->ensureVisible(x, y, 50, 0);
 }
 
 void MainWindow::setFile(MidiFile *file){
@@ -669,7 +662,7 @@ void MainWindow::setFile(MidiFile *file){
 	_miscWidget->setFile(file);
 	updateChannelMenu();
 	updateTrackMenu();
-	mw_matrixWidget->update();
+	//mw_matrixWidget->update();
 	mw_timelineWidget->update();
 	mw_pianoWidget->update();
 	_miscWidget->redraw();
@@ -852,7 +845,7 @@ void MainWindow::stop(bool autoConfirmRecord, bool addEvents, bool resetPause){
 
 	if(resetPause){
 		file->setPauseTick(-1);
-		mw_matrixWidget->update();
+		//mw_matrixWidget->update();
 	}
 	if(!MidiInput::instance()->recording() && MidiPlayer::instance()->isPlaying()){
 		MidiPlayer::instance()->stop();
@@ -867,7 +860,7 @@ void MainWindow::stop(bool autoConfirmRecord, bool addEvents, bool resetPause){
 #ifdef ENABLE_REMOTE
 		_remoteServer->stop();
 #endif
-		panic();
+		//panic();
 	}
 
 	MidiTrack *track = file->track(NewNoteTool::editTrack());
@@ -877,7 +870,7 @@ void MainWindow::stop(bool autoConfirmRecord, bool addEvents, bool resetPause){
 
 	if(MidiInput::instance()->recording()){
 		MidiPlayer::instance()->stop();
-		panic();
+		//panic();
 		_miscWidget->setEnabled(true);
 		channelWidget->setEnabled(true);
 		protocolWidget->setEnabled(true);
@@ -926,7 +919,7 @@ void MainWindow::forward(){
 		file->setCursorTick(newTick);
 		mw_matrixWidget->timeMsChanged(file->msOfTick(newTick), true);
 	}
-	mw_matrixWidget->update();
+	//mw_matrixWidget->update();
 	mw_timelineWidget->update();
 }
 
@@ -959,7 +952,7 @@ void MainWindow::back(){
 		file->setCursorTick(newTick);
 		mw_matrixWidget->timeMsChanged(file->msOfTick(newTick), true);
 	}
-	mw_matrixWidget->update();
+	//mw_matrixWidget->update();
 	mw_timelineWidget->update();
 }
 
@@ -969,7 +962,7 @@ void MainWindow::backToBegin(){
 	file->setPauseTick(0);
 	file->setCursorTick(0);
 
-	mw_matrixWidget->update();
+	//mw_matrixWidget->update();
 	mw_timelineWidget->update();
 }
 
@@ -1168,7 +1161,7 @@ void MainWindow::openFile(QString filePath){
 
 	startDirectory = QFileInfo(nf).absoluteDir().path()+"/";
 
-	MidiFile *mf = new MidiFile(filePath, &ok);
+	MidiFile *mf = new MidiFile(filePath, &ok, Q_NULLPTR, mw_matrixWidget);
 
 	if(ok){
 		stop();
@@ -1362,7 +1355,7 @@ void MainWindow::newFile(){
 	}
 
 	// create new File
-	MidiFile *f = new MidiFile();
+	MidiFile *f = new MidiFile(mw_matrixWidget);
 
 	setFile(f);
 
@@ -2038,14 +2031,14 @@ void MainWindow::colorsByChannel(){
 	mw_matrixWidget->setColorsByChannel();
 	_colorsByChannel->setChecked(true);
 	_colorsByTracks->setChecked(false);
-	mw_matrixWidget->update();
+	//mw_matrixWidget->update();
 	_miscWidget->update();
 }
 void MainWindow::colorsByTrack(){
 	mw_matrixWidget->setColorsByTracks();
 	_colorsByChannel->setChecked(false);
 	_colorsByTracks->setChecked(true);
-	mw_matrixWidget->update();
+	//mw_matrixWidget->update();
 	_miscWidget->update();
 }
 
@@ -3181,7 +3174,7 @@ void MainWindow::checkEnableActionsForSelection(){
 void MainWindow::toolChanged(){
 	checkEnableActionsForSelection();
 	_miscWidget->update();
-	mw_matrixWidget->update();
+	//mw_matrixWidget->update();
 }
 
 void MainWindow::copiedEventsChanged(){

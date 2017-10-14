@@ -22,6 +22,7 @@
 #include <QObject>
 
 class MidiFile;
+class Protocol;
 
 /**
  * \class ProtocolEntry
@@ -36,7 +37,7 @@ class MidiFile;
  * Protocol (void reloadState(ProtocolEntry *entry)). Both Methods have to be
  * implemented in the Subclass.
  * Before a ProtocolEntry is changed it has to copy its old state to oldObj.
- * After changing itself, the Method protocol(ProtocolEntry *oldObj,
+ * After changing itself, the Method addProtocolEntry(ProtocolEntry *oldObj,
  * ProtocolEntry *newObj) has to be called, with "this" as newObj.
  */
 class ProtocolEntry : public QObject {
@@ -56,7 +57,7 @@ class ProtocolEntry : public QObject {
 		 * no need to save Layoutinformation because the program will relayout
 		 * after every call of the protocol.
 		 */
-		virtual ProtocolEntry *copy();
+		virtual ProtocolEntry *copy() = 0;
 
 		ProtocolEntry(QObject *parent = Q_NULLPTR);
 		ProtocolEntry(const ProtocolEntry &other);
@@ -67,18 +68,18 @@ class ProtocolEntry : public QObject {
 		 * This Method has to reload the Objects old state, written to entry in
 		 * copy().
 		 */
-		virtual void reloadState(ProtocolEntry *entry);
+		virtual void reloadState(ProtocolEntry *entry) = 0;
 
 		/**
 		 * \brief writes the old object oldObj and the new object newObj to the
 		 * protocol.
 		 */
-		virtual void protocol(ProtocolEntry *oldObj, ProtocolEntry *newObj);
+		virtual void addProtocolEntry(ProtocolEntry *oldObj, ProtocolEntry *newObj);
 
 		/**
 		 * \brief return the entries file.
 		 */
-		virtual MidiFile *file();
+		virtual MidiFile *file() = 0;
 };
 
 #endif

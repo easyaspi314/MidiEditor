@@ -32,7 +32,7 @@ PitchBendEvent::PitchBendEvent(const PitchBendEvent &other) :
 	_value = other._value;
 }
 
-MidiEvent::EventType PitchBendEvent::type() const {
+MidiEvent::EventType PitchBendEvent::eventType() {
 	return PitchBendEventType;
 }
 
@@ -77,7 +77,7 @@ int PitchBendEvent::value(){
 void PitchBendEvent::setValue(int v){
 	ProtocolEntry *toCopy = copy();
 	_value = v;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 bool PitchBendEvent::isOnEvent(){

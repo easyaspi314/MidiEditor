@@ -43,20 +43,6 @@ class PaintWidget : public QWidget {
 		void setEnabled(bool b);
 		QRect relativeRect();
 
-		/**
-		 * \brief These helpers will return pixel-aligned values
-		 * when antialiasing is disabled and precise valeus
-		 * when it isn't.
-		 *
-		 * This uses the functions from GraphicsObject.
-		 */
-		static QRectF qRectF(QRectF other);
-		static QRectF qRectF(qreal x, qreal y, qreal w, qreal h);
-		static QLineF qLineF(QLineF other);
-		static QLineF qLineF(qreal x1, qreal y1, qreal x2, qreal y2);
-		static QPolygonF qPolygonF(QPolygonF other);
-		static QPointF qPointF(QPointF other);
-		static QPointF qPointF(qreal x, qreal y);
 	protected:
 		void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 		void enterEvent(QEvent *event) Q_DECL_OVERRIDE;

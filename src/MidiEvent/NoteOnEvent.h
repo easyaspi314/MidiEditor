@@ -30,7 +30,7 @@ class NoteOnEvent : public OnEvent{
 	public:
 		NoteOnEvent(int note, int velocity, int ch, MidiTrack *track);
 		NoteOnEvent(const NoteOnEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+		MidiEvent::EventType eventType() Q_DECL_OVERRIDE;
 
 		int note();
 		int velocity();

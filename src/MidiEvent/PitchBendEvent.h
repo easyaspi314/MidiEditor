@@ -28,7 +28,7 @@ class PitchBendEvent : public MidiEvent {
 	public:
 		PitchBendEvent(int channel, int val, MidiTrack *track);
 		PitchBendEvent(const PitchBendEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+		MidiEvent::EventType eventType() Q_DECL_OVERRIDE;
 
 		virtual int line() Q_DECL_OVERRIDE;
 		int value();

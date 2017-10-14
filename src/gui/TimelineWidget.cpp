@@ -44,26 +44,26 @@ void TimelineWidget::mouseMoveEvent(QMouseEvent *event) {
 	int xPos = qRound(mouseX);
 	int oldXPos = qRound(mouseLastX);
 	if (oldXPos < xPos) {
-		matrixWidget->update(oldXPos -2, 0, qRound(mouseX) + 2,
-								matrixWidget->height());
+	//	matrixWidget->update(oldXPos -2, 0, qRound(mouseX) + 2,
+	//							matrixWidget->sceneRect().height());
 		update(oldXPos -2, 0, qRound(mouseX) + 2, height());
 	} else {
-		matrixWidget->update(xPos - 2, 0, oldXPos + 2,
-								matrixWidget->height());
+		//matrixWidget->update(xPos - 2, 0, oldXPos + 2,
+		//						matrixWidget->sceneRect().height());
 		update(xPos - 2, 0, oldXPos + 2, height());
 	}
 }
 void TimelineWidget::leaveEvent(QEvent *event) {
 	Q_UNUSED(event)
-	matrixWidget->update(qRound(mouseX - 2), 0, qRound(mouseX + 2),
-							matrixWidget->height());
+//	matrixWidget->update(qRound(mouseX - 2), 0, qRound(mouseX + 2),
+//							matrixWidget->height());
 	update(qRound(mouseX - 2), 0, qRound(mouseX + 2), height());
 }
 void TimelineWidget::setMatrixWidget(MatrixWidget *widget) {
 	matrixWidget = widget;
 	file = matrixWidget->midiFile();
 	matrixWidget->setTimelineWidget(this);
-	setFixedWidth(matrixWidget->width());
+	setFixedWidth(matrixWidget->sceneRect().width());
 	update();
 }
 qreal TimelineWidget::mousePosition() {
@@ -303,6 +303,6 @@ void TimelineWidget::mouseDoubleClickEvent(QMouseEvent *event) {
 		int tick = file->tick(matrixWidget->msOfXPos(mouseX));
 		file->setCursorTick(tick);
 		update();
-		matrixWidget->update();
+		//matrixWidget->update();
 	}
 }

@@ -197,7 +197,7 @@ class MainWindow : public QMainWindow {
 		TimelineWidget *mw_timelineWidget;
 		PianoWidget *mw_pianoWidget;
 		QScrollBar *vert, *hori;
-		QScrollArea *matrixArea, *timelineArea, *pianoArea, *miscArea;
+		QScrollArea *timelineArea, *pianoArea, *miscArea;
 		ChannelListWidget *channelWidget;
 		ProtocolWidget *protocolWidget;
 		TrackListWidget *_trackWidget;

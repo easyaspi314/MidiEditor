@@ -22,7 +22,7 @@
 #include <QUuid>
 #include "ProtocolItem.h"
 
-ProtocolStep::ProtocolStep(QString description, QImage *img, bool modified){
+ProtocolStep::ProtocolStep(QString description, QImage *img, bool modified) {
 	_stepDescription = description;
 	_modified = modified;
 	_itemStack = new QStack<ProtocolItem*>;

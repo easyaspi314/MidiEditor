@@ -21,7 +21,7 @@
 #include "../MidiEvent/TextEvent.h"
 #include "MidiFile.h"
 
-MidiTrack::MidiTrack(MidiFile *file) : ProtocolEntry() {
+MidiTrack::MidiTrack(MidiFile *file) : ProtocolEntry((QObject*)file) {
 
 	_number = 0;
 	_nameEvent = Q_NULLPTR;
@@ -96,7 +96,7 @@ void MidiTrack::setNumber(int number){
 		default: { _color = new QColor(50, 50, 255, 255); break; }
 	}
 
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 void MidiTrack::setNameEvent(TextEvent *nameEvent){
@@ -108,7 +108,7 @@ void MidiTrack::setNameEvent(TextEvent *nameEvent){
 	if(_nameEvent){
 		_nameEvent->setTextType(TextEvent::TrackNameTextEventType);
 	}
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 	emit trackChanged();
 }
 
@@ -138,7 +138,7 @@ void MidiTrack::reloadState(ProtocolEntry *entry){
 void MidiTrack::setHidden(bool hidden){
 	ProtocolEntry *toCopy = copy();
 	_hidden = hidden;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 	emit trackChanged();
 }
 
@@ -149,7 +149,7 @@ bool MidiTrack::hidden(){
 void MidiTrack::setMuted(bool muted){
 	ProtocolEntry *toCopy = copy();
 	_muted = muted;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 	emit trackChanged();
 }
 

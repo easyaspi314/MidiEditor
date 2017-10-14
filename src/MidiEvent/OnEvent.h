@@ -30,7 +30,7 @@ class OnEvent : public MidiEvent{
 	public:
 		OnEvent(int ch, MidiTrack *track);
 		OnEvent(const OnEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+		MidiEvent::EventType eventType() Q_DECL_OVERRIDE;
 
 		void setOffEvent(OffEvent *event);
 		OffEvent *offEvent();

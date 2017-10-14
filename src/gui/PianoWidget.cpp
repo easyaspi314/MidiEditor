@@ -37,7 +37,7 @@ PianoWidget::PianoWidget(QWidget *parent) : PaintWidget(parent) {
 }
 void PianoWidget::setMatrixWidget(MatrixWidget *widget) {
 	matrixWidget = widget;
-	setMinimumHeight(matrixWidget->height());
+	setMinimumHeight(matrixWidget->sceneRect().height());
 	matrixWidget->setPianoWidget(this);
 	update();
 }
@@ -72,7 +72,7 @@ void PianoWidget::paintEvent(QPaintEvent *event) {
 	QPixmap pianoPixmap;
 	if (!QPixmapCache::find("PianoWidget_" + QString::number(matrixWidget->scaleY, 'f', 2), pianoPixmap)) {
 		matrixWidget->pianoKeys.clear();
-		setFixedHeight(matrixWidget->height());
+		setFixedHeight(matrixWidget->sceneRect().height());
 
 		pianoPixmap = QPixmap(110, height());
 
@@ -298,7 +298,7 @@ void PianoWidget::paintPianoKey(QPainter *painter, int number, qreal x,
 			playerRect.setWidth(width * scaleWidthBlack);
 			playerRect.setHeight(height * scaleHeightBlack + 0.5);
 			QColor c = Qt::black;
-			if (mouseInWidget(matrixWidget)) {
+			if (matrixWidget->mouseInWidget()) {
 				c = QColor(200, 200, 200);
 				inRect = true;
 			}

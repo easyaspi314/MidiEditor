@@ -33,7 +33,7 @@ NoteOnEvent::NoteOnEvent(const NoteOnEvent &other) : OnEvent(other){
 	_velocity = other._velocity;
 }
 
-MidiEvent::EventType NoteOnEvent::type() const {
+MidiEvent::EventType NoteOnEvent::eventType() {
 	return NoteOnEventType;
 }
 
@@ -54,7 +54,7 @@ void NoteOnEvent::setVelocity(int v){
 		v = 127;
 	}
 	_velocity = v;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 int NoteOnEvent::line(){
@@ -64,7 +64,7 @@ int NoteOnEvent::line(){
 void NoteOnEvent::setNote(int n){
 	ProtocolEntry *toCopy = copy();
 	_note = n;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 ProtocolEntry *NoteOnEvent::copy(){

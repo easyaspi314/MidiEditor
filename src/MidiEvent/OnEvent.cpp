@@ -34,7 +34,7 @@ OnEvent::OnEvent(const OnEvent &other) : MidiEvent(other){
 	return;
 }
 
-MidiEvent::EventType OnEvent::type() const {
+MidiEvent::EventType OnEvent::eventType() {
 	return OnEventType;
 }
 

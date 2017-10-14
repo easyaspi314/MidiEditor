@@ -26,7 +26,7 @@ SysExEvent::SysExEvent(const SysExEvent &other) : MidiEvent(other) {
 	_data = other._data;
 }
 
-MidiEvent::EventType SysExEvent::type() const {
+MidiEvent::EventType SysExEvent::eventType() {
 	return SystemExclusiveEventType;
 }
 
@@ -66,5 +66,5 @@ void SysExEvent::reloadState(ProtocolEntry *entry){
 void SysExEvent::setData(QByteArray d){
 	ProtocolEntry *toCopy = copy();
 	_data = d;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }

@@ -32,7 +32,7 @@ class OffEvent : public MidiEvent{
 	public:
 		OffEvent(int ch, int line, MidiTrack *track);
 		OffEvent(const OffEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+		MidiEvent::EventType eventType() Q_DECL_OVERRIDE;
 
 		void setOnEvent(OnEvent *event);
 		OnEvent *onEvent();
@@ -41,7 +41,9 @@ class OffEvent : public MidiEvent{
 		static void clearOnEvents();
 		static void removeOnEvent(OnEvent *event);
 		static QList<OnEvent*> corruptedOnEvents();
-		void draw(QPainter *p, QColor c) Q_DECL_OVERRIDE;
+		void paint(QPainter *painter,
+			   const QStyleOptionGraphicsItem *option,
+			   QWidget *widget = Q_NULLPTR) Q_DECL_OVERRIDE;
 		int line() Q_DECL_OVERRIDE;
 		QByteArray save() Q_DECL_OVERRIDE;
 		QString toMessage() Q_DECL_OVERRIDE;

@@ -111,7 +111,7 @@ MidiPlayer *MidiPlayer::instance() {
 }
 
 void MidiPlayer::panic() {
-	qWarning("panic");
+
 	if (isPlaying()){
 		stop();
 	}

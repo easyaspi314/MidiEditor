@@ -30,7 +30,7 @@ ChannelPressureEvent::ChannelPressureEvent(const ChannelPressureEvent &other) :
 	_value = other._value;
 }
 
-MidiEvent::EventType ChannelPressureEvent::type() const {
+MidiEvent::EventType ChannelPressureEvent::eventType() {
 	return ChannelPressureEventType;
 }
 
@@ -69,7 +69,7 @@ QString ChannelPressureEvent::typeString(){
 void ChannelPressureEvent::setValue(int v){
 	ProtocolEntry *toCopy = copy();
 	_value = v;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 int ChannelPressureEvent::value(){

@@ -27,17 +27,17 @@ class ProgChangeEvent : public MidiEvent {
 	public:
 		ProgChangeEvent(int channel, int prog, MidiTrack *track);
 		ProgChangeEvent(const ProgChangeEvent &other);
-		MidiEvent::EventType type() const;
+		MidiEvent::EventType eventType() Q_DECL_OVERRIDE;
 
-		virtual int line();
+		virtual int line() Q_DECL_OVERRIDE;
 
-		QString toMessage();
-		QByteArray save();
+		QString toMessage() Q_DECL_OVERRIDE;
+		QByteArray save() Q_DECL_OVERRIDE;
 
-		virtual ProtocolEntry *copy();
-		virtual void reloadState(ProtocolEntry *entry);
+		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;
+		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
 
-		QString typeString();
+		QString typeString() Q_DECL_OVERRIDE;
 
 		int program();
 		void setProgram(int prog);

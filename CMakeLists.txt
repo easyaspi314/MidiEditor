@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1.0)
 
 project(MidiEditor)
-
+message(STATUS "CPP: ${CMAKE_PREFIX_PATH}")
 message(STATUS "Running CMake for project MidiEditor...")
 message(STATUS "Source directory: ${CMAKE_SOURCE_DIR}")
 message(STATUS "Output directory: ${CMAKE_BINARY_DIR}")
@@ -14,64 +14,86 @@ include_directories(${CMAKE_BINARY_DIR})
 
 option(INSTALL_WITH_CPACK "Make deployment on Windows installer or Linux DEB file" OFF)
 option(ENABLE_REMOTE "Enable Android remote control" OFF)
+option(FORCE_QT_SEARCH "Force CMake to search for Qt again (resets when found)" OFF)
 
 message(STATUS "Checking your compiler...")
-
-if (WIN32)
-   if (MSVC14) # Microsoft Visual Studio 2015
-      message(STATUS "Your compiler, MSVC 2015 ${CMAKE_CXX_COMPILER_VERSION}, is supported.")
-      set(COMPILER_CODE "msvc2015")
-   elseif (MSVC12) # Microsoft Visual Studio 2013
-      message(STATUS "Your compiler, MSVC 2013 ${CMAKE_CXX_COMPILER_VERSION}, is supported.")
-      set(COMPILER_CODE "msvc2013")
-   elseif (MSVC15) # Microsoft Visual Studio 2017
-      message(STATUS "Your compiler, MSVC 2017 ${CMAKE_CXX_COMPILER_VERSION}, is supported.")
-      set(COMPILER_CODE, "msvc2017")
-   elseif (MINGW) # MinGW
-      message(STATUS "Your compiler, MinGW ${CMAKE_CXX_COMPILER_VERSION} is supported.")
-      set(COMPILER_CODE, "mingw53_32")
+# Qt5 sets the QTDIR variable for us.
+if (IS_DIRECTORY ENV{QTDIR})
+   set(QT5_DIR_GUESS "$ENV{QTDIR}")
+elseif ( NOT QT_ALREADY_FOUND OR FORCE_QT_SEARCH  )
+   if (NOT QT5_DIR_GUESS AND IS_DIRECTORY "${CMAKE_PREFIX_PATH}" AND "${CMAKE_PREFIX_PATH}" MATCHES "/*(\\|\/)lib(\\|\/)cmake.?/g")
+      set(QT5_DIR_GUESS ${CMAKE_PREFIX_PATH})
    endif()
 
-   option(NO_CONSOLE_MODE "Start MidiEditor in a console window for debugging" OFF)
-
-   if(CMAKE_CL_64 OR CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(QT5_DIR_GUESS "C:/Qt/5.9.1/${COMPILER_CODE}_64/lib/cmake" CACHE PATH "Additional search paths for QT5")
-      set(ARCH "x64")
-
-   elseif(CMAKE_CL_64 OR CMAKE_SIZEOF_VOID_P EQUAL 8 )
-      set(QT5_DIR_GUESS "C:/Qt/5.9.1/${COMPILER_CODE}/lib/cmake" CACHE PATH "Additional search paths for Qt 5")
-      set(ARCH "x86")
+   if (QT5_DIR_GUESS AND NOT IS_DIRECTORY "${QT5_DIR_GUESS}")
+      message(WARNING "Couldn't find the Qt installation directory. Trying to guess...")
+      unset(QT_ALREADY_FOUND)
+      unset(QT5_DIR_GUESS CACHE)
    endif()
-
-   if (MSVC)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+   if (FORCE_QT_SEARCH)
+      unset(QT_ALREADY_FOUND)
+      unset(QT5_DIR_GUESS CACHE)
    endif()
+   if (WIN32)
+      if (MSVC14) # Microsoft Visual Studio 2015
+         set(COMPILER_MESSAGE "Your compiler, MSVC 2015 ${CMAKE_CXX_COMPILER_VERSION}, is supported." CACHE INTERNAL FORCE)
+         set(COMPILER_CODE "msvc2015")
+      elseif (MSVC12) # Microsoft Visual Studio 2013
+         set(COMPILER_MESSAGE "Your compiler, MSVC 2013 ${CMAKE_CXX_COMPILER_VERSION}, is supported." CACHE INTERNAL FORCE)
+         set(COMPILER_CODE "msvc2013")
+      elseif (MSVC15) # Microsoft Visual Studio 2017
+         set(COMPILER_MESSAGE "Your compiler, MSVC 2017 ${CMAKE_CXX_COMPILER_VERSION}, is supported." CACHE INTERNAL FORCE)
+         set(COMPILER_CODE, "msvc2017")
+      elseif (MINGW) # MinGW
+         set(COMPILER_MESSAGE "Your compiler, MinGW ${CMAKE_CXX_COMPILER_VERSION} is supported." CACHE INTERNAL FORCE)
+         set(COMPILER_CODE, "mingw53_32")
+      endif()
 
-   MESSAGE(STATUS "ARCH = ${ARCH}")
+      option(NO_CONSOLE_MODE "Start MidiEditor in a console window for debugging" OFF)
 
-elseif (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" AND APPLE) # Apple Clang
+      if (CMAKE_CL_64 OR CMAKE_SIZEOF_VOID_P EQUAL 8)
+         if (IS_DIRECTORY "C:/Qt/5.9.1/${COMPILER_CODE}_64/lib/cmake")
+            set(QT5_DIR_GUESS "C:/Qt/5.9.1/${COMPILER_CODE}_64/lib/cmake" CACHE PATH "Additional search paths for QT5")
+            set(ARCH "x64")
+         endif()
+      if ()
+         set(QT5_DIR_GUESS "C:/Qt/5.9.1/${COMPILER_CODE}/lib/cmake" CACHE PATH "Additional search paths for Qt 5")
+         set(ARCH "x86")
+      endif()
 
-   message(STATUS "Your compiler, AppleClang ${CMAKE_CXX_COMPILER_VERSION}, is supported.")
+      if (MSVC)
+         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+      endif()
 
-   set(CMAKE_MACOSX_RPATH ON)
+      MESSAGE(STATUS "ARCH = ${ARCH}")
 
-   option(USE_JACK "Use Jack Audio as well as CoreAudio for IO" OFF)
+   elseif (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" AND APPLE) # Apple Clang
 
-   set(QT5_DIR_GUESS "~/Qt/5.9.1/clang_64/lib/cmake" CACHE PATH "Additional search paths for Qt 5" )
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+      set(COMPILER_MESSAGE "Your compiler, AppleClang ${CMAKE_CXX_COMPILER_VERSION}, is supported." CACHE INTERNAL FORCE)
 
-elseif (CMAKE_COMPILER_IS_GNUCXX) # Gnu C++
+      set(CMAKE_MACOSX_RPATH ON)
 
-   message(STATUS "Your compiler, ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}, is supported.")
+      option(USE_JACK "Use Jack Audio as well as CoreAudio for IO" OFF)
 
-   option(USE_JACK "Use Jack Audio as well as ALSA for IO" OFF)
+      set(QT5_DIR_GUESS "$ENV{HOME}/Qt/5.9.1/clang_64/lib/cmake" CACHE PATH "Additional search paths for Qt 5" )
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-   set(QT5_DIR_GUESS "~/Qt/5.9.1/gcc_64/lib/cmake" CACHE PATH "Additional search paths for QT5")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-else()
-   message(FATAL_ERROR "Your compiler is not supported by this CMakeLists.\
+   elseif (CMAKE_COMPILER_IS_GNUCXX) # Gnu C++
+
+      set(COMPILER_MESSAGE "Your compiler, ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}, is supported." CACHE INTERNAL FORCE)
+
+      option(USE_JACK "Use Jack Audio as well as ALSA for IO" OFF)
+
+      set(QT5_DIR_GUESS "$ENV{HOME}/Qt/5.9.1/gcc_64/lib/cmake" CACHE PATH "Additional search paths for QT5")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+   endif()
+      message(FATAL_ERROR "Your compiler is not supported by this CMakeLists.\
  Please use Visual Studio 2015 (2013 or 2017 also work), MinGW, AppleClang (Xcode), or GCC (G++) instead.")
+   endif()
+   set(FORCE_QT_SEARCH OFF CACHE BOOL)
 endif()
+message(STATUS "${COMPILER_MESSAGE}")
+
 
 if(ARCH STREQUAL "x64" )
    add_definitions(-D__ARCH64__)
@@ -97,20 +119,24 @@ if (APPLE)
 endif()
 
 # Check Qt version
+
 if (Qt5Core_FOUND)
-   if (Qt5Core_VERSION VERSION_LESS 5.9)
-      message(FATAL_ERROR "Your Qt version (${Qt5Core_VERSION}) is out of date.\
- Please update to Qt >= 5.9.")
-    else()
-      message(STATUS "Found Qt version ${Qt5Core_VERSION}.")
+   if (NOT QT_ALREADY_FOUND)
+      if (Qt5Core_VERSION VERSION_LESS 5.9)
+         message(FATAL_ERROR "Your Qt version (${Qt5Core_VERSION}) is out of date.\
+            Please update to Qt >= 5.9.")
+      else()
+         set(QT_ALREADY_FOUND "Found Qt version ${Qt5Core_VERSION}." CACHE STRING INTERNAL)
+      endif()
    endif()
- else()
+else()
    message(FATAL_ERROR "You don't have Qt 5 installed.\
- Alternatively, you may need to set CMAKE_PREFIX_PATH to
-   /path/to/Qt/<Qt Version>/<Compiler>/lib/cmake
-and try again.\
- On Windows, this is usually in C:/Qt, and on Linux/Mac, it is usually ~/Qt.")
+      Alternatively, you may need to set CMAKE_PREFIX_PATH to
+      /path/to/Qt/<Qt Version>/<Compiler>/lib/cmake
+      and try again.\
+      On Windows, this is usually in C:/Qt, and on Linux/Mac, it is usually ~/Qt.")
 endif()
+message(STATUS "${QT_ALREADY_FOUND}")
 
 message(STATUS "Collecting files…")
 

@@ -40,7 +40,8 @@
 
 int MidiFile::defaultTimePerQuarter = 192;
 
-MidiFile::MidiFile() {
+MidiFile::MidiFile(QObject *parent) : ProtocolEntry(parent) {
+
 	_modified = false;
 	midiTicks = 0;
 	_cursorTick = 0;
@@ -88,7 +89,7 @@ MidiFile::MidiFile() {
 	calcMaxTime();
 }
 
-MidiFile::MidiFile(QString path, bool *ok, QStringList *log) {
+MidiFile::MidiFile(QString path, bool *ok, QStringList *log, QObject *parent) : ProtocolEntry(parent) {
 	if (!log) {
 		log = new QStringList();
 	}
@@ -129,7 +130,7 @@ MidiFile::MidiFile(QString path, bool *ok, QStringList *log) {
 	printLog(log);
 }
 
-MidiFile::MidiFile(int ticks, Protocol *p) {
+MidiFile::MidiFile(int ticks, Protocol *p, QObject *parent) : ProtocolEntry(parent){
 	midiTicks = ticks;
 	prot = p;
 	connect(prot, SIGNAL(fileModified(bool)), this, SLOT(setModified(bool)));
@@ -1532,7 +1533,7 @@ void MidiFile::setModified(bool b) {
 void MidiFile::setMaxLengthMs(int ms) {
 	int oldTicks = midiTicks;
 	midiTicks = tick(ms);
-	ProtocolEntry::protocol(copy(), this);
+	ProtocolEntry::addProtocolEntry(copy(), this);
 	if (midiTicks < oldTicks) {
 		// remove events after maxTick
 		QList<MidiEvent *> *ev = eventsBetween(midiTicks, oldTicks);
@@ -1544,7 +1545,7 @@ void MidiFile::setMaxLengthMs(int ms) {
 }
 
 ProtocolEntry *MidiFile::copy() {
-	MidiFile *file = new MidiFile(midiTicks, protocol());
+	MidiFile *file = new MidiFile(midiTicks, protocol(), this->parent());
 	file->_tracks = new QList<MidiTrack *>(*(_tracks));
 	file->pasteTracks = pasteTracks;
 	return file;
@@ -1581,7 +1582,7 @@ void MidiFile::addTrack() {
 	foreach (MidiTrack *track, *_tracks) {
 		track->setNumber(n++);
 	}
-	ProtocolEntry::protocol(toCopy, this);
+	ProtocolEntry::addProtocolEntry(toCopy, this);
 	connect(track, SIGNAL(trackChanged()), this, SIGNAL(trackChanged()));
 }
 
@@ -1633,7 +1634,7 @@ bool MidiFile::removeTrack(MidiTrack *track) {
 		track->setNumber(n++);
 	}
 
-	ProtocolEntry::protocol(toCopy, this);
+	ProtocolEntry::addProtocolEntry(toCopy, this);
 
 	return true;
 }
@@ -1718,7 +1719,7 @@ void MidiFile::registerCopiedTrack(MidiTrack *source,
 	list.insert(source, destination);
 	pasteTracks.insert(fileFrom, list);
 
-	ProtocolEntry::protocol(toCopy, this);
+	ProtocolEntry::addProtocolEntry(toCopy, this);
 }
 
 MidiTrack *MidiFile::getPasteTrack(MidiTrack *source, MidiFile *fileFrom) {

@@ -91,7 +91,7 @@ void SenderThread::enqueue(MidiEvent *event){
 		_eventQueue = new AtomicQueue<QByteArray>();
 	}
 	// If it is a NoteOnEvent or an OffEvent, we put it in _noteQueue.
-	if (event->type() == MidiEvent::NoteOnEventType || event->type() == MidiEvent::OffEventType) {
+	if (event->eventType() == MidiEvent::NoteOnEventType || event->eventType() == MidiEvent::OffEventType) {
 		_noteQueue->push(event->save());
 	// Otherwise, it goes into _eventQueue.
 	} else {

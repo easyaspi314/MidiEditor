@@ -73,7 +73,7 @@ QList<MidiEvent*> Selection::selectedEvents(){
 void Selection::setSelection(QList<MidiEvent*> selections){
 	ProtocolEntry *toCopy = copy();
 	_selectedEvents = selections;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 	if(_eventWidget){
 		_eventWidget->setEvents(_selectedEvents);
 		//_eventWidget->reload();

@@ -678,11 +678,11 @@ MidiEvent::EventType EventWidget::computeType(){
 	MidiEvent::EventType type = MidiEvent::MidiEventType;
 	bool inited = false;
 	foreach(MidiEvent *event, _events){
-		if (!inited && event->type() != MidiEvent::OnEventType
-				&& event->type() != MidiEvent::OffEventType) {
-			type = event->type();
+		if (!inited && event->eventType() != MidiEvent::OnEventType
+				&& event->eventType() != MidiEvent::OffEventType) {
+			type = event->eventType();
 		} else {
-			if (type != event->type())
+			if (type != event->eventType())
 				type = MidiEvent::MidiEventType;
 		}
 		inited = true;

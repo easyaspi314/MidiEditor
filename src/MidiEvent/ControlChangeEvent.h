@@ -28,7 +28,7 @@ class ControlChangeEvent : public MidiEvent {
 	public:
 		ControlChangeEvent(int channel, int contr, int val, MidiTrack *track);
 		ControlChangeEvent(const ControlChangeEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+		MidiEvent::EventType eventType() Q_DECL_OVERRIDE;
 
 		virtual int line() Q_DECL_OVERRIDE;
 		int control();

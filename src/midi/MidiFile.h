@@ -40,10 +40,10 @@ class MidiFile : public ProtocolEntry {
 	Q_OBJECT
 
 	public:
-		MidiFile(QString path, bool *ok, QStringList *log = 0);
-		MidiFile();
+		MidiFile(QString path, bool *ok, QStringList *log = Q_NULLPTR, QObject *parent = Q_NULLPTR);
+		MidiFile(QObject *parent = Q_NULLPTR);
 		// needed to protocol fileLength
-		MidiFile(int maxTime, Protocol *p);
+		MidiFile(int maxTime, Protocol *p, QObject *parent = Q_NULLPTR);
 		bool save(QString path);
 		QByteArray writeDeltaTime(int time);
 		int maxTime();

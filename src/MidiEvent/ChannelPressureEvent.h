@@ -28,7 +28,7 @@ class ChannelPressureEvent : public MidiEvent {
 	public:
 		ChannelPressureEvent(int channel, int value, MidiTrack *track);
 		ChannelPressureEvent(const ChannelPressureEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+		MidiEvent::EventType eventType() Q_DECL_OVERRIDE;
 
 		virtual int line() Q_DECL_OVERRIDE;
 

@@ -78,14 +78,14 @@ void MidiOutput::sendCommand(MidiEvent *e) {
 		_sender->enqueue(e);
 
 		if (isAlternativePlayer()) {
-			if (e->type() == MidiEvent::NoteOnEventType) {
+			if (e->eventType() == MidiEvent::NoteOnEventType) {
 				NoteOnEvent *n = qobject_cast<NoteOnEvent *>(e);
 				if (n && n->velocity() > 0) {
 					playedNotes[n->channel()].append(n->note());
 				} else if (n && n->velocity() == 0) {
 					playedNotes[n->channel()].removeOne(n->note());
 				}
-			} else if (e->type() == MidiEvent::OffEventType) {
+			} else if (e->eventType() == MidiEvent::OffEventType) {
 				OffEvent *o = qobject_cast<OffEvent *>(e);
 				if (o) {
 					NoteOnEvent *n = qobject_cast<NoteOnEvent *>(o->onEvent());

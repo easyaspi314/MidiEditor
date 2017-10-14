@@ -40,13 +40,13 @@ class TextEvent : public MidiEvent {
 
 		TextEvent(int channel, MidiTrack *track);
 		TextEvent(const TextEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+		MidiEvent::EventType eventType() Q_DECL_OVERRIDE;
 
 		QString text();
 		void setText(QString text);
 
 		TextEvent::TextType textType();
-		void setTextType(TextEvent::TextType type);
+		void setTextType(TextEvent::TextType eventType);
 
 		int line() Q_DECL_OVERRIDE;
 
@@ -56,7 +56,7 @@ class TextEvent : public MidiEvent {
 		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
 
 		QString typeString() Q_DECL_OVERRIDE;
-		static QString textTypeString(int type);
+		static QString textTypeString(int eventType);
 
 	private:
 		TextEvent::TextType _type;

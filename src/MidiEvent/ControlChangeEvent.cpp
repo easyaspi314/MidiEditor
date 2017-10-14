@@ -34,7 +34,7 @@ ControlChangeEvent::ControlChangeEvent(const ControlChangeEvent &other) :
 	_control = other._control;
 }
 
-MidiEvent::EventType ControlChangeEvent::type() const {
+MidiEvent::EventType ControlChangeEvent::eventType() {
 	return ControlChangeEventType;
 }
 
@@ -84,13 +84,13 @@ int ControlChangeEvent::control(){
 void ControlChangeEvent::setValue(int v){
 	ProtocolEntry *toCopy = copy();
 	_value = v;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 void ControlChangeEvent::setControl(int c){
 	ProtocolEntry *toCopy = copy();
 	_control = c;
-	protocol(toCopy, this);
+	addProtocolEntry(toCopy, this);
 }
 
 bool ControlChangeEvent::isOnEvent(){

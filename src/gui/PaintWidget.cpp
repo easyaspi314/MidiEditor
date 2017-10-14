@@ -208,24 +208,3 @@ void PaintWidget::setEnabled(bool b){
 	setMouseTracking(enabled);
 	update();
 }
-QRectF PaintWidget::qRectF(QRectF other) {
-	return GraphicObject::qRectF(other);
-}
-QRectF PaintWidget::qRectF(qreal x, qreal y, qreal w, qreal h) {
-	return GraphicObject::qRectF(x, y, w, h);
-}
-QLineF PaintWidget::qLineF(QLineF other) {
-	return GraphicObject::qLineF(other);
-}
-QLineF PaintWidget::qLineF(qreal x1, qreal y1, qreal x2, qreal y2) {
-	return GraphicObject::qLineF(x1, y1, x2, y2);
-}
-QPointF PaintWidget::qPointF(QPointF other) {
-	return GraphicObject::qPointF(other);
-}
-QPointF PaintWidget::qPointF(qreal x, qreal y) {
-	return GraphicObject::qPointF(x, y);
-}
-QPolygonF PaintWidget::qPolygonF(QPolygonF other) {
-	return GraphicObject::qPolygonF(other);
-}

@@ -19,15 +19,21 @@
 #include "GraphicObject.h"
 
 #include "MatrixWidget.h"
+#include <QGraphicsItem>
 
-GraphicObject::GraphicObject() {
-	_x = 0;
-	_y = 0;
-	_width = 0;
-	_height = 0;
+GraphicObject::GraphicObject(QGraphicsItem *parent) : QGraphicsRectItem (QRectF(0, 0, 0, 0), parent) {
+	setFlags(ItemIsSelectable|ItemIsMovable | ItemIsFocusable);
+
+	setPos(0, 0);
+	setX(0);
+	setY(0);
+	setWidth(0);
+	setHeight(0);
 }
-
-qreal GraphicObject::x() {
+QRectF GraphicObject::boundingRect() const {
+	return QRectF(0, 0, width(), height());
+}
+/*qreal GraphicObject::x() {
 	return _x;
 }
 
@@ -35,13 +41,7 @@ qreal GraphicObject::y() {
 	return _y;
 }
 
-qreal GraphicObject::width() {
-	return _width;
-}
 
-qreal GraphicObject::height() {
-	return _height;
-}
 
 void GraphicObject::setX(qreal x) {
 	_x = x;
@@ -49,18 +49,31 @@ void GraphicObject::setX(qreal x) {
 
 void GraphicObject::setY(qreal y) {
 	_y = y;
+}*/
+qreal GraphicObject::width() const {
+	return rect().width();
 }
 
+qreal GraphicObject::height() const {
+	return rect().height();
+}
 void GraphicObject::setWidth(qreal w) {
-	_width = w;
+	QRectF rectF = rect();
+	rectF.setWidth(w);
+	setRect(rectF);
 }
 
 void GraphicObject::setHeight(qreal h) {
-	_height = h;
+	QRectF rectF = rect();
+	rectF.setHeight(h);
+	setRect(rectF);
 }
 
-void GraphicObject::draw(QPainter *p, QColor c) {
-	Q_UNUSED(p) Q_UNUSED(c)
+void GraphicObject::paint(QPainter *painter,
+	   const QStyleOptionGraphicsItem *option,
+	   QWidget *widget) {
+	Q_UNUSED(option) Q_UNUSED(widget)
+	painter->drawRoundedRect(rect(), 1, 1);
 	return;
 }
 
@@ -70,41 +83,4 @@ bool GraphicObject::shown() {
 
 void GraphicObject::setShown(bool b) {
 	shownInWidget = b;
-}
-QRectF GraphicObject::qRectF(QRectF other) {
-	if (MatrixWidget::antiAliasingEnabled) {
-		return other;
-	} else {
-		return QRectF(other.toRect());
-	}
-}
-QRectF GraphicObject::qRectF(qreal x, qreal y, qreal w, qreal h) {
-	return qRectF(QRectF(x, y, w, h));
-}
-QLineF GraphicObject::qLineF(QLineF other) {
-	if (MatrixWidget::antiAliasingEnabled) {
-		return other;
-	} else {
-		return QLineF(other.toLine());
-	}
-}
-QLineF GraphicObject::qLineF(qreal x1, qreal y1, qreal x2, qreal y2) {
-	return qLineF(QLineF(x1, y1, x2, y2));
-}
-QPolygonF GraphicObject::qPolygonF(QPolygonF other) {
-	if (MatrixWidget::antiAliasingEnabled) {
-		return other;
-	} else {
-		return QPolygonF(other.toPolygon());
-	}
-}
-QPointF GraphicObject::qPointF(QPointF  other) {
-	if (MatrixWidget::antiAliasingEnabled) {
-		return other;
-	} else {
-		return QPointF(other.toPoint());
-	}
-}
-QPointF GraphicObject::qPointF(qreal x, qreal y) {
-	return qPointF(QPointF(x, y));
 }
