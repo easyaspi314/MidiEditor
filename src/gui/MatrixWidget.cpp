@@ -729,8 +729,8 @@ void MatrixWidget::calcSizes() {
 	ToolArea = QRectF(parentWidget()->geometry());
 	PianoArea = qRectF(0, timeHeight, lineNameWidth, height() - timeHeight);
 	TimeLineArea = qRectF(lineNameWidth, 0, width() - lineNameWidth, timeHeight);
-	timelineWidget->setGeometry(qMax(qRound(relativeRect().x()), 110), 0, qRound(sceneRect().width() - 110), 50);
-	pianoWidget->setGeometry(0, qMax(qRound(relativeRect().y()), 50), 110, qRound(sceneRect().height() - 50));
+	//timelineWidget->setGeometry(qMax(qRound(relativeRect().x()), 110), 0, qRound(sceneRect().width() - 110), 50);
+	//pianoWidget->setGeometry(0, qMax(qRound(relativeRect().y()), 50), 110, qRound(sceneRect().height() - 50));
 
 }
 
