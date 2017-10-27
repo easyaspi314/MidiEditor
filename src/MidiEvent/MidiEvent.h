@@ -21,6 +21,7 @@
 
 #include <QDataStream>
 #include <QColor>
+#include <QCache>
 #include "../gui/GraphicObject.h"
 #include "../protocol/ProtocolEntry.h"
 #include <QWidget>
@@ -39,8 +40,8 @@ class MidiEvent : public ProtocolEntry, public GraphicObject {
 	Q_OBJECT
 
 	public:
-		enum EventType {
-			MidiEventType,
+		enum {
+			MidiEventType = UserType + 2,
 			ChannelPressureEventType,
 			ControlChangeEventType,
 			KeyPressureEventType,
@@ -59,7 +60,7 @@ class MidiEvent : public ProtocolEntry, public GraphicObject {
 
 		MidiEvent(int channel, MidiTrack *track);
 		MidiEvent(const MidiEvent &other);
-		virtual MidiEvent::EventType eventType();
+		virtual int type() const Q_DECL_OVERRIDE;
 
 		static MidiEvent *loadMidiEvent(QDataStream *content,
 				bool *ok, bool *endEvent, MidiTrack *track, quint8 startByte = 0,
@@ -112,14 +113,17 @@ class MidiEvent : public ProtocolEntry, public GraphicObject {
 		int temporaryRecordID();
 
 		virtual void moveToChannel(int channel);
+		QPainterPath painterPath();
 
 	protected:
+		QCache<QString, QPainterPath> cache;
 		int numChannel, timePos;
 		MidiFile *midiFile;
 		static ubyte _startByte;
 		static EventWidget *_eventWidget;
 		MidiTrack *_track;
 		int _tempID;
+		QString _uuid;
 };
 
 #endif

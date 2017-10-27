@@ -30,7 +30,7 @@ UnknownEvent::UnknownEvent(const UnknownEvent &other) : MidiEvent(other) {
 	_type = other._type;
 }
 
-MidiEvent::EventType UnknownEvent::eventType()  {
+int UnknownEvent::type() const {
 	return UnknownEventType;
 }
 

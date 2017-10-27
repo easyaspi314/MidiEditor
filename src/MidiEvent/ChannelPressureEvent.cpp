@@ -30,7 +30,7 @@ ChannelPressureEvent::ChannelPressureEvent(const ChannelPressureEvent &other) :
 	_value = other._value;
 }
 
-MidiEvent::EventType ChannelPressureEvent::eventType() {
+int ChannelPressureEvent::type() const {
 	return ChannelPressureEventType;
 }
 

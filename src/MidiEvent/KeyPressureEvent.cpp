@@ -32,7 +32,7 @@ KeyPressureEvent::KeyPressureEvent(const KeyPressureEvent &other) :
 	_note = other._note;
 }
 
-MidiEvent::EventType KeyPressureEvent::eventType() {
+int KeyPressureEvent::type() const {
 	return KeyPressureEventType;
 }
 

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1.0)
 
 project(MidiEditor)
-message(STATUS "CPP: ${CMAKE_PREFIX_PATH}")
+
 message(STATUS "Running CMake for project MidiEditor...")
 message(STATUS "Source directory: ${CMAKE_SOURCE_DIR}")
 message(STATUS "Output directory: ${CMAKE_BINARY_DIR}")
@@ -18,7 +18,7 @@ option(FORCE_QT_SEARCH "Force CMake to search for Qt again (resets when found)" 
 
 message(STATUS "Checking your compiler...")
 # Qt5 sets the QTDIR variable for us.
-if (IS_DIRECTORY ENV{QTDIR})
+if (IS_DIRECTORY ENV{QTDIR} OR IS_DIRECTORY ENV{Qt5_DIR})
    set(QT5_DIR_GUESS "$ENV{QTDIR}")
 elseif ( NOT QT_ALREADY_FOUND OR FORCE_QT_SEARCH  )
    if (NOT QT5_DIR_GUESS AND IS_DIRECTORY "${CMAKE_PREFIX_PATH}" AND "${CMAKE_PREFIX_PATH}" MATCHES "/*(\\|\/)lib(\\|\/)cmake.?/g")
@@ -90,7 +90,6 @@ elseif ( NOT QT_ALREADY_FOUND OR FORCE_QT_SEARCH  )
       message(FATAL_ERROR "Your compiler is not supported by this CMakeLists.\
  Please use Visual Studio 2015 (2013 or 2017 also work), MinGW, AppleClang (Xcode), or GCC (G++) instead.")
    endif()
-   set(FORCE_QT_SEARCH OFF CACHE BOOL)
 endif()
 message(STATUS "${COMPILER_MESSAGE}")
 
@@ -108,7 +107,7 @@ set(CMAKE_AUTORCC ON)
 
 message(STATUS "Checking Qt version...")
 
-find_package(Qt5 COMPONENTS Core Widgets Xml Multimedia REQUIRED PATHS ${QT5_DIR_GUESS})
+find_package(Qt5 COMPONENTS Core Widgets Xml Multimedia OpenGL REQUIRED PATHS ${QT5_DIR_GUESS})
 
 if (ENABLE_REMOTE)
    find_package(Qt5 COMPONENTS Network REQUIRED PATHS ${QT5_DIR_GUESS})
@@ -187,9 +186,9 @@ source_group( ""               FILES ${main} ${mainh} )
 source_group( "midi\\rtmidi"   FILES ${RTMidi} ${RTMidih} )
 
 # TODO: AutoRCC? It seems to work.
-include(ressources.cmake)
+include("ressources.cmake")
 
-include(${CMAKE_CURRENT_BINARY_DIR}/version.cmake)
+include("${CMAKE_CURRENT_BINARY_DIR}/version.cmake")
 
 add_executable(MidiEditor midieditor.rc)
 target_sources(MidiEditor PRIVATE
@@ -217,26 +216,26 @@ if (APPLE)
    set(BUNDLE_SHORT_VERSION_STRING "3.1.1")
    set(BUNDLE_BUNDLE_VERSION "3.1.1")
    set(BUNDLE_LONG_VERSION_STRING "${GIT_TAG}")
-   configure_file(${CMAKE_SOURCE_DIR}/Info.plist.cmake ${CMAKE_CURRENT_BINARY_DIR}/Info.plist)
+   configure_file("${CMAKE_SOURCE_DIR}/Info.plist.cmake" "${CMAKE_CURRENT_BINARY_DIR}/Info.plist")
    set_target_properties(MidiEditor PROPERTIES
-                         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_BINARY_DIR}/Info.plist)
+                         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_BINARY_DIR}/Info.plist")
 #	target_sources(MidiEditor PRIVATE
 #		run_environment/metronome/metronome-01.wav
 #	run_environment/MidiEditor.icns
 #	${CMAKE_BINARY_DIR}/ressources.rcc)
    target_sources(MidiEditor PRIVATE
-      run_environment/MidiEditor.icns
-      ${CMAKE_CURRENT_BINARY_DIR}/ressources.rcc)
+      "run_environment/MidiEditor.icns"
+      "${CMAKE_CURRENT_BINARY_DIR}/ressources.rcc")
 
    set_target_properties(MidiEditor PROPERTIES MACOSX_BUNDLE YES)
-   set_target_properties(MidiEditor PROPERTIES RESOURCE ${CMAKE_CURRENT_BINARY_DIR}/ressources.rcc)
+   set_target_properties(MidiEditor PROPERTIES RESOURCE "${CMAKE_CURRENT_BINARY_DIR}/ressources.rcc")
    set_source_files_properties(run_environment/MidiEditor.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-   set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/ressources.rcc PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+   set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/ressources.rcc" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 elseif(WIN32 AND NO_CONSOLE_MODE)
    set_target_properties(MidiEditor PROPERTIES WIN32_EXECUTABLE YES )
 endif()
 
-    target_link_libraries(MidiEditor Qt5::Widgets Qt5::Xml Qt5::Multimedia)
+    target_link_libraries(MidiEditor Qt5::Widgets Qt5::Xml Qt5::Multimedia Qt5::OpenGL)
    if (ENABLE_REMOTE)
       target_link_libraries(MidiEditor Qt5::Network)
    endif()
@@ -329,6 +328,9 @@ if (MSVC)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
 else()
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+
+   # Optim
+   # set_source_files_properties("src/AtomicQueue.h" PROPERTIES COMPILE_FLAGS -O0)
 endif()
 
 

@@ -49,6 +49,10 @@ void SenderThread::sendCommands() {
 	}
 	timer->blockSignals(true);
 	QByteArray event;
+	if (!_eventQueue || !_noteQueue) {
+		qWarning("sendCommands: Event queue or note queue is null.");
+		return;
+	}
 	while(_eventQueue->pop(event)){
 		// send command
 		MidiOutput::instance()->sendEnqueuedCommand(event);
@@ -91,7 +95,7 @@ void SenderThread::enqueue(MidiEvent *event){
 		_eventQueue = new AtomicQueue<QByteArray>();
 	}
 	// If it is a NoteOnEvent or an OffEvent, we put it in _noteQueue.
-	if (event->eventType() == MidiEvent::NoteOnEventType || event->eventType() == MidiEvent::OffEventType) {
+	if (event->type() == MidiEvent::NoteOnEventType || event->type() == MidiEvent::OffEventType) {
 		_noteQueue->push(event->save());
 	// Otherwise, it goes into _eventQueue.
 	} else {

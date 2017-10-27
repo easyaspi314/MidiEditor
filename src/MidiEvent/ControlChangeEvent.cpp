@@ -34,7 +34,7 @@ ControlChangeEvent::ControlChangeEvent(const ControlChangeEvent &other) :
 	_control = other._control;
 }
 
-MidiEvent::EventType ControlChangeEvent::eventType() {
+int ControlChangeEvent::type() const {
 	return ControlChangeEventType;
 }
 

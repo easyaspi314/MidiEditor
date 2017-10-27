@@ -37,7 +37,7 @@ class PianoWidget : public PaintWidget
 		PianoWidget(QWidget *parent = Q_NULLPTR);
 		void paintPianoKey(QPainter *painter, int number, qreal x, qreal y, qreal width, qreal height);
 		void setMatrixWidget(MatrixWidget *widget);
-		QSize sizeHint() const Q_DECL_OVERRIDE;
+	//	QSize sizeHint() const Q_DECL_OVERRIDE;
 		void setFile(MidiFile *file);
 		enum PianoKey {
 			C = 0,

@@ -39,12 +39,13 @@ class TimelineWidget : public PaintWidget
 
 		void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 		void setFile(MidiFile *midiFile);
-		QSize sizeHint() const Q_DECL_OVERRIDE;
+//		QSize sizeHint() const Q_DECL_OVERRIDE;
 		qreal mousePosition();
 	protected:
 		void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 		void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 		void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
+		void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
 	private:
 		MatrixWidget *matrixWidget;
 		qreal timeHeight;

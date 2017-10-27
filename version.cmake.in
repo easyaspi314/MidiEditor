@@ -28,6 +28,6 @@ OUTPUT_STRIP_TRAILING_WHITESPACE
 
 message(STATUS "Updated Git information.")
 configure_file(
-  @CMAKE_SOURCE_DIR@/version.h.in
-  @CMAKE_BINARY_DIR@/version.h
+  "@CMAKE_SOURCE_DIR@/version.h.in"
+  "@CMAKE_BINARY_DIR@/version.h"
 )

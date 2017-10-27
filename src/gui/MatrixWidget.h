@@ -53,7 +53,6 @@ class MatrixWidget : public QGraphicsView {
 		MatrixWidget(QWidget *parent = Q_NULLPTR);
 		void setFile(MidiFile *file);
 		MidiFile *midiFile();
-		QList<MidiEvent*> *activeEvents();
 		QList<MidiEvent*> *velocityEvents();
 
 		qreal lineHeight();
@@ -89,6 +88,7 @@ class MatrixWidget : public QGraphicsView {
 
 		void addChannel(int channel);
 	public slots:
+		void init();
 		void zoomHorIn();
 		void zoomHorOut();
 		void zoomVerIn();
@@ -110,7 +110,7 @@ class MatrixWidget : public QGraphicsView {
 
 	protected:
 #ifdef OLD
-		void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+//		void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 #endif
 		void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 		void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
@@ -120,13 +120,14 @@ class MatrixWidget : public QGraphicsView {
 		void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 		void keyPressEvent(QKeyEvent* e) Q_DECL_OVERRIDE;
 		void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+		void scrollContentsBy(int dx, int dy) Q_DECL_OVERRIDE;
 
 	private:
 #ifdef OLD
-		void paintChannel(QPainter *painter, int channel);
+//		void paintChannel(QPainter *painter, int channel);
 
-		void paintPianoKey(QPainter *painter, int number, qreal x, qreal y,
-				qreal width, qreal height);
+//		void paintPianoKey(QPainter *painter, int number, qreal x, qreal y,
+//				qreal width, qreal height);
 #endif
 		int startTick, endTick, startTimeX, endTimeX, timeHeight,
 				msOfFirstEventInList, visibleStartTick, visibleEndTick;
@@ -149,7 +150,7 @@ class MatrixWidget : public QGraphicsView {
 		QList<TimeSignatureEvent*> *currentTimeSignatureEvents;
 
 		// All Events to show in the velocityWidget are saved in velocityObjects
-		QList<MidiEvent*> *objects, *velocityObjects;
+		QList<MidiEvent*> *velocityObjects;
 
 		// To play the pianokeys, there is one NoteOnEvent
 		NoteOnEvent *pianoEvent;

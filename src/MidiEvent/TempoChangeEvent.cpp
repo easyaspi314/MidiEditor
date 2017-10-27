@@ -27,7 +27,7 @@ TempoChangeEvent::TempoChangeEvent(const TempoChangeEvent &other) : MidiEvent(ot
 	_beats = other._beats;
 }
 
-MidiEvent::EventType TempoChangeEvent::eventType() {
+int TempoChangeEvent::type() const {
 	return TempoChangeEventType;
 }
 

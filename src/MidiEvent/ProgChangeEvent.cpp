@@ -28,7 +28,7 @@ ProgChangeEvent::ProgChangeEvent(const ProgChangeEvent &other) : MidiEvent(other
 	_program = other._program;
 }
 
-MidiEvent::EventType ProgChangeEvent::eventType() {
+int ProgChangeEvent::type() const {
 	return ProgramChangeEventType;
 }
 

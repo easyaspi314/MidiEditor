@@ -32,7 +32,7 @@ PitchBendEvent::PitchBendEvent(const PitchBendEvent &other) :
 	_value = other._value;
 }
 
-MidiEvent::EventType PitchBendEvent::eventType() {
+int PitchBendEvent::type() const {
 	return PitchBendEventType;
 }
 

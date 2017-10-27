@@ -24,6 +24,13 @@ inline QRectF qRectF(QRectF other) {
 		return QRectF(other.toRect());
 	}
 }
+inline QRectF qRectFAligned(QRectF other) {
+	if (antiAliasingEnabled) {
+		return other;
+	} else {
+		return QRectF(int(other.x()), int(other.y()), int(other.width()), int(other.height())).translated(0.5, 0.5);
+	}
+}
 inline QRectF qRectF(qreal x, qreal y, qreal w, qreal h) {
 	return qRectF(QRectF(x, y, w, h));
 }
@@ -31,7 +38,7 @@ inline QLineF qLineF(QLineF other) {
 	if (antiAliasingEnabled) {
 		return other;
 	} else {
-		return QLineF(other.toLine());
+		return QLineF(other.toLine());//.translated(0.5, 0.5);
 	}
 }
 inline QLineF qLineF(qreal x1, qreal y1, qreal x2, qreal y2) {
@@ -41,10 +48,10 @@ inline QPolygonF qPolygonF(QPolygonF other) {
 	if (antiAliasingEnabled) {
 		return other;
 	} else {
-		return QPolygonF(other.toPolygon());
+		return QPolygonF(other.toPolygon());//.translated(0.5, 0.5);
 	}
 }
-inline QPointF qPointF(QPointF  other) {
+inline QPointF qPointF(QPointF other) {
 	if (antiAliasingEnabled) {
 		return other;
 	} else {

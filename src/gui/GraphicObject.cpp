@@ -22,7 +22,7 @@
 #include <QGraphicsItem>
 
 GraphicObject::GraphicObject(QGraphicsItem *parent) : QGraphicsRectItem (QRectF(0, 0, 0, 0), parent) {
-	setFlags(ItemIsSelectable|ItemIsMovable | ItemIsFocusable);
+	setFlags(ItemIsSelectable | ItemIsMovable | ItemIsFocusable | ItemUsesExtendedStyleOption );
 
 	setPos(0, 0);
 	setX(0);
@@ -73,7 +73,7 @@ void GraphicObject::paint(QPainter *painter,
 	   const QStyleOptionGraphicsItem *option,
 	   QWidget *widget) {
 	Q_UNUSED(option) Q_UNUSED(widget)
-	painter->drawRoundedRect(rect(), 1, 1);
+	//painter->drawRoundedRect(rect(), 1, 1);
 	return;
 }
 

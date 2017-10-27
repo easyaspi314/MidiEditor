@@ -36,7 +36,7 @@ OffEvent::OffEvent(int ch, int l, MidiTrack *track) : MidiEvent(ch, track) {
 	}
 }
 
-MidiEvent::EventType OffEvent::eventType() {
+int OffEvent::type() const {
 	return OffEventType;
 }
 

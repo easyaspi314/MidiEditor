@@ -31,11 +31,12 @@ TimelineWidget::TimelineWidget(QWidget *parent) : PaintWidget(parent) {
 	setRepaintOnMousePress(false);
 	setRepaintOnMouseRelease(false);
 	setMouseTracking(true);
+	setAutoFillBackground(true);
 }
 
-QSize TimelineWidget::sizeHint() const {
+/*QSize TimelineWidget::sizeHint() const {
 	return QSize(150, 50);
-}
+}*/
 void TimelineWidget::mouseMoveEvent(QMouseEvent *event) {
 	PaintWidget::mouseMoveEvent(event);
 	if (!mouseInRect(relativeRect())) {
@@ -58,12 +59,12 @@ void TimelineWidget::leaveEvent(QEvent *event) {
 //	matrixWidget->update(qRound(mouseX - 2), 0, qRound(mouseX + 2),
 //							matrixWidget->height());
 	update(qRound(mouseX - 2), 0, qRound(mouseX + 2), height());
+	mouseX = -1;
 }
 void TimelineWidget::setMatrixWidget(MatrixWidget *widget) {
 	matrixWidget = widget;
 	file = matrixWidget->midiFile();
 	matrixWidget->setTimelineWidget(this);
-	setFixedWidth(matrixWidget->sceneRect().width());
 	update();
 }
 qreal TimelineWidget::mousePosition() {
@@ -82,6 +83,7 @@ void TimelineWidget::paintEvent(QPaintEvent *event) {
 	if (!file || paintingActive() || !matrixWidget) {
 		return;
 	}
+	//qWarning(QString::number(rect().width()).toUtf8());
 	QPainter painter(this);
 	int updatemode = 0;
 	if (!event->region().isNull() && !event->region().isEmpty()) {
@@ -93,7 +95,7 @@ void TimelineWidget::paintEvent(QPaintEvent *event) {
 		painter.setClipping(true);
 		painter.setClipRect(event->rect());
 	} else {
-		painter.setClipping(true);
+		painter.setClipping(false);
 		painter.setClipRect(relativeRect());
 	}
 	QFont font = painter.font();
@@ -233,15 +235,17 @@ void TimelineWidget::paintEvent(QPaintEvent *event) {
 			&& MatrixWidget::antiAliasingEnabled) {
 		painter.setRenderHint(QPainter::Antialiasing);
 	}
+
 	/*switch (updatemode) {
 		case 1: {
-			QPainter::PixmapFragment frags[event->region().rectCount()];
+			QPainter::PixmapFragment *frags = new QPainter::PixmapFragment[event->region().rectCount()];
 			QVector<QRect> rects = event->region().rects();
 			for (int i = 0; i < event->region().rectCount(); i++) {
 				QRect rect = rects.at(i);
 				frags[i] = QPainter::PixmapFragment::create(rect.center(), rect, 1, 1, 0, 1);
 			}
 			painter.drawPixmapFragments(frags, event->region().rectCount(), pixmap);
+			delete[] frags;
 			break;
 		}
 		case 2: {
@@ -251,9 +255,8 @@ void TimelineWidget::paintEvent(QPaintEvent *event) {
 			break;
 		}
 		default:
-			QPainter::PixmapFragment frag = QPainter::PixmapFragment::create(
-												relativeRect().center(), relativeRect());
-			painter.drawPixmapFragments(&frag, 1, pixmap);
+
+			painter.drawPixmap(0, 0, pixmap);
 	}*/
 	// paint the cursorTick of file
 	if (file->cursorTick() >= 0 &&
@@ -293,6 +296,7 @@ void TimelineWidget::paintEvent(QPaintEvent *event) {
 		painter.setPen(Qt::red);
 		painter.drawLine(mousePos, 0, mousePos, height());
 	}
+	//painter.fillRect(0, 0, width(), height(), QBrush(Qt::GlobalColor(random() % 10 + 1)));
 }
 void TimelineWidget::mouseDoubleClickEvent(QMouseEvent *event) {
 	Q_UNUSED(event)
@@ -305,4 +309,7 @@ void TimelineWidget::mouseDoubleClickEvent(QMouseEvent *event) {
 		update();
 		//matrixWidget->update();
 	}
+}
+void TimelineWidget::wheelEvent(QWheelEvent *event) {
+	event->ignore();
 }

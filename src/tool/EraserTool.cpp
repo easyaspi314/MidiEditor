@@ -51,11 +51,14 @@ void EraserTool::reloadState(ProtocolEntry *entry){
 }
 
 void EraserTool::draw(QPainter *painter){
-	foreach(MidiEvent *ev, *(matrixWidget->activeEvents())){
-		if(pointInRect( mouseX, mouseY, ev->x(), ev->y(), ev->x()+ev->width(),
-				ev->y()+ev->height()))
-		{
-			painter->fillRect(qRectF(ev->x(), ev->y(), ev->width(), ev->height()), Qt::black);
+	foreach(QGraphicsItem *item, matrixWidget->items()){
+		MidiEvent *ev = qgraphicsitem_cast<MidiEvent*>(item);
+		if (ev) {
+			if(pointInRect( mouseX, mouseY, ev->x(), ev->y(), ev->x()+ev->width(),
+					ev->y()+ev->height()))
+			{
+				painter->fillRect(qRectF(ev->x(), ev->y(), ev->width(), ev->height()), Qt::black);
+			}
 		}
 	}
 }
@@ -67,13 +70,16 @@ bool EraserTool::move(qreal mouseX, qreal mouseY){
 
 bool EraserTool::release(){
 	currentProtocol()->startNewAction("Remove event", image());
-	foreach(MidiEvent *ev, *(matrixWidget->activeEvents())){
-		if(pointInRect(mouseX, mouseY, ev->x(), ev->y(), ev->x()+ev->width(),
-				ev->y()+ev->height()))
-		{
-			file()->channel(ev->channel())->removeEvent(ev);
-			if(Selection::instance()->selectedEvents().contains(ev)){
-				deselectEvent(ev);
+	foreach(QGraphicsItem *item, matrixWidget->items()){
+		MidiEvent *ev = qgraphicsitem_cast<MidiEvent*>(item);
+		if (ev) {
+			if(pointInRect(mouseX, mouseY, ev->x(), ev->y(), ev->x()+ev->width(),
+				       ev->y()+ev->height()))
+			{
+				file()->channel(ev->channel())->removeEvent(ev);
+				if(Selection::instance()->selectedEvents().contains(ev)){
+					deselectEvent(ev);
+				}
 			}
 		}
 	}

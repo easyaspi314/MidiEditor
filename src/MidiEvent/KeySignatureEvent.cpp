@@ -28,7 +28,7 @@ KeySignatureEvent::KeySignatureEvent(const KeySignatureEvent &other) : MidiEvent
 	_minor = other._minor;
 }
 
-MidiEvent::EventType KeySignatureEvent::eventType() {
+int KeySignatureEvent::type() const {
 	return KeySignatureEventType;
 }
 

@@ -31,7 +31,7 @@ TextEvent::TextEvent(const TextEvent &other) : MidiEvent(other) {
 	_text = other._text;
 }
 
-MidiEvent::EventType TextEvent::eventType() {
+int TextEvent::type() const {
 	return TextEventType;
 }
 

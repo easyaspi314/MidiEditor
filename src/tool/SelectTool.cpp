@@ -127,9 +127,12 @@ bool SelectTool::release(){
 			x_end = mouseX+1;
 			y_end = mouseY+1;
 		}
-		foreach(MidiEvent* event, *(matrixWidget->activeEvents())){
-			if(inRect(event, x_start, y_start, x_end, y_end)){
-				selectEvent(event, false);
+		foreach(QGraphicsItem* item, matrixWidget->items()){
+			MidiEvent *event = qgraphicsitem_cast<MidiEvent*>(item);
+			if (event) {
+				if(inRect(event, x_start, y_start, x_end, y_end)){
+					selectEvent(event, false);
+				}
 			}
 		}
 	} else if(stool_type == SelectionTypeLeft ||

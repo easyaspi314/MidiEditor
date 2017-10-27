@@ -38,7 +38,7 @@ TimeSignatureEvent::TimeSignatureEvent(const TimeSignatureEvent &other):
 	num32In4th = other.num32In4th;
 }
 
-MidiEvent::EventType TimeSignatureEvent::eventType() {
+int TimeSignatureEvent::type() const {
 	return TimeSignatureEventType;
 }
 int TimeSignatureEvent::num(){

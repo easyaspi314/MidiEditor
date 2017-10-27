@@ -33,7 +33,7 @@ NoteOnEvent::NoteOnEvent(const NoteOnEvent &other) : OnEvent(other){
 	_velocity = other._velocity;
 }
 
-MidiEvent::EventType NoteOnEvent::eventType() {
+int NoteOnEvent::type() const {
 	return NoteOnEventType;
 }
 

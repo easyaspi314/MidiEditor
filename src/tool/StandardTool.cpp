@@ -69,11 +69,15 @@ bool StandardTool::press(bool leftClick) {
 		bool onSelectedEvent = false;
 		int minDiffToMouse = 0;
 		int action = NoAction;
-		foreach (MidiEvent *ev, *(matrixWidget->activeEvents())) {
-			if (pointInRect(mouseX, mouseY, ev->x() - 2, ev->y(), ev->x() + ev->width() + 2,
-							ev->y() + ev->height())) {
+		foreach (QGraphicsItem *item, matrixWidget->items()) {
+			MidiEvent *ev = qgraphicsitem_cast<MidiEvent *>(item);
+			if (ev)
+			{
+				if (pointInRect(mouseX, mouseY, ev->x() - 2, ev->y(), ev->x() + ev->width() + 2,
+						ev->y() + ev->height())) {
 
-				if (Selection::instance()->selectedEvents().contains(ev)) {
+
+				if (/*Selection::instance()->selectedEvents().contains(ev)*/ev->isSelected()) {
 					onSelectedEvent = true;
 				}
 
@@ -122,8 +126,9 @@ bool StandardTool::press(bool leftClick) {
 					action = currentAction;
 				}
 			}
-		}
 
+			}
+		}
 		if (event) {
 
 			switch (action) {
@@ -194,14 +199,17 @@ bool StandardTool::press(bool leftClick) {
 
 bool StandardTool::move(qreal mouseX, qreal mouseY) {
 	EventTool::move(mouseX, mouseY);
-	foreach (MidiEvent *ev, *(matrixWidget->activeEvents())) {
-		// left/right side means SizeChangeTool
-		if (pointInRect(mouseX, mouseY, ev->x() - 2, ev->y(), ev->x() + 2,
-						ev->y() + ev->height()) ||
-				pointInRect(mouseX, mouseY, ev->x() + ev->width() - 2, ev->y(),
-							ev->x() + ev->width() + 2, ev->y() + ev->height())) {
-			matrixWidget->setCursor(Qt::SplitHCursor);
-			return false;
+	foreach (QGraphicsItem *item, matrixWidget->items()) {
+		MidiEvent *ev = qgraphicsitem_cast<MidiEvent *>(item);
+		if (ev) {
+			// left/right side means SizeChangeTool
+			if (pointInRect(mouseX, mouseY, ev->x() - 2, ev->y(), ev->x() + 2,
+					ev->y() + ev->height()) ||
+					pointInRect(mouseX, mouseY, ev->x() + ev->width() - 2, ev->y(),
+						    ev->x() + ev->width() + 2, ev->y() + ev->height())) {
+				matrixWidget->setCursor(Qt::SplitHCursor);
+				return false;
+			}
 		}
 	}
 	matrixWidget->setCursor(Qt::ArrowCursor);

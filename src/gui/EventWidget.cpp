@@ -199,7 +199,7 @@ void EventWidgetDelegate::setEditorData(QWidget *editor, const QModelIndex &inde
 		case EventWidget::MidiEventValue: {
 			QSpinBox *spin = qobject_cast<QSpinBox*>(editor);
 			spin->setMinimum(0);
-			MidiEvent::EventType type = eventWidget->type();
+			int type = eventWidget->type();
 			switch(type){
 				case MidiEvent::PitchBendEventType: {
 					spin->setMaximum(16383);
@@ -674,15 +674,15 @@ void EventWidget::reload(){
 	resizeRowsToContents();
 }
 
-MidiEvent::EventType EventWidget::computeType(){
-	MidiEvent::EventType type = MidiEvent::MidiEventType;
+int EventWidget::computeType(){
+	int type = MidiEvent::MidiEventType;
 	bool inited = false;
 	foreach(MidiEvent *event, _events){
-		if (!inited && event->eventType() != MidiEvent::OnEventType
-				&& event->eventType() != MidiEvent::OffEventType) {
-			type = event->eventType();
+		if (!inited && event->type() != MidiEvent::OnEventType
+				&& event->type() != MidiEvent::OffEventType) {
+			type = event->type();
 		} else {
-			if (type != event->eventType())
+			if (type != event->type())
 				type = MidiEvent::MidiEventType;
 		}
 		inited = true;

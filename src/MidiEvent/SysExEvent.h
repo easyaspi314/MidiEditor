@@ -29,7 +29,7 @@ class SysExEvent : public MidiEvent{
 	public:
 		SysExEvent(int channel, QByteArray data, MidiTrack *track);
 		SysExEvent(const SysExEvent &other);
-		MidiEvent::EventType eventType() Q_DECL_OVERRIDE;
+		int type() const Q_DECL_OVERRIDE;
 
 		QByteArray data();
 		int line() Q_DECL_OVERRIDE;

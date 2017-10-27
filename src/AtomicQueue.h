@@ -20,9 +20,10 @@ class AtomicQueue
 	 {
 		  QueueNode( const T& value ) : next( NULL ), data( value ) {}
 		  ~QueueNode() { /*if ( next ) delete next;*/ }
-		  QueueNode   *next;
-		  T           data;
-	 };
+		  // We set these to 0 because otherwise, Clang optimizes this out and all hell breaks loose.
+		  QueueNode   *next = 0;
+		  T           data = 0;
+	 } ;
 
 public:
 	 AtomicQueue()
@@ -66,7 +67,8 @@ public:
 					 result = next->data;
 					 return true;
 				}
-		  }
+			  }
+
 		  return false;
 	 }
 

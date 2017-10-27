@@ -28,32 +28,32 @@
  */
 PianoWidget::PianoWidget(QWidget *parent) : PaintWidget(parent) {
 	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	setFixedWidth(110);
-	setMinimumHeight(1);
 	setRepaintOnMouseMove(false);
 	setRepaintOnMouseMove(false);
 	setRepaintOnMouseRelease(false);
 	setMouseTracking(true);
+	setAutoFillBackground(true);
 }
 void PianoWidget::setMatrixWidget(MatrixWidget *widget) {
 	matrixWidget = widget;
-	setMinimumHeight(matrixWidget->sceneRect().height());
 	matrixWidget->setPianoWidget(this);
-	update();
+	//update();
 }
 void PianoWidget::setFile(MidiFile *file) {
 	Q_UNUSED(file)
 	update();
 }
-QSize PianoWidget::sizeHint() const {
-	return QSize(110, 150);
-}
+/*QSize PianoWidget::sizeHint() const {
+	if (matrixWidget)
+		return QSize(110, matrixWidget->contentsRect().height() - 50);
+	return QSize(110, 250);
+}*/
 void PianoWidget::paintEvent(QPaintEvent *event) {
 
 	if (paintingActive() || !matrixWidget || !matrixWidget->midiFile()) {
 		return;
 	}
-	QPainter painter(this);
+	/*QPainter painter(this);
 	QFont font = painter.font();
 	font.setPixelSize(12);
 	int updatemode = 0;
@@ -66,9 +66,9 @@ void PianoWidget::paintEvent(QPaintEvent *event) {
 		painter.setClipping(true);
 		painter.setClipRect(event->rect());
 	} else {
-		painter.setClipping(true);
+		painter.setClipping(false);
 		painter.setClipRect(relativeRect());
-	}
+	}*/
 	QPixmap pianoPixmap;
 	if (!QPixmapCache::find("PianoWidget_" + QString::number(matrixWidget->scaleY, 'f', 2), pianoPixmap)) {
 		matrixWidget->pianoKeys.clear();
@@ -86,7 +86,7 @@ void PianoWidget::paintEvent(QPaintEvent *event) {
 		if (qFuzzyIsNull(numLines)) {
 			qWarning("Invalid numLines. ");
 			pixpainter.end();
-			painter.end();
+			//painter.end();
 			return;
 		}
 		int pianoKeys = qRound(numLines);
@@ -171,13 +171,14 @@ void PianoWidget::paintEvent(QPaintEvent *event) {
 	}
 	/*switch (updatemode) {
 		case 1: {
-			QPainter::PixmapFragment frags[event->region().rectCount()];
+			QPainter::PixmapFragment *frags = new QPainter::PixmapFragment[event->region().rectCount()];
 			QVector<QRect> rects = event->region().rects();
 			for (int i = 0; i < event->region().rectCount(); i++) {
 				QRect rect = rects.at(i);
 				frags[i] = QPainter::PixmapFragment::create(rect.center(), rect, 1, 1, 0, 1);
 			}
 			painter.drawPixmapFragments(frags, event->region().rectCount(), pianoPixmap);
+			delete[] frags;
 			break;
 		}
 		case 2: {

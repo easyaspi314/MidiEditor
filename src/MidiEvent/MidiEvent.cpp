@@ -35,7 +35,8 @@
 #include "../midi/MidiTrack.h"
 
 #include <QByteArray>
-
+#include <QUuid>
+#include <QPaintEngine>
 #include "../midi/MidiChannel.h"
 
 ubyte MidiEvent::_startByte = 0;
@@ -47,6 +48,7 @@ MidiEvent::MidiEvent(int channel, MidiTrack *track) : ProtocolEntry(),
 	numChannel = channel;
 	timePos = 0;
 	midiFile = Q_NULLPTR;
+	_uuid = QUuid::createUuid().toString();
 }
 
 MidiEvent::MidiEvent(const MidiEvent &other) : ProtocolEntry(other), GraphicObject() {
@@ -54,13 +56,14 @@ MidiEvent::MidiEvent(const MidiEvent &other) : ProtocolEntry(other), GraphicObje
 	numChannel = other.numChannel;
 	timePos = other.timePos;
 	midiFile = other.midiFile;
+	_uuid = other._uuid;
 	setX(other.x());
 	setY(other.y());
 	setWidth(other.width());
 	setHeight(other.height());
 }
 
-MidiEvent::EventType MidiEvent::eventType()  {
+int MidiEvent::type() const {
 	return MidiEventType;
 }
 
@@ -418,16 +421,36 @@ MidiFile *MidiEvent::file() {
 int MidiEvent::line() {
 	return 0;
 }
-
+QPainterPath MidiEvent::painterPath() {
+	if (cache.contains(_uuid)) {
+		return *(cache.object(_uuid));
+	}
+	QPainterPath path;
+	if (antiAliasingEnabled)
+		path.addRoundedRect(qRectF(rect()), 1, 1);
+	else
+		path.addRect(qRectF(rect()));
+	return path;
+}
 void MidiEvent::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+	QRectF clipRect = qRectF(option->exposedRect).marginsAdded(QMarginsF(1, 1, 1, 1));
+
+	painter->setClipRect(clipRect);
+	QPen mPen = painter->pen();
+	mPen.setCosmetic(true);
+	mPen.setStyle(Qt::SolidLine);
+	mPen.setJoinStyle(Qt::MiterJoin);
+	mPen.setMiterLimit(3);
+	mPen.setWidth(1);
 	if (isSelected()) {
-		painter->setPen(Qt::black);
-		painter->setBrush(Qt::blue);
+		mPen.setColor(Qt::black);
+		painter->setBrush(Qt::darkBlue);
 	} else {
-		painter->setPen(Qt::gray);
+		mPen.setColor(Qt::gray);
 		painter->setBrush(colorByChannel ? midiFile->channel(channel())->color() : *(_track->color()));
 	}
-	painter->drawRoundedRect(qRectF(rect()), 1, 1);
+	painter->setPen(mPen);
+	painter->drawPath(painterPath());
 }
 
 ProtocolEntry *MidiEvent::copy() {

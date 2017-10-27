@@ -28,7 +28,7 @@ class TempoChangeEvent : public MidiEvent {
 	public:
 		TempoChangeEvent(int channel, int value, MidiTrack *track);
 		TempoChangeEvent(const TempoChangeEvent &other);
-		MidiEvent::EventType eventType() Q_DECL_OVERRIDE;
+		int type() const Q_DECL_OVERRIDE;
 
 		int beatsPerQuarter();
 		qreal msPerTick();

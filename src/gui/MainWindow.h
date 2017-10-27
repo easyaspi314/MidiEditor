@@ -187,6 +187,10 @@ class MainWindow : public QMainWindow {
 
 		void updateDetected(Update *update);
 
+		void initGUI();
+		void initObjects();
+
+
 	protected:
 		void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 		void keyPressEvent(QKeyEvent* e) Q_DECL_OVERRIDE;
@@ -218,7 +222,9 @@ class MainWindow : public QMainWindow {
 #ifdef ENABLE_REMOTE
 		RemoteServer *_remoteServer;
 #endif
+		void setupActions();
 
+		QMenu *fileMB, *editMB, *toolsMB, *viewMB, *playbackMB, *midiMB, *helpMB;
 		QWidget *_miscWidgetControl;
 		QGridLayout *_miscControlLayout;
 
@@ -227,7 +233,7 @@ class MainWindow : public QMainWindow {
 			*_allChannelsAudible, *_allChannelsMute, *_allTracksVisible, *_allTracksInvisible, *stdToolAction, *undoAction, *redoAction, *_pasteAction, *pasteActionTB;
 		MiscWidget *_miscWidget;
 
-		QToolBar *setupActions(QWidget *parent);
+		QToolBar *buttons;
 #ifdef Q_OS_MAC
 	//	QMacToolBar *setupMacActions();
 #endif

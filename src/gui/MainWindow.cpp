@@ -108,17 +108,30 @@ MainWindow * MainWindow::_mainWindow;
 
 MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags),
 	_initFile(initFile) {
-	_mainWindow = this;
 
 	inputIsReady = false;
 	outputIsReady = false;
+
+	_mainWindow = this;
+	EditorTool::setMainWindow(this);
+
+	setWindowTitle(QApplication::applicationName());
+	setWindowIcon(QIcon(":/run_environment/graphics/icon.png"));
+	resize(1280, 720);
+	show();
+	_moveSelectedEventsToChannelMenu = Q_NULLPTR;
+	_moveSelectedEventsToTrackMenu = Q_NULLPTR;
+	initGUI();
+	QTimer::singleShot(0, this, SLOT(initObjects()));
+
+}
+void MainWindow::initObjects() {
+
 	// file may be set already.
 	if (!file)
 		file = Q_NULLPTR;
 	_settings = new QSettings(QString("MidiEditor"), QString("NONE"));
 
-	_moveSelectedEventsToChannelMenu = Q_NULLPTR;
-	_moveSelectedEventsToTrackMenu = Q_NULLPTR;
 
 #ifdef ENABLE_REMOTE
 	bool ok;
@@ -181,7 +194,7 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 	connect(UpdateManager::instance(), SIGNAL(updateDetected(Update*)), this, SLOT(updateDetected(Update*)));
 	_quantizationGrid = _settings->value("quantization", 3).toInt();
 
-
+	macToolbarActions = new QList<QString *>();
 
 	startDirectory = QDir::homePath();
 
@@ -194,17 +207,63 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 	// read recent paths
 	_recentFilePaths = _settings->value("recent_file_list").toStringList();
 
-	EditorTool::setMainWindow(this);
 
-	setWindowTitle(QApplication::applicationName());
-	setWindowIcon(QIcon(":/run_environment/graphics/icon.png"));
+
+	bool screenLocked = _settings->value("screen_locked", false).toBool();
+	mw_matrixWidget->setScreenLocked(screenLocked);
+	int div = _settings->value("div", 2).toInt();
+	mw_matrixWidget->setDiv(div);
+	for(int i = 1; i < MiscWidget::MiscModeEnd; i++){
+		_miscMode->addItem(MiscWidget::modeToString(i));
+	}
+	for(int i = 1; i<128; i++){
+		_miscController->addItem(MidiFile::controlChangeName(i));
+	}
+	for(int i = 1; i<15; i++){
+		_miscChannel->addItem("Channel "+QString::number(i));
+	}
+	for(int i = 1; i<16;i++){
+		_chooseEditChannel->addItem("Channel "+QString::number(i));
+	}
+	if(_settings->value("colors_from_channel", false).toBool()){
+		colorsByChannel();
+	} else {
+		colorsByTrack();
+	}
+	copiedEventsChanged();
+	setAcceptDrops(true);
+	QTimer::singleShot(0, mw_matrixWidget, SLOT(init()));
+	QTimer::singleShot(10, this, SLOT(loadInitFile()));
+	//if(UpdateManager::autoCheckForUpdates()){
+	//	QTimer::singleShot(500, UpdateManager::instance(), SLOT(checkForUpdates()));
+	//}
+		updateRecentPathsList();
+}
+void MainWindow::initGUI() {
+
+	// Menubar
+	fileMB = menuBar()->addMenu("File");
+	editMB = menuBar()->addMenu("Edit");
+	toolsMB = menuBar()->addMenu("Tools");
+	viewMB = menuBar()->addMenu("View");
+	playbackMB = menuBar()->addMenu("Playback");
+	midiMB = menuBar()->addMenu("Midi");
+	helpMB = menuBar()->addMenu("Help");
 
 	QWidget *central = new QWidget(this);
 	QGridLayout *centralLayout = new QGridLayout(central);
 	centralLayout->setContentsMargins(3,3,3,5);
+	// Add the Widgets to the central Layout
+	centralLayout->setSpacing(0);
+	//centralLayout->addWidget(buttons,0,0);
+	QSplitter *mainSplitter = new QSplitter(Qt::Horizontal, central);
+	centralLayout->addWidget(mainSplitter,1,0);
+	centralLayout->setRowStretch(1, 1);
+	central->setLayout(centralLayout);
+	setCentralWidget(central);
 
 	// there is a vertical split
-	QSplitter *mainSplitter = new QSplitter(Qt::Horizontal, central);
+
 	//mainSplitter->setHandleWidth(0);
 
 	// The left side
@@ -238,40 +297,40 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 	matrixAreaLayout->setSpacing(0);
 
 	//matrixAreaLayout->setHorizontalSpacing(6);
-	timelineArea = new QScrollArea(matrixAreaContainer);
-	timelineArea->setFixedHeight(50);
-	timelineArea->setWidgetResizable(true);
-	timelineArea->setContentsMargins(0, 0, 0, 0);
-	QScrollBar *timelineScrollBar = timelineArea->horizontalScrollBar();
-	timelineArea->verticalScrollBar()->hide();
-	timelineScrollBar->hide();
+	//timelineArea = new QScrollArea(matrixAreaContainer);
+	//timelineArea->setFixedHeight(50);
+	//timelineArea->setWidgetResizable(true);
+	//timelineArea->setContentsMargins(0, 0, 0, 0);
+	//QScrollBar *timelineScrollBar = timelineArea->horizontalScrollBar();
+	//timelineArea->verticalScrollBar()->hide();
+	//timelineScrollBar->hide();
 
-	pianoArea = new QScrollArea(matrixAreaContainer);
-	pianoArea->setContentsMargins(0, 0, 0, 0);
-	pianoArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	timelineArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	QScrollBar *pianoScrollBar = pianoArea->verticalScrollBar();
-	pianoScrollBar->hide();
-	pianoArea->horizontalScrollBar()->hide();
-	timelineScrollBar->setStyleSheet("QScrollBar {height:0px;}");
-	pianoScrollBar->setStyleSheet("QScrollBar {width:0px;}");
-	pianoArea->setWidgetResizable(true);
-	pianoArea->setFixedWidth(110);
-	pianoArea->setMinimumHeight(1);
+	//pianoArea = new QScrollArea(matrixAreaContainer);
+	//pianoArea->setContentsMargins(0, 0, 0, 0);
+	//pianoArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	//timelineArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	//QScrollBar *pianoScrollBar = pianoArea->verticalScrollBar();
+	//pianoScrollBar->hide();
+	//pianoArea->horizontalScrollBar()->hide();
+	//timelineScrollBar->setStyleSheet("QScrollBar {height:0px;}");
+	//pianoScrollBar->setStyleSheet("QScrollBar {width:0px;}");
+	//pianoArea->setWidgetResizable(true);
+	//pianoArea->setFixedWidth(110);
+	//pianoArea->setMinimumHeight(1);
 
 	mw_matrixWidget = new MatrixWidget(matrixAreaContainer);
-	mw_timelineWidget = new TimelineWidget(timelineArea);
+	mw_timelineWidget = new TimelineWidget(mw_matrixWidget);
 	mw_timelineWidget->setFixedHeight(50);
 	mw_timelineWidget->setMinimumWidth(50);
-	pianoArea->setBackgroundRole(QPalette::Dark);
-	mw_pianoWidget = new PianoWidget(pianoArea);
+	// pianoArea->setBackgroundRole(QPalette::Dark);
+	mw_pianoWidget = new PianoWidget(mw_matrixWidget);
 	mw_pianoWidget->setFixedWidth(110);
 	mw_pianoWidget->setMinimumHeight(1);
 
 	matrixAreaLayout->setContentsMargins(0,0,0,0);
-	matrixAreaLayout->addWidget(mw_matrixWidget, 1, 1, 2, 2);
-	matrixAreaLayout->addWidget(timelineArea, 0, 1, 1, 2);
-	matrixAreaLayout->addWidget(pianoArea, 1, 0, 2, 1);
+	matrixAreaLayout->addWidget(mw_matrixWidget, 0, 0, 2, 2);
+	//matrixAreaLayout->addWidget(timelineArea, 0, 1, 1, 2);
+	//matrixAreaLayout->addWidget(pianoArea, 1, 0, 2, 1);
 
 	matrixAreaLayout->setColumnStretch(0, 1);
 	matrixAreaContainer->setLayout(matrixAreaLayout);
@@ -279,11 +338,11 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 	//mw_matrixWidget->setFixedWidth(1529);
 	//mw_matrixWidget->setMinimumSize(QSize(150,150));
 
-	timelineArea->setWidget(mw_timelineWidget);
-	pianoArea->setWidget(mw_pianoWidget);
+	//timelineArea->setWidget(mw_timelineWidget);
+	//pianoArea->setWidget(mw_pianoWidget);
 	mw_matrixWidget->setFrameShape(QFrame::NoFrame);
-	pianoArea->setFrameShape(QFrame::NoFrame);
-	timelineArea->setFrameShape(QFrame::NoFrame);
+	//pianoArea->setFrameShape(QFrame::NoFrame);
+	//timelineArea->setFrameShape(QFrame::NoFrame);
 
 	//timelineArea->verticalScrollBar()->setEnabled(false);
 	//timelineArea->horizontalScrollBar()->setEnabled(false);
@@ -295,10 +354,7 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 	leftSplitter->addWidget(matrixAreaContainer);
 	mw_pianoWidget->setMatrixWidget(mw_matrixWidget);
 	mw_timelineWidget->setMatrixWidget(mw_matrixWidget);
-	bool screenLocked = _settings->value("screen_locked", false).toBool();
-	mw_matrixWidget->setScreenLocked(screenLocked);
-	int div = _settings->value("div", 2).toInt();
-	mw_matrixWidget->setDiv(div);
+
 
 	// VelocityArea
 	QWidget *velocityArea = new QWidget(leftSplitter);
@@ -336,44 +392,24 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 	miscScrollBar->hide();
 	miscScrollBar->setStyleSheet("QScrollBar {height:0px;}");
 
-	// Sync the scroll bars.
-	// Until we can make a magical QScrollArea that will show what we want,
-	// this is what we are stuck with.
-	connect(hori, SIGNAL(valueChanged(int)), timelineScrollBar, SLOT(setValue(int)));
-	connect(timelineScrollBar, SIGNAL(valueChanged(int)), hori, SLOT(setValue(int)));
-	connect(vert, SIGNAL(valueChanged(int)), pianoScrollBar, SLOT(setValue(int)));
-	connect(pianoScrollBar, SIGNAL(valueChanged(int)), vert, SLOT(setValue(int)));
-	connect(hori, SIGNAL(valueChanged(int)), miscScrollBar, SLOT(setValue(int)));
-	connect(miscScrollBar, SIGNAL(valueChanged(int)), hori, SLOT(setValue(int)));
-
-
 	// controls for velocity widget
 	_miscControlLayout = new QGridLayout(_miscWidgetControl);
 	_miscControlLayout->setHorizontalSpacing(0);
-	//_miscWidgetControl->setContentsMargins(0,0,0,0);
-	//_miscControlLayout->setContentsMargins(0,0,0,0);
 	_miscWidgetControl->setLayout(_miscControlLayout);
 	_miscMode = new QComboBox(_miscWidgetControl);
-	for(int i = 0; i < MiscWidget::MiscModeEnd; i++){
-		_miscMode->addItem(MiscWidget::modeToString(i));
-	}
-	//_miscControlLayout->addWidget(new QLabel("Mode:", _miscWidgetControl), 0, 0, 1, 3);
+	_miscMode->addItem(MiscWidget::modeToString(0));
 	_miscControlLayout->addWidget(_miscMode, 1, 0, 1, 3);
 	connect(_miscMode, SIGNAL(currentIndexChanged(int)), this, SLOT(changeMiscMode(int)));
 
-	//_miscControlLayout->addWidget(new QLabel("Control:", _miscWidgetControl), 2, 0, 1, 3);
 	_miscController = new QComboBox(_miscWidgetControl);
-	for(int i = 0; i<128; i++){
-		_miscController->addItem(MidiFile::controlChangeName(i));
-	}
+	_miscController->addItem(MidiFile::controlChangeName(0));
+
 	_miscControlLayout->addWidget(_miscController, 3, 0, 1, 3);
 	connect(_miscController, SIGNAL(currentIndexChanged(int)), _miscWidget, SLOT(setControl(int)));
 
 	//_miscControlLayout->addWidget(new QLabel("Channel:", _miscWidgetControl), 4, 0, 1, 3);
 	_miscChannel = new QComboBox(_miscWidgetControl);
-	for(int i = 0; i<15; i++){
-		_miscChannel->addItem("Channel "+QString::number(i));
-	}
+		_miscChannel->addItem("Channel "+QString::number(0));
 	_miscControlLayout->addWidget(_miscChannel, 5, 0, 1, 3);
 	connect(_miscChannel, SIGNAL(currentIndexChanged(int)), _miscWidget, SLOT(setChannel(int)));
 	_miscControlLayout->setRowStretch(6, 1);
@@ -526,9 +562,8 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 	QLabel *channelLabel = new QLabel("Channel: ", chooser);
 	chooserLayout->addWidget(channelLabel, 2, 0, 1, 1);
 	_chooseEditChannel = new QComboBox(chooser);
-	for(int i = 0; i<16;i++){
-		_chooseEditChannel->addItem("Channel "+QString::number(i));
-	}
+	_chooseEditChannel->addItem("Channel "+QString::number(0));
+
 	connect(_chooseEditChannel, SIGNAL(activated(int)), this, SLOT(editChannel(int)));
 
 	chooserLayout->addWidget(_chooseEditChannel, 2, 1, 1, 1);
@@ -544,41 +579,25 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 	connect(mw_matrixWidget, SIGNAL(sizeChanged(int, double, int, double)), this,
 			SLOT(matrixSizeChanged(int, double, int, double)));
 
-	connect(mw_matrixWidget, SIGNAL(scrollChanged(int, int)), this,
-			SLOT(scrollPositionsChanged(int, int)));
+//	connect(mw_matrixWidget, SIGNAL(scrollChanged(int, int)), this,
+//			SLOT(scrollPositionsChanged(int, int)));
 
-	setCentralWidget(central);
+	// setCentralWidget(central);
+
 
 	// TODO: finish this
-	QToolBar *buttons = setupActions(this);
-//#ifdef Q_OS_MAC
+	setupActions();
+#ifdef Q_OS_MAC
 //	this->window()->winId();
 //	setupMacActions(this)->attachToWindow(this->window()->windowHandle());
-//#endif
-	addToolBar(buttons);
+#endif
+	//setupActions();
+//	addToolBar(buttons);
 
 	rightSplitter->setStretchFactor(0, 5);
 	rightSplitter->setStretchFactor(1, 5);
 
-	// Add the Widgets to the central Layout
-	centralLayout->setSpacing(0);
-	//centralLayout->addWidget(buttons,0,0);
 
-	centralLayout->addWidget(mainSplitter,1,0);
-	centralLayout->setRowStretch(1, 1);
-	central->setLayout(centralLayout);
-
-	if(_settings->value("colors_from_channel", false).toBool()){
-		colorsByChannel();
-	} else {
-		colorsByTrack();
-	}
-	copiedEventsChanged();
-	setAcceptDrops(true);
-	QTimer::singleShot(200, this, SLOT(loadInitFile()));
-	//if(UpdateManager::autoCheckForUpdates()){
-	//	QTimer::singleShot(500, UpdateManager::instance(), SLOT(checkForUpdates()));
-	//}
 }
 
 void MainWindow::loadInitFile() {
@@ -2226,16 +2245,7 @@ void MainWindow::selectModeChanged(QAction *action){
 	}
 }
 
-QToolBar *MainWindow::setupActions(QWidget *parent){
-
-	// Menubar
-	QMenu *fileMB = menuBar()->addMenu("File");
-	QMenu *editMB = menuBar()->addMenu("Edit");
-	QMenu *toolsMB = menuBar()->addMenu("Tools");
-	QMenu *viewMB = menuBar()->addMenu("View");
-	QMenu *playbackMB = menuBar()->addMenu("Playback");
-	QMenu *midiMB = menuBar()->addMenu("Midi");
-	QMenu *helpMB = menuBar()->addMenu("Help");
+void MainWindow::setupActions(){
 
 	// File
 	QAction *newAction = new QAction("New", this);
@@ -2255,7 +2265,7 @@ QToolBar *MainWindow::setupActions(QWidget *parent){
 	fileMB->addMenu(_recentPathsMenu);
 	connect(_recentPathsMenu, SIGNAL(triggered(QAction*)), this, SLOT(openRecent(QAction*)));
 
-	updateRecentPathsList();
+
 
 	fileMB->addSeparator();
 
@@ -2777,7 +2787,8 @@ QToolBar *MainWindow::setupActions(QWidget *parent){
 	midiMB->addAction(configAction2);
 
 	QAction *thruAction = addToolbarAction("Connect Midi In/Out",
-														":/run_environment/graphics/tool/connection.png", "enableThru", true);
+					       ":/run_environment/graphics/tool/connection.png",
+					       "enableThru", true);
 	thruAction->setCheckable(true);
 	thruAction->setChecked(MidiInput::instance()->thru());
 	connect(thruAction, SIGNAL(toggled(bool)), this, SLOT(enableThru(bool)));
@@ -2802,7 +2813,7 @@ QToolBar *MainWindow::setupActions(QWidget *parent){
 	connect(donateAction, SIGNAL(triggered()), this, SLOT(donate()));
 	helpMB->addAction(donateAction);
 
-	QToolBar *out = new QToolBar("Toolbar", parent);
+	QToolBar *out = new QToolBar("Toolbar", this);
 	out->setFloatable(false);
 	out->setContentsMargins(0,0,0,0);
 	out->layout()->setSpacing(0);
@@ -2944,7 +2955,7 @@ QToolBar *MainWindow::setupActions(QWidget *parent){
 
 
 	out->addWidget(buttonBar);
-return out;
+	addToolBar(out);
 }
 
 QAction *MainWindow::addToolbarAction(QString title, QString iconPath, QString functionName, bool isToggleable) {
@@ -3153,8 +3164,9 @@ void MainWindow::setSpeed(QAction *action){
 
 void MainWindow::checkEnableActionsForSelection(){
 	bool enabled = Selection::instance()->selectedEvents().size()>0;
-	foreach(QAction *action, _activateWithSelections){
-		action->setEnabled(enabled);
+	if (!_activateWithSelections.isEmpty())
+	foreach (QAction *mAction, qAsConst(_activateWithSelections)){
+		mAction->setEnabled(enabled);
 	}
 	if(_moveSelectedEventsToChannelMenu){
 		_moveSelectedEventsToChannelMenu->setEnabled(enabled);

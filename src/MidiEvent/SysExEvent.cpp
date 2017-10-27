@@ -26,7 +26,7 @@ SysExEvent::SysExEvent(const SysExEvent &other) : MidiEvent(other) {
 	_data = other._data;
 }
 
-MidiEvent::EventType SysExEvent::eventType() {
+int SysExEvent::type() const {
 	return SystemExclusiveEventType;
 }
 

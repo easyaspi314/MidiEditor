@@ -77,7 +77,7 @@ class EventWidget : public QTableWidget {
 		};
 		QVariant fieldContent(EditorField field);
 
-		MidiEvent::EventType type() {
+		int type() {
 			return _currentType;
 		}
 
@@ -99,8 +99,8 @@ class EventWidget : public QTableWidget {
 	private:
 		QList<MidiEvent*> _events;
 
-		MidiEvent::EventType _currentType;
-		MidiEvent::EventType computeType();
+		int _currentType;
+		int computeType();
 		QString eventType();
 
 		QList<QPair<QString, EditorField> > getFields();

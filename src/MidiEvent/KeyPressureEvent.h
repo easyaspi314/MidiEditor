@@ -32,7 +32,7 @@ class KeyPressureEvent : public MidiEvent {
 	public:
 		KeyPressureEvent(int channel, int value, int note, MidiTrack *track);
 		KeyPressureEvent(const KeyPressureEvent &other);
-		MidiEvent::EventType eventType() Q_DECL_OVERRIDE;
+		int type() const Q_DECL_OVERRIDE;
 
 		virtual int line() Q_DECL_OVERRIDE;
 
