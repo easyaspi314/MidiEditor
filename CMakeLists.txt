@@ -7,8 +7,8 @@ message(STATUS "Source directory: ${CMAKE_SOURCE_DIR}")
 message(STATUS "Output directory: ${CMAKE_BINARY_DIR}")
 
 configure_file(
-  ${CMAKE_SOURCE_DIR}/version.cmake.in
-  ${CMAKE_BINARY_DIR}/version.cmake
+  "${CMAKE_SOURCE_DIR}/version.cmake.in"
+  "${CMAKE_BINARY_DIR}/version.cmake"
 )
 include_directories(${CMAKE_BINARY_DIR})
 
@@ -52,12 +52,12 @@ elseif ( NOT QT_ALREADY_FOUND OR FORCE_QT_SEARCH  )
       option(NO_CONSOLE_MODE "Start MidiEditor in a console window for debugging" OFF)
 
       if (CMAKE_CL_64 OR CMAKE_SIZEOF_VOID_P EQUAL 8)
-         if (IS_DIRECTORY "C:/Qt/5.9.1/${COMPILER_CODE}_64/lib/cmake")
-            set(QT5_DIR_GUESS "C:/Qt/5.9.1/${COMPILER_CODE}_64/lib/cmake" CACHE PATH "Additional search paths for QT5")
+         if (IS_DIRECTORY "C:/Qt/5.9.2/${COMPILER_CODE}_64/lib/cmake")
+            set(QT5_DIR_GUESS "C:/Qt/5.9.2/${COMPILER_CODE}_64/lib/cmake" CACHE PATH "Additional search paths for QT5")
             set(ARCH "x64")
          endif()
       if ()
-         set(QT5_DIR_GUESS "C:/Qt/5.9.1/${COMPILER_CODE}/lib/cmake" CACHE PATH "Additional search paths for Qt 5")
+         set(QT5_DIR_GUESS "C:/Qt/5.9.2/${COMPILER_CODE}/lib/cmake" CACHE PATH "Additional search paths for Qt 5")
          set(ARCH "x86")
       endif()
 
@@ -75,7 +75,7 @@ elseif ( NOT QT_ALREADY_FOUND OR FORCE_QT_SEARCH  )
 
       option(USE_JACK "Use Jack Audio as well as CoreAudio for IO" OFF)
 
-      set(QT5_DIR_GUESS "$ENV{HOME}/Qt/5.9.1/clang_64/lib/cmake" CACHE PATH "Additional search paths for Qt 5" )
+      set(QT5_DIR_GUESS "$ENV{HOME}/Qt/5.9.2/clang_64/lib/cmake" CACHE PATH "Additional search paths for Qt 5" )
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
    elseif (CMAKE_COMPILER_IS_GNUCXX) # Gnu C++
@@ -84,7 +84,7 @@ elseif ( NOT QT_ALREADY_FOUND OR FORCE_QT_SEARCH  )
 
       option(USE_JACK "Use Jack Audio as well as ALSA for IO" OFF)
 
-      set(QT5_DIR_GUESS "$ENV{HOME}/Qt/5.9.1/gcc_64/lib/cmake" CACHE PATH "Additional search paths for QT5")
+      set(QT5_DIR_GUESS "$ENV{HOME}/Qt/5.9.2/gcc_64/lib/cmake" CACHE PATH "Additional search paths for QT5")
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
    endif()
       message(FATAL_ERROR "Your compiler is not supported by this CMakeLists.\
