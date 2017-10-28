@@ -68,6 +68,9 @@
 bool MatrixWidget::antiAliasingEnabled = true;
 MatrixWidget::MatrixWidget(QWidget *parent) : QGraphicsView(parent) {
 	pianoKeys = QMap<int, QRectF>();
+	scrollTimer = new QTimer(this);
+	scrollTimer->setSingleShot(true);
+	connect(scrollTimer, SIGNAL(timeout()), this, SLOT(enableUpdates()));
 
 	// TODO: Maybe reimplement this so QMacCGContext will shut up
 
@@ -90,7 +93,7 @@ MatrixWidget::MatrixWidget(QWidget *parent) : QGraphicsView(parent) {
 	msOfFirstEventInList = 0;
 	velocityObjects = new QList<MidiEvent *>;
 
-
+	scrolling = false;
 	setViewportMargins(110, 50, 0, 0);
 	_div = 2;
 
@@ -100,7 +103,7 @@ void MatrixWidget::init() {
 	_mouseInWidget = underMouse();
 	setDragMode(RubberBandDrag);
 	setViewportUpdateMode(MinimalViewportUpdate);
-	setOptimizationFlags(DontSavePainterState);
+	setOptimizationFlags(DontAdjustForAntialiasing | DontSavePainterState);
 	setViewport(new QOpenGLWidget);
 	// TODO: Antialiasing + OpenGL
 	//setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
@@ -124,19 +127,26 @@ void MatrixWidget::init() {
 }
 
 void MatrixWidget::scrollContentsBy(int dx, int dy) {
+	QGraphicsView::scrollContentsBy(dx, dy);
+	//scrolling = true;
+	//setViewportUpdateMode(SmartViewportUpdate);
+	//scrollTimer->start(250);
 	if (dx && timelineWidget){
 		timelineWidget->move(timelineWidget->x() + dx, timelineWidget->y());
 	}
 	if (dy && pianoWidget) {
 		pianoWidget->move(pianoWidget->x(), pianoWidget->y() + dy);
 	}
-	QGraphicsView::scrollContentsBy(dx, dy);
+
 }
 
 void MatrixWidget::setScreenLocked(bool b) {
 	screen_locked = b;
 }
-
+void MatrixWidget::enableUpdates() {
+	//setViewportUpdateMode(MinimalViewportUpdate);
+	scrolling = false;
+}
 bool MatrixWidget::screenLocked() {
 	return screen_locked;
 }
@@ -581,10 +591,11 @@ void MatrixWidget::addChannel(int channel) {
 				offEvent->setWidth(width);
 				onEvent->setWidth(width);
 				event = onEvent;
-				if (items().contains(event)) {
+				if (onEvent->hasBeenAdded) {
 					it++;
 					continue;
 				}
+				onEvent->hasBeenAdded = true;
 			}
 		}
 		//event->setX(x);
@@ -741,7 +752,9 @@ MidiFile *MatrixWidget::midiFile() {
 
 void MatrixWidget::mouseMoveEvent(QMouseEvent *event) {
 	QGraphicsView::mouseMoveEvent(event);
-
+	//if (scrolling) {
+	//	return;
+	//}
 //	if (!enabled) {
 //		return;
 //	}
@@ -949,10 +962,12 @@ int MatrixWidget::maxVisibleMidiTime() {
 	return endTick;
 }
 void MatrixWidget::keyPressEvent(QKeyEvent *event) {
+	QGraphicsView::keyPressEvent(event);
 	takeKeyPressEvent(event);
 }
 
 void MatrixWidget::keyReleaseEvent(QKeyEvent *event) {
+	QGraphicsView::keyReleaseEvent(event);
 	takeKeyReleaseEvent(event);
 }
 

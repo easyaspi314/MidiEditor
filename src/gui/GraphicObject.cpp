@@ -23,7 +23,7 @@
 
 GraphicObject::GraphicObject(QGraphicsItem *parent) : QGraphicsRectItem (QRectF(0, 0, 0, 0), parent) {
 	setFlags(ItemIsSelectable | ItemIsMovable | ItemIsFocusable | ItemUsesExtendedStyleOption );
-
+	setCacheMode(DeviceCoordinateCache);
 	setPos(0, 0);
 	setX(0);
 	setY(0);

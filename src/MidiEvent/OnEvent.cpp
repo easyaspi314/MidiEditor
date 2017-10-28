@@ -25,12 +25,13 @@
 
 OnEvent::OnEvent(int ch, MidiTrack *track) : MidiEvent(ch, track){
 	_offEvent = Q_NULLPTR;
-
+	hasBeenAdded = false;
 	return;
 }
 
 OnEvent::OnEvent(const OnEvent &other) : MidiEvent(other){
 	_offEvent = other._offEvent;
+	hasBeenAdded = other.hasBeenAdded;
 	return;
 }
 
@@ -57,6 +58,7 @@ void OnEvent::reloadState(ProtocolEntry *entry){
 	}
 	MidiEvent::reloadState(entry);
 	_offEvent = other->_offEvent;
+	hasBeenAdded = other->hasBeenAdded;
 }
 
 QByteArray OnEvent::saveOffEvent(){

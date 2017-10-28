@@ -40,6 +40,7 @@ class OnEvent : public MidiEvent{
 		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
 
 		void moveToChannel(int channel) Q_DECL_OVERRIDE;
+		bool hasBeenAdded;
 
 	protected:
 		OffEvent *_offEvent;

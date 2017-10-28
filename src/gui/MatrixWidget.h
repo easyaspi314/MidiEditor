@@ -102,6 +102,7 @@ class MatrixWidget : public QGraphicsView {
 		int div();
 		void redraw();
 		bool mouseInWidget();
+		void enableUpdates();
 	signals:
 		void sizeChanged(int maxScrollTime, double maxScrollLine, int valueX,
 				double valueY);
@@ -161,6 +162,9 @@ class MatrixWidget : public QGraphicsView {
 		TimelineWidget *timelineWidget;
 		PianoWidget *pianoWidget;
 		QGraphicsScene *matrixScene;
+
+		QTimer *scrollTimer;
+		bool scrolling;
 
 		bool _mouseInWidget;
 
