@@ -123,7 +123,7 @@ void DataEditor::dataChanged(int line, ubyte data){
 }
 
 void DataEditor::plusClicked(int line){
-	_data = _data.insert(line, byte(0));
+	_data = _data.insert(line, char(0));
 	rebuild();
 }
 

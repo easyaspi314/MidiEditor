@@ -30,6 +30,7 @@
 #include <QSpinBox>
 #include "../midi/MidiOutput.h"
 #include "../midi/MidiInput.h"
+#include "../midi/MidiPlayer.h"
 #include "../midi/MidiFile.h"
 #include "../Terminal.h"
 
@@ -51,9 +52,9 @@ AdditionalMidiSettingsWidget::AdditionalMidiSettingsWidget(QSettings *settings, 
 	layout->addWidget(_tpqBox, row++, 2, 1, 4);
 
 	QWidget *tpqInfo = createInfoBox(tr("Note: There aren't many reasons to change this. "
-					    "MIDI files have a resolution for how many ticks can fit in a quarter note. "
-					    "Higher values = more detail. Lower values may be required for compatibility. "
-					    "Only affects new files."));
+						"MIDI files have a resolution for how many ticks can fit in a quarter note. "
+						"Higher values = more detail. Lower values may be required for compatibility. "
+						"Only affects new files."));
 	layout->addWidget(tpqInfo, row++, 0, 1, 6);
 
 	layout->addWidget(separator(), row++, 0, 1, 6);
@@ -80,6 +81,22 @@ AdditionalMidiSettingsWidget::AdditionalMidiSettingsWidget(QSettings *settings, 
 	layout->addWidget(Terminal::terminal()->console(), row, 0, 1, 6);
 	startCmd->setText(_settings->value("start_cmd", "").toString());
 	layout->setRowStretch(3, 1);
+
+	row += 3;
+
+	_gbaMode = new QCheckBox("Game Boy Advance mode (non-linear scaling)", this);
+	_gbaMode->setChecked(MidiOutput::isGBAMode());
+	connect(_gbaMode, SIGNAL(toggled(bool)), this, SLOT(gbaModeToggled(bool)));
+	layout->addWidget(_gbaMode, row++, 0, 1, 6);
+
+	layout->addWidget(new QLabel("Playback delay (for delayed MIDI drivers), ms:", this), row, 0, 1, 2);
+	_playbackDelay = new QSpinBox(this);
+	_playbackDelay->setMinimum(0);
+	_playbackDelay->setMaximum(100000);
+	_playbackDelay->setValue(MidiPlayer::playbackDelay());
+	connect(_playbackDelay, SIGNAL(valueChanged(int)), this, SLOT(playbackDelayChanged(int)));
+	layout->addWidget(_playbackDelay, row++, 2, 1, 4);
+
 }
 
 void AdditionalMidiSettingsWidget::manualModeToggled(bool enable){
@@ -88,6 +105,14 @@ void AdditionalMidiSettingsWidget::manualModeToggled(bool enable){
 
 void AdditionalMidiSettingsWidget::setDefaultTimePerQuarter(int value) {
 	MidiFile::defaultTimePerQuarter = value;
+}
+
+void AdditionalMidiSettingsWidget::gbaModeToggled(bool enable) {
+	MidiOutput::setGBAMode(enable);
+}
+
+void AdditionalMidiSettingsWidget::playbackDelayChanged(int value) {
+	MidiPlayer::setPlaybackDelay(value);
 }
 
 bool AdditionalMidiSettingsWidget::accept(){

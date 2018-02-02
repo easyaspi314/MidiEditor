@@ -43,6 +43,7 @@ class NoteOnEvent : public OnEvent{
 		QString toMessage() Q_DECL_OVERRIDE;
 		QString offEventMessage() Q_DECL_OVERRIDE;
 		QByteArray save() Q_DECL_OVERRIDE;
+		QByteArray play() Q_DECL_OVERRIDE;
 		QByteArray saveOffEvent() Q_DECL_OVERRIDE;
 
 		QString typeString() Q_DECL_OVERRIDE;

@@ -43,6 +43,9 @@ Metronome::Metronome(QObject *parent) : QObject(parent) {
 	denom = 2;
 	lastMeasure = -1;
 	lastPos = -1;
+
+	// Metronome would rather not keep loading this value.
+	delay = MidiPlayer::playbackDelay();
 }
 
 void Metronome::setFile(MidiFile *file) {
@@ -60,13 +63,13 @@ void Metronome::measureUpdate(int measure, int tickInMeasure) {
 	int pos = tickInMeasure / ticksPerClick;
 
 	if (lastMeasure < measure) {
-		emit click();
+		QTimer::singleShot(delay, this, SLOT(doClick()));
 		lastMeasure = measure;
 		lastPos = 0;
 		return;
 	} else {
 		if (pos > lastPos) {
-			emit click();
+			QTimer::singleShot(delay, this, SLOT(doClick()));
 			lastPos = pos;
 			return;
 		}
@@ -76,6 +79,10 @@ void Metronome::measureUpdate(int measure, int tickInMeasure) {
 void Metronome::meterChanged(int n, int d) {
 	num = n;
 	denom = d;
+}
+
+void Metronome::doClick() {
+	emit click();
 }
 
 void Metronome::playbackStarted() {
@@ -95,6 +102,7 @@ Metronome *Metronome::instance() {
 void Metronome::reset() {
 	lastPos = 0;
 	lastMeasure = -1;
+	delay = MidiPlayer::playbackDelay();
 }
 
 bool Metronome::enabled() {
@@ -105,14 +113,11 @@ void Metronome::setEnabled(bool b) {
 	if (b) {
 		// metronome
 		connect(MidiPlayer::player(),
-				SIGNAL(measureChanged(int, int)), Metronome::instance(), SLOT(measureUpdate(int,
-						int)));
+				SIGNAL(measureChanged(int, int)), Metronome::instance(), SLOT(measureUpdate(int, int)));
 		connect(MidiPlayer::player(),
-				SIGNAL(measureUpdate(int, int)), Metronome::instance(), SLOT(measureUpdate(int,
-						int)));
+				SIGNAL(measureUpdate(int, int)), Metronome::instance(), SLOT(measureUpdate(int, int)));
 		connect(MidiPlayer::player(),
-				SIGNAL(meterChanged(int, int)), Metronome::instance(), SLOT(meterChanged(int,
-						int)));
+				SIGNAL(meterChanged(int, int)), Metronome::instance(), SLOT(meterChanged(int, int)));
 		connect(MidiPlayer::player(),
 				SIGNAL(playerStopped()), Metronome::instance(), SLOT(playbackStopped()));
 		connect(MidiPlayer::player(),

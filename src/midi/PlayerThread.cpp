@@ -79,7 +79,7 @@ void PlayerThread::run() {
 		QByteArray array;
 		array.append(byte(0xB0) | byte(i));
 		array.append(byte(121));
-		array.append(byte(0));
+		array.append(char(0));
 		MidiOutput::instance()->sendCommand(array);
 	}
 	MidiOutput::instance()->playedNotes.clear();
@@ -143,7 +143,7 @@ void PlayerThread::timeout() {
 					QByteArray array;
 					array.append(0x80 | byte(channel));
 					array.append(byte(note));
-					array.append(byte(0));
+					array.append(char(0));
 					MidiOutput::instance()->sendCommand(array);
 				}
 			}

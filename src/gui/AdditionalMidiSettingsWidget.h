@@ -37,6 +37,8 @@ class AdditionalMidiSettingsWidget : public SettingsWidget {
 
 	public slots:
 		void manualModeToggled(bool enable);
+		void gbaModeToggled(bool enable);
+		void playbackDelayChanged(int value);
 		void setDefaultTimePerQuarter(int value);
 		bool accept() Q_DECL_OVERRIDE;
 
@@ -45,6 +47,8 @@ class AdditionalMidiSettingsWidget : public SettingsWidget {
 		QSettings *_settings;
 		QLineEdit *startCmd;
 		QSpinBox *_tpqBox;
+		QSpinBox *_playbackDelay;
+		QCheckBox *_gbaMode;
 };
 
 #endif // ADDITIONALMIDISETTINGSWIDGET_H

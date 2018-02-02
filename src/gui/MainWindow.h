@@ -185,6 +185,8 @@ class MainWindow : public QMainWindow {
 
 		void updateDetected(Update *update);
 
+		void showMidFixDialog();
+
 	protected:
 		void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 		void keyPressEvent(QKeyEvent* e) Q_DECL_OVERRIDE;

@@ -298,10 +298,10 @@ void PianoWidget::paintPianoKey(QPainter *painter, int number, qreal x,
 			playerRect.setWidth(width * scaleWidthBlack);
 			playerRect.setHeight(height * scaleHeightBlack + 0.5);
 			QColor c = Qt::black;
-			if (mouseInWidget(matrixWidget)) {
+			/*if (mouseInWidget(matrixWidget)) {
 				c = QColor(200, 200, 200);
 				inRect = true;
-			}
+			}*/
 			painter->fillRect(qRectF(playerRect), c);
 
 			keyPolygon.append(qPointF(x, y));

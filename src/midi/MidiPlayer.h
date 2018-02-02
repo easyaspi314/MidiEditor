@@ -35,25 +35,29 @@ class MidiPlayer : public QObject {
 
 		bool isPlaying();
 		int timeMs();
-		double speedScale();
+		qreal speedScale();
 		void setSpeedScale(double d);
+		static int playbackDelay();
+		static void setPlaybackDelay(int delay);
 		static PlayerThread *player();
 
-		/**
-		 * Send all Notes off to every channel.
-		 */
-		void panic();
 
 	public slots:
 		void play(MidiFile *file);
 		void play(NoteOnEvent *event);
 		void stop();
 
+		/**
+		 * Send all Notes off to every channel.
+		 */
+		void panic();
+
 	private:
 		MidiPlayer();
 		static MidiPlayer *createInstance();
 		bool playing;
-		double _speed;
+		int _playbackDelay;
+		qreal _speed;
 		static PlayerThread *_playerThread;
 };
 

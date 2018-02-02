@@ -39,6 +39,7 @@ class Metronome : public QObject {
 		void meterChanged(int n, int d);
 		void playbackStarted();
 		void playbackStopped();
+		void doClick();
 
 	signals:
 		void click();
@@ -52,6 +53,7 @@ class Metronome : public QObject {
 		int num, denom, lastPos, lastMeasure;
 		static bool _enable;
 		static QSoundEffect *clickSound;
+		int delay;
 };
 
 #endif

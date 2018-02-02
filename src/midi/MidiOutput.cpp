@@ -20,6 +20,7 @@
 
 #include "../MidiEvent/MidiEvent.h"
 #include "../gui/MainWindow.h"
+#include "MidiPlayer.h"
 
 #include <QFile>
 #include <QTextStream>
@@ -36,14 +37,17 @@
 #include "../Singleton.h"
 
 SenderThread *MidiOutput::_sender = new SenderThread();
+
 MidiOutput::MidiOutput() : QObject() {
 	_midiOut = Q_NULLPTR;
 	_outPort = "";
 	playedNotes = QMap<int, QList<int> >();
 	_alternativePlayer = false;
+	_gbaMode = false;
 
 	_stdChannel = 0;
 }
+
 void MidiOutput::init() {
 	// RtMidiOut constructor
 	try {
@@ -69,6 +73,12 @@ bool MidiOutput::isAlternativePlayer() {
 }
 void MidiOutput::setAlternativePlayer(bool enable) {
 	MidiOutput::instance()->_alternativePlayer = enable;
+}
+bool MidiOutput::isGBAMode() {
+	return MidiOutput::instance()->_gbaMode;
+}
+void MidiOutput::setGBAMode(bool enable) {
+	MidiOutput::instance()->_gbaMode = enable;
 }
 void MidiOutput::sendCommand(MidiEvent *e) {
 	if (!_sender->isRunning()) {
@@ -129,6 +139,7 @@ bool MidiOutput::setOutputPort(QString name) {
 				_midiOut->closePort();
 				_midiOut->openPort(i);
 				_outPort = name;
+				QTimer::singleShot(10, MidiPlayer::instance(), SLOT(panic()));
 				return true;
 			}
 
@@ -151,7 +162,7 @@ void MidiOutput::sendEnqueuedCommand(QByteArray array) {
 		// convert data to std::vector
 		std::vector<ubyte> message;
 
-		foreach (byte data, array) {
+		foreach(byte data, array) {
 			message.push_back(ubyte(data));
 		}
 		try {
@@ -176,9 +187,11 @@ void MidiOutput::sendProgram(int channel, int prog) {
 	array.append(byte(prog));
 	sendCommand(array);
 }
+
 MidiOutput *MidiOutput::createInstance() {
 	return new MidiOutput();
 }
+
 MidiOutput *MidiOutput::instance() {
 	return Singleton<MidiOutput>::instance(MidiOutput::createInstance);
 }

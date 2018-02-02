@@ -93,6 +93,7 @@ class MidiEvent : public ProtocolEntry, public GraphicObject {
 
 		virtual int line();
 		virtual QString toMessage();
+		virtual QByteArray play();
 		virtual QByteArray save();
 		virtual void draw(QPainter *p, QColor c) Q_DECL_OVERRIDE;
 

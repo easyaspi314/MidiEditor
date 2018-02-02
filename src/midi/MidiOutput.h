@@ -49,6 +49,8 @@ class MidiOutput : public QObject {
 		int standardChannel();
 		void sendProgram(int channel, int prog);
 		static SenderThread *sender();
+		static bool isGBAMode();
+		static void setGBAMode(bool enable);
 
 	public slots:
 		void init();
@@ -56,6 +58,7 @@ class MidiOutput : public QObject {
 	private:
 		MidiOutput();
 		static MidiOutput *createInstance();
+		bool _gbaMode;
 		QString _outPort;
 		RtMidiOut *_midiOut;
 		static SenderThread *_sender;

@@ -18,6 +18,7 @@
 
 #include "NoteOnEvent.h"
 
+#include "../midi/MidiOutput.h"
 #include "OffEvent.h"
 
 NoteOnEvent::NoteOnEvent(int note, int velocity, int ch, MidiTrack *track) : OnEvent(ch, track){
@@ -100,11 +101,22 @@ QByteArray NoteOnEvent::save(){
 	return array;
 }
 
+QByteArray NoteOnEvent::play(){
+	if (!MidiOutput::isGBAMode())
+		return save();
+
+	QByteArray array = QByteArray();
+	array.append(byte(0x90 | channel()));
+	array.append(byte(note()));
+	array.append(byte(round(sqrt(127.0 * velocity()))));
+	return array;
+}
+
 QByteArray NoteOnEvent::saveOffEvent(){
 	QByteArray array = QByteArray();
 	array.append(byte(0x80 | channel()));
 	array.append(byte(note()));
-	array.append(byte(0x0));
+	array.append(char(0x0));
 	return array;
 }
 

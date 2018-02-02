@@ -28,6 +28,7 @@
 #include "../tool/NewNoteTool.h"
 #include "../protocol/Protocol.h"
 #include "../tool/Selection.h"
+#include "../midi/MidiOutput.h"
 
 #include <QPixmapCache>
 
@@ -168,6 +169,7 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 	QString notesId = "MiscWidgetNotes_" + QString::number(height()) + "_" +
 					  file->protocol()->currentStepId()
 					  + "_" + QString::number(mode) +
+					  + "_" + MidiOutput::isGBAMode() +
 					  "_" + QString::number(matrixWidget->div()) + "_" +
 						QString::number(matrixWidget->scaleX, 'f', 2);
 
@@ -212,9 +214,13 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 				NoteOnEvent *noteOn = qobject_cast<NoteOnEvent *>(event);
 				if (noteOn) {
 					velocity = noteOn->velocity();
-
+					int h;
 					if (velocity > 0) {
-						int h = (height() * velocity) / 128;
+
+						if (MidiOutput::isGBAMode())
+							h = (height() * sqrt(velocity * 127))/128;
+						else
+							h = (height()*velocity)/128;
 						pixpainter.setBrush(c);
 						pixpainter.setPen(Qt::lightGray);
 						pixpainter.drawRoundedRect(qRectF(event->x(),
@@ -237,7 +243,7 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 					}
 
 					int velocity = 0;
-					double velocityMultiplier = 1.0;
+					qreal velocityMultiplier = 1.0;
 					NoteOnEvent *noteOn = qobject_cast<NoteOnEvent *>(event);
 
 					if (noteOn && noteOn->midiTime() >= matrixWidget->minVisibleMidiTime()
@@ -247,9 +253,13 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 							velocityMultiplier = velocity / aboveEvent->velocity();
 						}
 
-
+						int h;
 						if (velocity > 0) {
-							int h = (height() * velocity) / 128;
+
+							if (MidiOutput::isGBAMode())
+								h = (height() * sqrt(velocity * 127))/128;
+							else
+								h = (height()*velocity)/128;
 							if (edit_mode == SingleMode && dragging) {
 								h = velocityMultiplier * (h + (dragY - mouseY));
 							}
@@ -284,7 +294,11 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 			for (int i = 0; i < track.size(); i++) {
 
 				qreal xPix = track.at(i).first;
-				qreal yPix = height() - ((double)track.at(i).second / (double)_max) * height();
+				qreal yPix;
+				if (MidiOutput::isGBAMode() && mode == ControlEditor && controller == 7)
+					yPix = height()-((qreal)sqrt((qreal)_max * (qreal)track.at(i).second)/(qreal)_max)*height();
+				else
+					yPix = height()-((qreal)track.at(i).second/(qreal)_max)*height();
 				if (edit_mode == SingleMode) {
 					if (i == trackIndex) {
 						if (dragging) {
@@ -305,7 +319,11 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 			for (int i = 0; i < track.size(); i++) {
 
 				qreal xPix = track.at(i).first;
-				qreal yPix = height() - ((double)track.at(i).second / (double)_max) * height();
+				qreal yPix;
+				if (MidiOutput::isGBAMode() && mode == ControlEditor && controller == 7)
+					yPix = height()-((qreal)sqrt((qreal)_max * (qreal)track.at(i).second)/(qreal)_max)*height();
+				else
+					yPix = height()-((qreal)track.at(i).second/(qreal)_max)*height();
 				if (edit_mode == SingleMode) {
 					if (i == trackIndex) {
 						if (dragging) {
@@ -361,11 +379,11 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 			pixpainter.drawLine(qLineF(lineX, lineY, mouseX, mouseY));
 		}
 		pixpainter.end();
-			QPalette palette;
+		QPalette palette;
 		palette.setBrush(backgroundRole(), QBrush(*pixmap));
 		setPalette(palette);
-			QPixmapCache::insert(notesId, *pixmap);
-			inited = true;
+		QPixmapCache::insert(notesId, *pixmap);
+		inited = true;
 	}
 }
 
@@ -391,10 +409,12 @@ void MiscWidget::mouseMoveEvent(QMouseEvent *event) {
 						velocity = noteOn->velocity();
 
 						if (velocity > 0) {
-							int h = (height() * velocity) / 128;
-							if (!dragging
-									&& mouseInRect(qRectF(event->x(), height() - h - 5, WIDTH,
-													10))) {
+							int h;
+							if (MidiOutput::isGBAMode())
+								h = (height() * sqrt(velocity * 127))/128;
+							else
+								h = (height()*velocity)/128;
+							if (!dragging && mouseInRect(qRectF(event->x(), height() - h - 5, WIDTH, 10))) {
 								above = true;
 								aboveEvent = noteOn;
 								break;
@@ -418,7 +438,11 @@ void MiscWidget::mouseMoveEvent(QMouseEvent *event) {
 				for (int i = 0; i < track.size(); i++) {
 
 					qreal xPix = track.at(i).first;
-					qreal yPix = height() - (qreal(track.at(i).second) / qreal(_max)) * height();
+					qreal yPix;
+					if (MidiOutput::isGBAMode() && mode == ControlEditor && controller == 7)
+						yPix = height()-((qreal)sqrt((qreal)_max * (qreal)track.at(i).second)/(qreal)_max)*height();
+					else
+						yPix = height()-((qreal)track.at(i).second/(qreal)_max)*height();
 
 					if (mouseInRect(xPix - 4, yPix - 4, 8, 8)) {
 						trackIndex = i;
@@ -470,8 +494,12 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
 						&& noteOn->midiTime() <= matrixWidget->maxVisibleMidiTime()) {
 					velocity = noteOn->velocity();
 				}
+				int h;
 				if (velocity > 0) {
-					int h = (height() * velocity) / 128;
+					if (MidiOutput::isGBAMode())
+						h = (height()*(int)sqrt(velocity*127))/128;
+					else
+						h = (height()*velocity)/128;
 					if (!dragging
 							&& mouseInRect(qRectF(event->x(), height() - h - 5, WIDTH,
 											10))) {
@@ -501,7 +529,11 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
 						velocity = noteOn->velocity();
 					}
 					if (velocity > 0) {
-						qreal h = (height() * velocity) / 128;
+						qreal h;
+						if (MidiOutput::isGBAMode())
+							h = (height()*sqrt(velocity*127))/128;
+						else
+							h = (height()*velocity)/128;
 						if (!dragging
 								&& mouseInRect(qRectF(event->x(), height() - h - 5, WIDTH,
 												10))) {
@@ -546,7 +578,11 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
 			for (int i = 0; i < track.size(); i++) {
 
 				qreal xPix = track.at(i).first;
-				qreal yPix = height() - (qreal(track.at(i).second) / qreal(_max)) * height();
+				qreal yPix;
+				if (MidiOutput::isGBAMode() && mode == ControlEditor && controller == 7)
+					yPix = height()-((qreal)sqrt((qreal)_max * (qreal)track.at(i).second)/(qreal)_max)*height();
+				else
+					yPix = height()-((qreal)track.at(i).second/(qreal)_max)*height();
 
 				if (!dragging && mouseInRect(qRectF(xPix - 4, yPix - 4, 8, 8))) {
 					trackIndex = i;
@@ -615,7 +651,11 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 						NoteOnEvent *noteOn = qobject_cast<NoteOnEvent *>(event);
 						if (noteOn) {
 
-							qreal v = dV + noteOn->velocity();
+							qreal v;
+							if (MidiOutput::isGBAMode())
+								v = dV+sqrt(noteOn->velocity() * 127);
+							else
+								v = dV+noteOn->velocity();
 							if (aboveEventVelocity > 0) {
 								v *= (aboveEventVelocity / noteOn->velocity());
 							}
@@ -626,7 +666,10 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 							if (v < 0) {
 								v = 0;
 							}
-							noteOn->setVelocity(qFloor(v));
+							if (MidiOutput::isGBAMode())
+								noteOn->setVelocity(qRound(pow(v, 2) / 127));
+							else
+								noteOn->setVelocity(qRound(v));
 						}
 					}
 
@@ -682,9 +725,13 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 							case ControlEditor: {
 								ControlChangeEvent *ctrl = qobject_cast<ControlChangeEvent *>(ev);
 								if (ctrl) {
+									if (MidiOutput::isGBAMode() && ctrl->control() == 7)
+										v = qRound(pow(v, 2) / 127);
+
 									if (v > 127) {
 										v = 127;
 									}
+
 									ctrl->setValue(v);
 								}
 								break;
@@ -738,9 +785,12 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 						}
 						switch (mode) {
 							case ControlEditor: {
+								if (MidiOutput::isGBAMode() && controller == 7)
+									v = qRound(pow(v, 2) / 127);
 								if (v > 127) {
 									v = 127;
 								}
+
 								ControlChangeEvent *ctrl = new ControlChangeEvent(channel, controller, v,
 										track);
 								file->insertEventInChannel(channel, ctrl, tick);
@@ -818,6 +868,8 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 				}
 				switch (mode) {
 					case ControlEditor: {
+						if (MidiOutput::isGBAMode() && controller == 7)
+							v = qRound(pow(v, 2) / 127);
 						if (v > 127) {
 							v = 127;
 						}
@@ -1003,6 +1055,8 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 					lastValue = v;
 					switch (mode) {
 						case ControlEditor: {
+							if (MidiOutput::isGBAMode() && controller == 7)
+									v = qRound(pow(v, 2) / 127);
 							ControlChangeEvent *ctrl = new ControlChangeEvent(channel, controller, v,
 									track);
 							file->insertEventInChannel(channel, ctrl, tick);

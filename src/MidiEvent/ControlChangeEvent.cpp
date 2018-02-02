@@ -18,6 +18,7 @@
 
 #include "ControlChangeEvent.h"
 
+#include "../midi/MidiOutput.h"
 #include "../midi/MidiFile.h"
 
 ControlChangeEvent::ControlChangeEvent(int channel, int control, int value, MidiTrack *track) :
@@ -52,6 +53,30 @@ QByteArray ControlChangeEvent::save(){
 	array.append(byte(0xB0 | channel()));
 	array.append(byte(_control));
 	array.append(byte(_value));
+	return array;
+}
+
+QByteArray ControlChangeEvent::play() {
+	if (!MidiOutput::isGBAMode())
+		return save();
+
+	int value = _value;
+	if (_control == 1) {
+		if (value > 0) {
+			value = 10 * value;
+			if (value > 127)
+				value = 127;
+		}
+
+	} else if (_control == 7) {
+		value = qRound(sqrt(127.0 * value));
+	}
+
+	QByteArray array = QByteArray();
+	array.append(byte(0xB0 | channel()));
+	array.append(byte(_control));
+	array.append(byte(value));
+	//qWarning(toMessage().toUtf8());
 	return array;
 }
 

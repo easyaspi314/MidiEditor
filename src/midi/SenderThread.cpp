@@ -89,9 +89,9 @@ void SenderThread::enqueue(MidiEvent *event){
 	}
 	// If it is a NoteOnEvent or an OffEvent, we put it in _noteQueue.
 	if (event->type() == MidiEvent::NoteOnEventType || event->type() == MidiEvent::OffEventType) {
-		_noteQueue->push(event->save());
+		_noteQueue->push(event->play());
 	// Otherwise, it goes into _eventQueue.
 	} else {
-		_eventQueue->push(event->save());
+		_eventQueue->push(event->play());
 	}
 }

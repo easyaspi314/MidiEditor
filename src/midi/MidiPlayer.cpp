@@ -34,8 +34,9 @@ PlayerThread *MidiPlayer::_playerThread = new PlayerThread();
 MidiPlayer::MidiPlayer() : QObject() {
 	playing = false;
 	_speed = 1;
-
+	_playbackDelay = 0;
 }
+
 void MidiPlayer::play(MidiFile *file) {
 	if (isPlaying() || SingleNotePlayer::instance()->isPlaying()) {
 		stop();
@@ -111,7 +112,9 @@ MidiPlayer *MidiPlayer::instance() {
 }
 
 void MidiPlayer::panic() {
+#ifdef DEBUG
 	qWarning("panic");
+#endif
 	if (isPlaying()){
 		stop();
 	}
@@ -128,7 +131,7 @@ void MidiPlayer::panic() {
 		array.clear();
 		array.append(byte(0xB0 | i));
 		array.append(byte(120));
-		array.append(byte(0));
+		array.append(char(0));
 		MidiOutput::instance()->sendCommand(array);
 	}
 	if (MidiOutput::isAlternativePlayer()) {
@@ -137,17 +140,25 @@ void MidiPlayer::panic() {
 				QByteArray array;
 				array.append(byte(0x80 | channel));
 				array.append(byte(note));
-				array.append(byte(0));
+				array.append(char(0));
 				MidiOutput::instance()->sendCommand(array);
 			}
 		}
 	}
 }
 
-double MidiPlayer::speedScale() {
+qreal MidiPlayer::speedScale() {
 	return _speed;
 }
 
 void MidiPlayer::setSpeedScale(double d) {
 	_speed = d;
+}
+
+int MidiPlayer::playbackDelay() {
+	return MidiPlayer::instance()->_playbackDelay;
+}
+
+void MidiPlayer::setPlaybackDelay(int delay) {
+	MidiPlayer::instance()->_playbackDelay = delay;
 }

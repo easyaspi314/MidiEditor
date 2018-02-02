@@ -79,6 +79,8 @@
 #include "../protocol/Protocol.h"
 #include "../Terminal.h"
 
+#include "../gba/MidFix4AgbDialog.h"
+
 #ifdef ENABLE_REMOTE
 #include "../remote/RemoteServer.h"
 #endif
@@ -135,6 +137,12 @@ MainWindow::MainWindow(QString initFile, QWidget *parent, Qt::WindowFlags flags)
 
 	bool velocityDragging = _settings->value("velocity_dragging", false).toBool();
 	NewNoteTool::enableVelocityDragging = velocityDragging;
+
+	bool gbaMode = _settings->value("gba_mode", false).toBool();
+	MidiOutput::setGBAMode(gbaMode);
+
+	int playbackDelay = _settings->value("playback_delay", 0).toInt();
+	MidiPlayer::setPlaybackDelay(playbackDelay);
 
 	bool selectAndMove = _settings->value("select_and_move", true).toBool();
 	StandardTool::selectAndMoveEnabled = selectAndMove;
@@ -1292,6 +1300,8 @@ void MainWindow::closeEvent(QCloseEvent *event){
 	_settings->setValue("ticks_per_quarter", MidiFile::defaultTimePerQuarter);
 	_settings->setValue("screen_locked", mw_matrixWidget->screenLocked());
 	_settings->setValue("magnet", EventTool::magnetEnabled());
+	_settings->setValue("gba_mode", MidiOutput::isGBAMode());
+	_settings->setValue("playback_delay", MidiPlayer::playbackDelay());
 	_settings->setValue("antialiasing", MatrixWidget::antiAliasingEnabled);
 	_settings->setValue("velocity_dragging", NewNoteTool::enableVelocityDragging);
 	_settings->setValue("select_and_move", StandardTool::selectAndMoveEnabled);
@@ -2098,6 +2108,11 @@ void MainWindow::instrumentChannel(QAction *action){
 	}
 }
 
+void MainWindow::showMidFixDialog() {
+	MidFix4AgbDialog *midFixDialog = new MidFix4AgbDialog(file, this);
+	midFixDialog->show();
+}
+
 void MainWindow::spreadSelection(){
 
 	if(!file){
@@ -2548,6 +2563,10 @@ QToolBar *MainWindow::setupActions(QWidget *parent){
 	toolsMB->addAction(transposeAction);
 
 	toolsMB->addSeparator();
+
+	QAction *midFixAction = new QAction("Convert normal MIDI for GBA (beta)");
+	connect(midFixAction, SIGNAL(triggered()), this, SLOT(showMidFixDialog()));
+	toolsMB->addAction(midFixAction);
 
 	QAction *setFileLengthMs = new QAction("Set file duration", this);
 	connect(setFileLengthMs, SIGNAL(triggered()), this,SLOT(setFileLengthMs()));

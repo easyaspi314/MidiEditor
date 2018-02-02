@@ -20,8 +20,8 @@ class AtomicQueue
 	 {
 		  QueueNode( const T& value ) : next( NULL ), data( value ) {}
 		  ~QueueNode() { /*if ( next ) delete next;*/ }
-		  QueueNode   *next;
-		  T           data;
+		   QueueNode   *next = 0;
+		   T           data = 0;
 	 };
 
 public:
@@ -55,7 +55,7 @@ public:
 		  }
 	 }
 
-	 bool peek( T& result )
+	 bool peek(T& result)
 	 {
 		  if ( m_divider.load() != m_tail.load() )
 		  {
@@ -70,10 +70,10 @@ public:
 		  return false;
 	 }
 
-	 bool pop( T& result )
+	 bool pop(T& result)
 	 {
-		  bool res = this->peek( result );
-		  if ( res )
+		  bool res = this->peek(result);
+		  if (res)
 		  {
 				m_divider = m_divider.load()->next;
 		  }

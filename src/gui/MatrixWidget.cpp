@@ -368,7 +368,7 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 
 	if (MidiPlayer::instance()->isPlaying()) {
 		painter.setPen(Qt::red);
-		int x = xPosOfMs(MidiPlayer::instance()->timeMs());
+		int x = xPosOfMs(MidiPlayer::instance()->timeMs() - MidiPlayer::playbackDelay());
 		if (x >= 0 && viewport.contains(QPoint(x, viewport.center().y()))) {
 			painter.drawLine(qLineF(x, 0, x, height()));
 		}

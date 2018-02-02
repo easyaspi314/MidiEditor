@@ -370,6 +370,10 @@ QString MidiEvent::toMessage() {
 	return "";
 }
 
+QByteArray MidiEvent::play() {
+	return save();
+}
+
 QByteArray MidiEvent::save() {
 	return QByteArray();
 }

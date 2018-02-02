@@ -37,6 +37,7 @@ class ControlChangeEvent : public MidiEvent {
 		void setControl(int c);
 
 		QString toMessage() Q_DECL_OVERRIDE;
+		QByteArray play() Q_DECL_OVERRIDE;
 		QByteArray save() Q_DECL_OVERRIDE;
 
 		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;
