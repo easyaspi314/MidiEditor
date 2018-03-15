@@ -24,25 +24,25 @@
 
 class SysExEvent : public MidiEvent{
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		SysExEvent(int channel, QByteArray data, MidiTrack *track);
-		SysExEvent(const SysExEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+    public:
+        SysExEvent(ubyte channel, const QByteArray &data, MidiTrack *track);
+        SysExEvent(const SysExEvent &other);
+        EventType type() const qoverride;
 
-		QByteArray data();
-		int line() Q_DECL_OVERRIDE;
-		QByteArray save() Q_DECL_OVERRIDE;
+        QByteArray data();
+        ubyte line() qoverride;
+        const QByteArray save() qoverride;
 
-		QString typeString() Q_DECL_OVERRIDE;
-		ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
+        const QString typeString() qoverride;
+        ProtocolEntry *copy() qoverride;
+        virtual void reloadState(ProtocolEntry *entry) qoverride;
 
-		void setData(QByteArray d);
+        void setData(const QByteArray &d);
 
-	private:
-		QByteArray _data;
+    private:
+        QByteArray _data;
 
 };
 

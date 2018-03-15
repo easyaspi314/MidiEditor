@@ -23,33 +23,33 @@
 
 class KeySignatureEvent  : public MidiEvent {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		KeySignatureEvent(int channel, int tonality, bool minor, MidiTrack *track);
-		KeySignatureEvent(const KeySignatureEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+    public:
+        KeySignatureEvent(ubyte channel, ubyte tonality, bool minor, MidiTrack *track);
+        KeySignatureEvent(const KeySignatureEvent &other);
+        EventType type() const qoverride;
 
-		virtual int line() Q_DECL_OVERRIDE;
+        virtual ubyte line() qoverride;
 
-		QString toMessage() Q_DECL_OVERRIDE;
-		QByteArray save() Q_DECL_OVERRIDE;
+        const QString toMessage() qoverride;
+        const QByteArray save() qoverride;
 
-		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
+        virtual ProtocolEntry *copy() qoverride;
+        virtual void reloadState(ProtocolEntry *entry) qoverride;
 
-		QString typeString() Q_DECL_OVERRIDE;
+        const QString typeString() qoverride;
 
-		int tonality();
-		bool minor();
-		void setTonality(int t);
-		void setMinor(bool minor);
+        ubyte tonality();
+        bool minor();
+        void setTonality(ubyte t);
+        void setMinor(bool minor);
 
-		static QString toString(int tonality, bool minor);
+        static QString toString(ubyte tonality, bool minor);
 
-	private:
-		int _tonality;
-		bool _minor;
+    private:
+        ubyte _tonality;
+        bool _minor;
 };
 
 #endif

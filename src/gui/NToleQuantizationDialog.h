@@ -20,22 +20,25 @@
 #define NTOLEQUANTIZATIONDIALOGONDIALOG_H
 
 #include <QDialog>
+#include "../Utils.h"
 class QComboBox;
 
 class NToleQuantizationDialog : public QDialog {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
+    public:
 
-		NToleQuantizationDialog(QWidget *parent = Q_NULLPTR);
-		static int ntoleNNum, ntoleBeatNum, replaceNumNum, replaceDenomNum;
+        NToleQuantizationDialog(QWidget *parent = qnullptr);
 
-	public slots:
-		void takeResults();
 
-	private:
-		QComboBox *ntoleN, *ntoleBeat, *replaceNum, *replaceDenom;
+    public slots:
+        void takeResults();
+
+    private:
+        QComboBox *ntoleN, *ntoleBeat, *replaceNum, *replaceDenom;
+    public:
+        static ubyte ntoleNNum, ntoleBeatNum, replaceNumNum, replaceDenomNum;
 };
 
 #endif

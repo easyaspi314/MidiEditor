@@ -28,43 +28,40 @@ class MidiTrack;
 
 class EventTool: public EditorTool {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
+    public:
 
-		EventTool();
-		EventTool(EventTool &other);
-		Tool::ToolType type() const;
+        EventTool();
+        EventTool(EventTool &other);
+        ToolType type() const;
 
-		static void selectEvent(MidiEvent *event, bool single, bool ignoreStr=false);
-		static void deselectEvent(MidiEvent *event);
-		static void clearSelection();
-		void paintSelectedEvents(QPainter *painter);
+        static void selectEvent(MidiEvent *event, bool single, bool ignoreStr=false);
+        static void deselectEvent(MidiEvent *event);
+        static void clearSelection();
+        void paintSelectedEvents(QPainter *painter);
 
-		void changeTick(MidiEvent* event, qreal shiftX);
+        void changeTick(MidiEvent* event, qreal shiftX);
 
-		static void copyAction();
-		static void pasteAction();
+        static void copyAction();
+        static void pasteAction();
 
-		virtual bool showsSelection();
+        virtual bool showsSelection();
 
-		static void setPasteTrack(int track);
-		static int pasteTrack();
-		static void setPasteChannel(int channel);
-		static int pasteChannel();
+        static void setPasteTrack(ushort track);
+        static ushort pasteTrack();
+        static void setPasteChannel(ubyte channel);
+        static ubyte pasteChannel();
 
-		int rasteredX(qreal x, int *tick = Q_NULLPTR);
+        int rasteredX(qreal x, int *tick = qnullptr);
 
-		static void enableMagnet(bool enable);
-		static bool magnetEnabled();
+        static QList<MidiEvent*> *copiedEvents;
 
-		static QList<MidiEvent*> *copiedEvents;
+    protected:
+        static ushort _pasteTrack;
+        static ubyte _pasteChannel ;
+        static bool isCutAction;
 
-	protected:
-		static bool isCutAction;
-		static int _pasteChannel;
-		static int _pasteTrack;
-		static bool _magnet;
 };
 
 #endif

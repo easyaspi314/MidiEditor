@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -27,7 +29,7 @@
 
 #include "../remote/RemoteServer.h"
 
-RemoteSettingsWidget::RemoteSettingsWidget(RemoteServer *server, QWidget *parent) : SettingsWidget("Android Remote", parent){
+RemoteSettingsWidget::RemoteSettingsWidget(RemoteServer *server, QWidget *parent) : SettingsWidget("Android Remote", parent) {
 	_server = server;
 
 	QGridLayout *layout = new QGridLayout(this);
@@ -49,7 +51,7 @@ RemoteSettingsWidget::RemoteSettingsWidget(RemoteServer *server, QWidget *parent
 	layout->addWidget(portL, 2, 0, 1, 1);
 
 	QString port = QString::number(_server->clientPort());
-	if(_server->clientPort() < 0){
+	if (_server->clientPort() < 0) {
 		port = "";
 	}
 	_portField = new QLineEdit(port, this);
@@ -58,11 +60,11 @@ RemoteSettingsWidget::RemoteSettingsWidget(RemoteServer *server, QWidget *parent
 	layout->setRowStretch(6, 1);
 }
 
-bool RemoteSettingsWidget::accept(){
+bool RemoteSettingsWidget::accept() {
 	bool ok;
 
 	int port = _portField->text().toInt(&ok);
-	if(!ok){
+	if (!ok) {
 		QMessageBox::information(this, "Enter number", QString("Port is no number!"));
 		return true;
 	}

@@ -23,34 +23,40 @@
 
 class NewNoteTool : public EventTool {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		NewNoteTool();
-		NewNoteTool(NewNoteTool &other);
-		Tool::ToolType type() const Q_DECL_OVERRIDE;
+    public:
+        NewNoteTool();
+        NewNoteTool(NewNoteTool &other);
+        ToolType type() const qoverride;
 
-		ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
 
-		void draw(QPainter *painter) Q_DECL_OVERRIDE;
-		bool press(bool leftClick) Q_DECL_OVERRIDE;
-		bool release() Q_DECL_OVERRIDE;
-		bool move(qreal mouseX, qreal mouseY) Q_DECL_OVERRIDE;
-		bool releaseOnly() Q_DECL_OVERRIDE;
+        void draw(QPainter *painter) qoverride;
+        bool press(bool leftClick) qoverride;
+        bool release() qoverride;
+        bool move(qreal mouseX, qreal mouseY) qoverride;
+        bool releaseOnly() qoverride;
 
-		static int editTrack();
-		static int editChannel();
-		static void setEditTrack(int i);
-		static void setEditChannel(int i);
+        static ushort editTrack();
+        static ubyte editChannel();
+        static void setEditTrack(ushort i);
+        static void setEditChannel(ubyte i);
+    private:
+        qreal xPos;
+        static ushort _track;
+        ubyte line;
+        #ifdef NO_BIT_PACK
+            ubyte velocity;
+            bool inDrag;
+        #else
+            ubyte velocity : 7;
+            bool inDrag : 1;
+        #endif
+        static ubyte _channel;
 
-		static bool enableVelocityDragging;
-	private:
-		bool inDrag;
-		int line;
-		qreal xPos;
-		int velocity;
-		static int _channel, _track;
+
 };
 
 #endif

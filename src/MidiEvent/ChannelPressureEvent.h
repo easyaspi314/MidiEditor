@@ -23,28 +23,28 @@
 
 class ChannelPressureEvent : public MidiEvent {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		ChannelPressureEvent(int channel, int value, MidiTrack *track);
-		ChannelPressureEvent(const ChannelPressureEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+    public:
+        ChannelPressureEvent(ubyte channel, ubyte value, MidiTrack *track);
+        ChannelPressureEvent(const ChannelPressureEvent &other);
+        EventType type() const qoverride;
 
-		virtual int line() Q_DECL_OVERRIDE;
+        virtual ubyte line() qoverride;
 
-		QString toMessage() Q_DECL_OVERRIDE;
-		QByteArray save() Q_DECL_OVERRIDE;
+        const QString toMessage() qoverride;
+        const QByteArray save() qoverride;
 
-		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
+        virtual ProtocolEntry *copy() qoverride;
+        virtual void reloadState(ProtocolEntry *entry) qoverride;
 
-		QString typeString() Q_DECL_OVERRIDE;
+        const QString typeString() qoverride;
 
-		int value();
-		void setValue(int v);
+        ubyte value();
+        void setValue(ubyte v);
 
-	private:
-		int _value;
+    private:
+        ubyte _value;
 };
 
 #endif

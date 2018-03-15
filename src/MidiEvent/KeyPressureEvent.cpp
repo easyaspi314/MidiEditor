@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -18,74 +20,74 @@
 
 #include "KeyPressureEvent.h"
 
-KeyPressureEvent::KeyPressureEvent(int channel, int value, int note, MidiTrack *track) :
-		MidiEvent(channel, track)
+KeyPressureEvent::KeyPressureEvent(ubyte channel, ubyte value, ubyte note, MidiTrack *track) :
+        MidiEvent(channel, track)
 {
-	_value = value;
-	_note = note;
+    _value = value;
+    _note = note;
 }
 
 KeyPressureEvent::KeyPressureEvent(const KeyPressureEvent &other) :
-		MidiEvent(other)
+        MidiEvent(other)
 {
-	_value = other._value;
-	_note = other._note;
+    _value = other._value;
+    _note = other._note;
 }
 
-MidiEvent::EventType KeyPressureEvent::type() const {
-	return KeyPressureEventType;
+EventType KeyPressureEvent::type() const {
+    return KeyPressureEventType;
 }
 
-int KeyPressureEvent::line(){
-	return KEY_PRESSURE_LINE;
+ubyte KeyPressureEvent::line(){
+    return KeyPressureEventLine;
 }
 
-QString KeyPressureEvent::toMessage(){
-	return "";
+const QString KeyPressureEvent::toMessage(){
+    return QString();
 }
 
-QByteArray KeyPressureEvent::save(){
-	QByteArray array = QByteArray();
-	array.append(byte(0xA0 | channel()));
-	array.append(byte(_note));
-	array.append(byte(_value));
-	return array;
+const QByteArray KeyPressureEvent::save(){
+    QByteArray array = QByteArray();
+    append(array, 0xA0 | channel());
+    append(array, _note);
+    append(array, _value);
+    return array;
 }
 
 ProtocolEntry *KeyPressureEvent::copy(){
-	return new KeyPressureEvent(*this);
+    return new KeyPressureEvent(*this);
 }
 
 void KeyPressureEvent::reloadState(ProtocolEntry *entry) {
-	KeyPressureEvent *other = qobject_cast<KeyPressureEvent*>(entry);
-	if(!other){
-		return;
-	}
-	MidiEvent::reloadState(entry);
-	_value = other->_value;
-	_note = other->_note;
+    KeyPressureEvent *other = qobject_cast<KeyPressureEvent*>(entry);
+    if(!other){
+        return;
+    }
+    MidiEvent::reloadState(entry);
+    _value = other->_value;
+    _note = other->_note;
 }
 
-void KeyPressureEvent::setValue(int v){
-	ProtocolEntry *toCopy = copy();
-	_value = v;
-	protocol(toCopy, this);
+void KeyPressureEvent::setValue(ubyte v){
+    ProtocolEntry *toCopy = copy();
+    _value = v;
+    protocol(toCopy, this);
 }
 
-void KeyPressureEvent::setNote(int n){
-	ProtocolEntry *toCopy = copy();
-	_note = n;
-	protocol(toCopy, this);
+void KeyPressureEvent::setNote(ubyte n){
+    ProtocolEntry *toCopy = copy();
+    _note = n;
+    protocol(toCopy, this);
 }
 
-QString KeyPressureEvent::typeString(){
-	return "Key Pressure Event";
+const QString KeyPressureEvent::typeString(){
+    return "Key Pressure Event";
 }
 
-int KeyPressureEvent::value(){
-	return _value;
+ubyte KeyPressureEvent::value(){
+    return _value;
 }
 
-int KeyPressureEvent::note(){
-	return _note;
+ubyte KeyPressureEvent::note(){
+    return _note;
 }

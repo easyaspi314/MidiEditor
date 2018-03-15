@@ -23,31 +23,31 @@
 
 class ControlChangeEvent : public MidiEvent {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		ControlChangeEvent(int channel, int contr, int val, MidiTrack *track);
-		ControlChangeEvent(const ControlChangeEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+    public:
+        ControlChangeEvent(ubyte channel, ubyte contr, ubyte val, MidiTrack *track);
+        ControlChangeEvent(const ControlChangeEvent &other);
+        EventType type() const qoverride;
 
-		virtual int line() Q_DECL_OVERRIDE;
-		int control();
-		int value();
-		void setValue(int v);
-		void setControl(int c);
+        virtual ubyte line() qoverride;
+        ubyte control();
+        ubyte value();
+        void setValue(ubyte v);
+        void setControl(ubyte c);
 
-		QString toMessage() Q_DECL_OVERRIDE;
-		QByteArray play() Q_DECL_OVERRIDE;
-		QByteArray save() Q_DECL_OVERRIDE;
+        const QString toMessage() qoverride;
+        const QByteArray play() qoverride;
+        const QByteArray save() qoverride;
 
-		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
+        virtual ProtocolEntry *copy() qoverride;
+        virtual void reloadState(ProtocolEntry *entry) qoverride;
 
-		QString typeString() Q_DECL_OVERRIDE;
+        const QString typeString() qoverride;
 
-		virtual bool isOnEvent() Q_DECL_OVERRIDE;
-	private:
-		int _control, _value;
+        virtual bool isOnEvent() qoverride;
+    private:
+        ubyte _control, _value;
 
 };
 

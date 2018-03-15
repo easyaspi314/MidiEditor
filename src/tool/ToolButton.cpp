@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -19,22 +21,22 @@
 #include "ToolButton.h"
 #include "Tool.h"
 
-ToolButton::ToolButton(Tool *tool, QKeySequence sequence, QWidget *parent) : QAction(parent) {
-	button_tool = tool;
-	tool->setButton(this);
-	setText(button_tool->toolTip());
-	QImage image = *(button_tool->image());
-	setIcon(QIcon(QPixmap::fromImage(image)));
-	connect(this, SIGNAL(triggered()), this, SLOT(buttonClick()));
-	setCheckable(true);
-	setShortcut(sequence);
+ToolButton::ToolButton(Tool *tool, const QKeySequence &sequence, QWidget *parent) : QAction(parent) {
+    button_tool = tool;
+    tool->setButton(this);
+    setText(button_tool->toolTip());
+    QImage image = *(button_tool->image());
+    setIcon(QIcon(QPixmap::fromImage(image)));
+    connect(this, &ToolButton::triggered, this, &ToolButton::buttonClick);
+    setCheckable(true);
+    setShortcut(sequence);
 }
 
-void ToolButton::buttonClick(){
-	button_tool->buttonClick();
+void ToolButton::buttonClick() {
+    button_tool->buttonClick();
 }
 
 
-void ToolButton::releaseButton(){
-	button_tool->buttonClick();
+void ToolButton::releaseButton() {
+    button_tool->buttonClick();
 }

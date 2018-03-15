@@ -28,19 +28,19 @@ class QString;
 
 class SettingsWidget : public QWidget {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
+    public:
 
-		SettingsWidget(QString title, QWidget *parent = Q_NULLPTR);
-		QString title();
-		virtual bool accept();
-		QWidget *createInfoBox(QString info);
-		QWidget *separator();
-		virtual QIcon icon();
+        SettingsWidget(QString title, QWidget *parent = qnullptr);
+        QString title();
+        virtual bool accept();
+        QWidget *createInfoBox(QString info);
+        QWidget *separator();
+        virtual QIcon icon();
 
-	private:
-		QString _title;
+    private:
+        QString _title;
 };
 
 #endif

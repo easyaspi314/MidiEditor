@@ -23,6 +23,8 @@
 #include <QObject>
 #include <QWidget>
 
+#include "../Utils.h"
+
 class Update;
 
 class UpdateDialog : public QDialog {
@@ -30,7 +32,7 @@ class UpdateDialog : public QDialog {
 	Q_OBJECT
 
 	public:
-		UpdateDialog(Update *update, QWidget *parent = Q_NULLPTR);
+		UpdateDialog(Update *update, QWidget *parent = qnullptr);
 };
 
 #endif

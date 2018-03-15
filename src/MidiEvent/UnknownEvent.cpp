@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -20,61 +22,61 @@
 
 #include "../midi/MidiFile.h"
 
-UnknownEvent::UnknownEvent(int channel, int type, QByteArray data, MidiTrack *track) : MidiEvent(channel, track){
-	_data = data;
-	_type = type;
+UnknownEvent::UnknownEvent(ubyte channel, ubyte type, QByteArray data, MidiTrack *track) : MidiEvent(channel, track){
+    _data = data;
+    _type = type;
 }
 
 UnknownEvent::UnknownEvent(const UnknownEvent &other) : MidiEvent(other) {
-	_data = other._data;
-	_type = other._type;
+    _data = other._data;
+    _type = other._type;
 }
 
-MidiEvent::EventType UnknownEvent::type() const {
-	return UnknownEventType;
+EventType UnknownEvent::type() const {
+    return UnknownEventType;
 }
 
 QByteArray UnknownEvent::data(){
-	return _data;
+    return _data;
 }
 
-int UnknownEvent::line(){
-	return UNKNOWN_LINE;
+ubyte UnknownEvent::line(){
+    return UnknownEventLine;
 }
 
-QByteArray UnknownEvent::save(){
-	QByteArray s;
-	s.append(byte(0xFF));
-	s.append(byte(_type));
-	s.append(MidiFile::writeVariableLengthValue(_data.length()));
-	s.append(_data);
-	return s;
+const QByteArray UnknownEvent::save(){
+    QByteArray s;
+    append(s, 0xFF);
+    append(s, _type);
+    s.append(MidiFile::writeVariableLengthValue(_data.length()));
+    s.append(_data);
+    return s;
 }
 
 void UnknownEvent::reloadState(ProtocolEntry *entry){
-	UnknownEvent *other = qobject_cast<UnknownEvent*>(entry);
-	if(!other){
-		return;
-	}
-	MidiEvent::reloadState(entry);
-	_type = other->_type;
-	_data = other->_data;
+    UnknownEvent *other = qobject_cast<UnknownEvent*>(entry);
+    if(!other){
+        return;
+    }
+    MidiEvent::reloadState(entry);
+    _type = other->_type;
+    _data = other->_data;
 }
 
 ProtocolEntry *UnknownEvent::copy(){
-	return new UnknownEvent(*this);
+    return new UnknownEvent(*this);
 }
 
-int UnknownEvent::unknownType(){
-	return _type;
+ubyte UnknownEvent::unknownType(){
+    return _type;
 }
 
-void UnknownEvent::setUnknownType(int type){
-	_type = type;
-	protocol(copy(), this);
+void UnknownEvent::setUnknownType(ubyte type){
+    _type = type;
+    protocol(copy(), this);
 }
 
-void UnknownEvent::setData(QByteArray d){
-	_data = d;
-	protocol(copy(), this);
+void UnknownEvent::setData(const QByteArray &d){
+    _data = d;
+    protocol(copy(), this);
 }

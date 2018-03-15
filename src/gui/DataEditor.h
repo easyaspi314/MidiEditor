@@ -28,44 +28,45 @@ class QLineEdit;
 
 class DataLineEditor : public QObject {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		DataLineEditor(int line, QPushButton *plus, QPushButton *minus = Q_NULLPTR, QLineEdit *edit = Q_NULLPTR);
+    public:
+        DataLineEditor(int line, QPushButton *plus, QPushButton *minus = qnullptr,
+                       QLineEdit *edit = qnullptr, QObject *parent = qnullptr);
 
-	public slots:
-		void plus();
-		void minus();
-		void changed(QString text);
+    public slots:
+        void plus();
+        void minus();
+        void changed(const QString &text);
 
-	signals:
-		void dataChanged(int line, ubyte data);
-		void plusClicked(int line);
-		void minusClicked(int line);
+    signals:
+        void dataChanged(int line, ubyte data);
+        void plusClicked(int line);
+        void minusClicked(int line);
 
-	private:
-		int _line;
+    private:
+        int _line;
 };
 
 class DataEditor : public QScrollArea
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		DataEditor(QWidget *parent = Q_NULLPTR);
-		void setData(QByteArray data);
-		QByteArray data();
+    public:
+        DataEditor(QWidget *parent = qnullptr);
+        void setData(const QByteArray &data);
+        const QByteArray &data();
 
-		void rebuild();
+        void rebuild();
 
-	public slots:
-		void dataChanged(int line, ubyte data);
-		void plusClicked(int line);
-		void minusClicked(int line);
+    public slots:
+        void dataChanged(int line, ubyte data);
+        void plusClicked(int line);
+        void minusClicked(int line);
 
-	private:
-		QByteArray _data;
-		QWidget *_central;
+    private:
+        QByteArray _data;
+        QWidget *_central;
 
 };
 

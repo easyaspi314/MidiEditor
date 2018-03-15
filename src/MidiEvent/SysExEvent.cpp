@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -18,53 +20,53 @@
 
 #include "SysExEvent.h"
 
-SysExEvent::SysExEvent(int channel, QByteArray data, MidiTrack *track) : MidiEvent(channel, track){
-	_data = data;
+SysExEvent::SysExEvent(ubyte channel, const QByteArray &data, MidiTrack *track) : MidiEvent(channel, track){
+    _data = data;
 }
 
 SysExEvent::SysExEvent(const SysExEvent &other) : MidiEvent(other) {
-	_data = other._data;
+    _data = other._data;
 }
 
-MidiEvent::EventType SysExEvent::type() const {
-	return SystemExclusiveEventType;
+EventType SysExEvent::type() const {
+    return SystemExclusiveEventType;
 }
 
 QByteArray SysExEvent::data(){
-	return _data;
+    return _data;
 }
 
-int SysExEvent::line(){
-	return SYSEX_LINE;
+ubyte SysExEvent::line(){
+    return SysExEventLine;
 }
 
-QByteArray SysExEvent::save(){
-	QByteArray s;
-	s.append(byte(0xF0));
-	s.append(_data);
-	s.append(byte(0xF7));
-	return s;
+const QByteArray SysExEvent::save(){
+    QByteArray s;
+    append(s, 0xF0);
+    s.append(_data);
+    append(s, 0xF7);
+    return s;
 }
 
-QString SysExEvent::typeString(){
-	return "System Exclusive Message (SysEx)";
+const QString SysExEvent::typeString(){
+    return "System Exclusive Message (SysEx)";
 }
 
 ProtocolEntry *SysExEvent::copy(){
-	return new SysExEvent(*this);
+    return new SysExEvent(*this);
 }
 
 void SysExEvent::reloadState(ProtocolEntry *entry){
-	SysExEvent *other = qobject_cast<SysExEvent*>(entry);
-	if(!other){
-		return;
-	}
-	MidiEvent::reloadState(entry);
-	_data = other->_data;
+    SysExEvent *other = qobject_cast<SysExEvent*>(entry);
+    if(!other){
+        return;
+    }
+    MidiEvent::reloadState(entry);
+    _data = other->_data;
 }
 
-void SysExEvent::setData(QByteArray d){
-	ProtocolEntry *toCopy = copy();
-	_data = d;
-	protocol(toCopy, this);
+void SysExEvent::setData(const QByteArray &d){
+    ProtocolEntry *toCopy = copy();
+    _data = d;
+    protocol(toCopy, this);
 }

@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -19,108 +21,115 @@
 #include "OffEvent.h"
 #include "OnEvent.h"
 
-QMultiMap<int, OnEvent*> *OffEvent::onEvents = new QMultiMap<int, OnEvent*>();
 
-OffEvent::OffEvent(int ch, int l, MidiTrack *track) : MidiEvent(ch, track) {
-	_line = l;
-	_onEvent = Q_NULLPTR;
-	QList<OnEvent*> eventsToClose = onEvents->values(line());
-	for(int i = 0; i<eventsToClose.length(); i++){
-		if(eventsToClose.at(i)->channel() == channel()){
-			setOnEvent(eventsToClose.at(i));
+//QMultiMap<int, OnEvent*> *OffEvent::onEvents = qnullptr;
+typedef QMultiMap<int, OnEvent*> OnEventMap;
+Q_GLOBAL_STATIC(OnEventMap, onEvents);
 
-			// remove entry
-			removeOnEvent(eventsToClose.at(i));
-			return;
-		}
-	}
+OffEvent::OffEvent(ubyte ch, ubyte l, MidiTrack *track) : MidiEvent(ch, track) {
+    /*if (!onEvents) {
+        onEvents = new QMultiMap<int, OnEvent*>();
+    }*/
+    _line = l;
+    _onEvent = qnullptr;
+    QList<OnEvent*> eventsToClose = onEvents->values(line());
+    for(int i = 0; i < eventsToClose.length(); i++){
+        if(eventsToClose.at(i)->channel() == channel()){
+            setOnEvent(eventsToClose.at(i));
+
+            // remove entry
+            removeOnEvent(eventsToClose.at(i));
+            return;
+        }
+    }
 }
 
-MidiEvent::EventType OffEvent::type() const {
-	return OffEventType;
+EventType OffEvent::type() const {
+    return OffEventType;
 }
 
-QList<OnEvent*> OffEvent::corruptedOnEvents(){
-	return onEvents->values();
+const QList<OnEvent*> OffEvent::corruptedOnEvents(){
+    return onEvents->values();
 }
 
 void OffEvent::removeOnEvent(OnEvent *event){
-	onEvents->remove(event->line(), event);
-	/*
-	for(int j = 0; j<eventsToClose.length(); j++){
-		if(i!=j){
-			onEvents->insertMulti(line(), eventsToClose.at(j));
-		}
-	}
-	*/
+    onEvents->remove(event->line(), event);
+    /*
+    for(int j = 0; j<eventsToClose.length(); j++){
+        if(i!=j){
+            onEvents->insertMulti(line(), eventsToClose.at(j));
+        }
+    }
+    */
 }
 OffEvent::OffEvent(const OffEvent &other) : MidiEvent(other) {
-	_onEvent = other._onEvent;
+    _line = other._line;
+    _onEvent = other._onEvent;
 }
 
 void OffEvent::setOnEvent(OnEvent *event){
-	_onEvent = event;
-	event->setOffEvent(this);
+    _onEvent = event;
+    event->setOffEvent(this);
 }
 
 OnEvent *OffEvent::onEvent(){
-	return _onEvent;
+    return _onEvent;
 }
 
 void OffEvent::setMidiTime(int t, bool toProtocol){
-	MidiEvent::setMidiTime(t, toProtocol);
+    MidiEvent::setMidiTime(t, toProtocol);
 }
 
 void OffEvent::enterOnEvent(OnEvent *event){
-	onEvents->insertMulti(event->line(), event);
+    onEvents->insertMulti(event->line(), event);
 }
 
 void OffEvent::clearOnEvents(){
-	onEvents->clear();
+    onEvents->clear();
 }
 
 void OffEvent::draw(QPainter *p, QColor c){
-	if(onEvent() && !onEvent()->shown()){
-		onEvent()->draw(p, c);
-	}
+    if(onEvent() && !onEvent()->shown()){
+        onEvent()->draw(p, c);
+    }
 }
 
 ProtocolEntry *OffEvent::copy(){
-	return new OffEvent(*this);
+    return new OffEvent(*this);
 }
 
 void OffEvent::reloadState(ProtocolEntry *entry){
-	OffEvent *other = qobject_cast<OffEvent*>(entry);
-	if(!other){
-		return;
-	}
-	MidiEvent::reloadState(entry);
-	_onEvent = other->_onEvent;
+    OffEvent *other = qobject_cast<OffEvent*>(entry);
+    if(!other){
+        return;
+    }
+    MidiEvent::reloadState(entry);
+    _onEvent = other->_onEvent;
 }
 
-QByteArray OffEvent::save(){
-	if(onEvent()){
-		return onEvent()->saveOffEvent();
-	} else {
-		return QByteArray();
-	}
+const QByteArray OffEvent::save(){
+    if(onEvent()){
+        return onEvent()->saveOffEvent();
+    } else {
+        return QByteArray();
+    }
 }
 
-QString OffEvent::toMessage(){
-	if(onEvent()){
-		return onEvent()->offEventMessage();
-	} else {
-		return QString();
-	}
+const QString OffEvent::toMessage(){
+    if(onEvent()){
+        return onEvent()->offEventMessage();
+    } else {
+        return QString();
+    }
 }
 
-int OffEvent::line(){
-	if(onEvent()){
-		return onEvent()->line();
-	}
-	return _line;
+ubyte OffEvent::line(){
+    if(onEvent()){
+        return onEvent()->line();
+    }
+    return _line;
 }
 
 bool OffEvent::isOnEvent(){
-	return false;
+    return false;
 }

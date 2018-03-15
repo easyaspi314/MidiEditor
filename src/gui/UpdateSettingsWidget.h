@@ -21,22 +21,17 @@
 
 #include "SettingsWidget.h"
 
-class QSettings;
 class QCheckBox;
 
 class UpdateSettingsWidget : public SettingsWidget {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		UpdateSettingsWidget(QSettings *settings, QWidget *parent = Q_NULLPTR);
+    public:
+        UpdateSettingsWidget(QWidget *parent = qnullptr);
 
-	public slots:
-		void enableAutoUpdates(bool enable);
-
-	private:
-		QCheckBox *_auto;
-		QSettings *_settings;
+    private:
+        QCheckBox *_auto;
 };
 
 #endif

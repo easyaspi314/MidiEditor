@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -23,22 +25,23 @@
 
 MidiTrack::MidiTrack(MidiFile *file) : ProtocolEntry() {
 
-	_number = 0;
-	_nameEvent = Q_NULLPTR;
-	_file = file;
-	_hidden = false;
-	_muted = false;
-	_color = new QColor(Qt::red);
-	_assignedChannel = -1;
+    _number = 0;
+    _nameEvent = qnullptr;
+    _file = file;
+    _hidden = false;
+    _muted = false;
+    _color = new QColor(Qt::red);
+    _assignedChannel = 31;
 }
 
-MidiTrack::MidiTrack(const MidiTrack &other) : ProtocolEntry(other) {
-	_number = other._number;
-	_nameEvent = other._nameEvent;
-	_file = other._file;
-	_hidden = other._hidden;
-	_muted = other._muted;
-	_color = other._color;
+MidiTrack::MidiTrack(const MidiTrack &other)/*: ProtocolEntry(other)*/ {
+    _number = other._number;
+    _assignedChannel = other._assignedChannel;
+    _nameEvent = other._nameEvent;
+    _file = other._file;
+    _hidden = other._hidden;
+    _muted = other._muted;
+    _color = other._color;
 }
 
 MidiTrack::~MidiTrack(){
@@ -46,136 +49,135 @@ MidiTrack::~MidiTrack(){
 }
 
 MidiFile *MidiTrack::file(){
-	return _file;
+    return _file;
 }
 
 QString MidiTrack::name(){
-	if(_nameEvent){
-		return _nameEvent->text();
-	}
-	return "Untitled track";
+    if(_nameEvent){
+        return _nameEvent->text();
+    }
+    return "Untitled track";
 }
 
-void MidiTrack::setName(QString name){
+void MidiTrack::setName(const QString &name){
 
-	if(!_nameEvent){
-		_nameEvent = new TextEvent(16, this);
-		_nameEvent->setTextType(TextEvent::TrackNameTextEventType);
-		_file->insertEventInChannel(16, _nameEvent, 0);
-	}
+    if(!_nameEvent){
+        _nameEvent = new TextEvent(16, this, TextType::TrackNameTextEventType);
+        _file->insertEventInChannel(16, _nameEvent, 0);
+    }
 
-	_nameEvent->setText(name);
-	emit trackChanged();
+    _nameEvent->setText(name);
+    emit trackChanged();
 }
 
-int MidiTrack::number(){
-	return _number;
+ushort MidiTrack::number(){
+    return _number;
 }
 
-void MidiTrack::setNumber(int number){
-	ProtocolEntry *toCopy = copy();
-	_number = number;
+void MidiTrack::setNumber(ushort number){
+    ProtocolEntry *toCopy = copy();
+    _number = number;
 
-	switch((number-1)%16){
-		case 0: { _color = new QColor(241, 70, 57, 255);break; }
-		case 1: { _color =  new QColor(205, 241, 0, 255);break; }
-		case 2: { _color = new QColor(50, 201, 20, 255);break; }
-		case 3: { _color = new QColor(107, 241, 231, 255);break; }
-		case 4: { _color =  new QColor(127, 67, 255, 255);break; }
-		case 5: { _color = new QColor(241, 127, 200, 255);break; }
-		case 6: { _color = new QColor(170, 212, 170, 255);break; }
-		case 7: { _color = new QColor(222, 202, 170, 255);break; }
-		case 8: { _color = new QColor(241, 201, 20, 255);break; }
-		case 9: { _color = new QColor(80, 80, 80, 255);break; }
-		case 10: { _color = new QColor(202, 50, 127, 255);break; }
-		case 11: { _color = new QColor(0, 132, 255, 255);break; }
-		case 12: { _color =  new QColor(102, 127, 37, 255);break; }
-		case 13: { _color = new QColor(241, 164, 80, 255);break; }
-		case 14: { _color = new QColor(107, 30, 107, 255);break; }
-		case 15: { _color = new QColor(50, 127, 127, 255);break; }
-		default: { _color = new QColor(50, 50, 255, 255); break; }
-	}
+    switch((number - 1) % 16){
+        case 0: { _color = new QColor(241, 70, 57, 255);break; }
+        case 1: { _color =  new QColor(205, 241, 0, 255);break; }
+        case 2: { _color = new QColor(50, 201, 20, 255);break; }
+        case 3: { _color = new QColor(107, 241, 231, 255);break; }
+        case 4: { _color =  new QColor(127, 67, 255, 255);break; }
+        case 5: { _color = new QColor(241, 127, 200, 255);break; }
+        case 6: { _color = new QColor(170, 212, 170, 255);break; }
+        case 7: { _color = new QColor(222, 202, 170, 255);break; }
+        case 8: { _color = new QColor(241, 201, 20, 255);break; }
+        case 9: { _color = new QColor(80, 80, 80, 255);break; }
+        case 10: { _color = new QColor(202, 50, 127, 255);break; }
+        case 11: { _color = new QColor(0, 132, 255, 255);break; }
+        case 12: { _color =  new QColor(102, 127, 37, 255);break; }
+        case 13: { _color = new QColor(241, 164, 80, 255);break; }
+        case 14: { _color = new QColor(107, 30, 107, 255);break; }
+        case 15: { _color = new QColor(50, 127, 127, 255);break; }
+        default: { _color = new QColor(50, 50, 255, 255); break; }
+    }
 
-	protocol(toCopy, this);
+    protocol(toCopy, this);
 }
 
 void MidiTrack::setNameEvent(TextEvent *nameEvent){
-	if((_nameEvent) && (_nameEvent->textType() == TextEvent::TrackNameTextEventType)){
-		_nameEvent->setTextType(TextEvent::TextTextEventType);
-	}
-	ProtocolEntry *toCopy = copy();
-	_nameEvent = nameEvent;
-	if(_nameEvent){
-		_nameEvent->setTextType(TextEvent::TrackNameTextEventType);
-	}
-	protocol(toCopy, this);
-	emit trackChanged();
+    if((_nameEvent) && (_nameEvent->textType() == TextType::TrackNameTextEventType)){
+        _nameEvent->setTextType(TextType::TextTextEventType);
+    }
+    ProtocolEntry *toCopy = copy();
+    _nameEvent = nameEvent;
+    if(_nameEvent){
+        _nameEvent->setTextType(TextType::TrackNameTextEventType);
+    }
+    protocol(toCopy, this);
+    emit trackChanged();
 }
 
 TextEvent *MidiTrack::nameEvent(){
-	return _nameEvent;
+    return _nameEvent;
 }
 
 ProtocolEntry *MidiTrack::copy(){
-	return new MidiTrack(*this);
+    return new MidiTrack(*this);
 }
 
 void MidiTrack::reloadState(ProtocolEntry *entry){
-	MidiTrack *other = qobject_cast<MidiTrack*>(entry);
-	if(!other){
-		return;
-	}
-	if(_number != other->number()){
-		setNumber(other->_number);
-	}
-	_nameEvent = other->_nameEvent;
-	_file = other->_file;
-	_hidden = other->_hidden;
-	_muted = other->_muted;
+    MidiTrack *other = qobject_cast<MidiTrack*>(entry);
+    if(!other){
+        return;
+    }
+    if(_number != other->number()){
+        setNumber(other->_number);
+    }
+    _nameEvent = other->_nameEvent;
+    _file = other->_file;
+    _hidden = other->_hidden;
+    _muted = other->_muted;
 }
 
 
 void MidiTrack::setHidden(bool hidden){
-	ProtocolEntry *toCopy = copy();
-	_hidden = hidden;
-	protocol(toCopy, this);
-	emit trackChanged();
+    ProtocolEntry *toCopy = copy();
+    _hidden = hidden;
+    protocol(toCopy, this);
+    emit trackChanged();
 }
 
 bool MidiTrack::hidden(){
-	return _hidden;
+    return _hidden;
 }
 
 void MidiTrack::setMuted(bool muted){
-	ProtocolEntry *toCopy = copy();
-	_muted = muted;
-	protocol(toCopy, this);
-	emit trackChanged();
+    ProtocolEntry *toCopy = copy();
+    _muted = muted;
+    protocol(toCopy, this);
+    emit trackChanged();
 }
 
 bool MidiTrack::muted(){
-	return _muted;
+    return _muted;
 }
 
 QColor *MidiTrack::color(){
-	return _color;
+    return _color;
 }
 
 MidiTrack *MidiTrack::copyToFile(MidiFile *file){
 
-	file->addTrack();
-	MidiTrack *newTrack = file->tracks()->last();
-	newTrack->setName(this->name());
+    file->addTrack();
+    MidiTrack *newTrack = file->tracks()->last();
+    newTrack->setName(this->name());
 
-	file->registerCopiedTrack(this, newTrack, this->file());
+    file->registerCopiedTrack(this, newTrack, this->file());
 
-	return newTrack;
+    return newTrack;
 }
 
-void MidiTrack::assignChannel(int ch){
-	_assignedChannel = ch;
+void MidiTrack::assignChannel(ubyte ch){
+    _assignedChannel = ch;
 }
 
-int MidiTrack::assignedChannel(){
-	return _assignedChannel;
+ubyte MidiTrack::assignedChannel(){
+    return _assignedChannel;
 }

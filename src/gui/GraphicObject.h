@@ -25,40 +25,27 @@
 class GraphicObject {
 
 
-	public:
-		GraphicObject();
+    public:
+        GraphicObject();
 
-		qreal x();
-		qreal y();
-		qreal width();
-		qreal height();
+        qreal x();
+        qreal y();
+        qreal width();
+        qreal height();
 
-		void setX(qreal x);
-		void setY(qreal y);
-		void setWidth(qreal w);
-		void setHeight(qreal h);
+        void setX(qreal x);
+        void setY(qreal y);
+        void setWidth(qreal w);
+        void setHeight(qreal h);
 
-		virtual void draw(QPainter *p, QColor c);
+        virtual void draw(QPainter *p, QColor c);
 
-		bool shown();
-		void setShown(bool b);
+        bool shown();
+        void setShown(bool b);
 
-		/**
-		 * \brief These helpers will return pixel-aligned values
-		 * when antialiasing is disabled and precise valeus
-		 * when it isn't.
-		 */
-		static QRectF qRectF(QRectF other);
-		static QRectF qRectF(qreal x, qreal y, qreal w, qreal h);
-		static QLineF qLineF(QLineF other);
-		static QLineF qLineF(qreal x1, qreal y1, qreal x2, qreal y2);
-		static QPolygonF qPolygonF(QPolygonF other);
-		static QPointF qPointF(QPointF other);
-		static QPointF qPointF(qreal x, qreal y);
-
-	private:
-		qreal _x, _y, _width, _height;
-		bool shownInWidget;
+    private:
+        qreal _x, _y, _width, _height;
+        bool shownInWidget;
 };
 
 #endif

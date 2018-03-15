@@ -24,9 +24,7 @@
 #include <QCloseEvent>
 #include <QSettings>
 #include <QToolBar>
-#ifdef Q_OS_MAC
-	#include <QtMacExtras>
-#endif
+#include "../Utils.h"
 
 class MatrixWidget;
 class TimelineWidget;
@@ -54,189 +52,201 @@ class Update;
 
 class MainWindow : public QMainWindow {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		MainWindow(QString initFile="", QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
-		void setFile(MidiFile *f);
-		EventWidget *eventWidget();
-		void setStartDir(QString dir);
-		void setInitFile(const char * file);
-		static MainWindow *_mainWindow;
-		static MainWindow *getMainWindow();
-		// Alert that the input and output ports are ready.
-		// This lets us load the UI without having to wait as long.
-		void ioReady(bool isInput);
+    public:
+        MainWindow(const QString &initFile = QString(), QWidget *parent = qnullptr,
+                   Qt::WindowFlags flags = Qt::WindowFlags());
+        void setFile(MidiFile *f);
+        EventWidget *eventWidget();
+        void setStartDir(const QString &dir);
+        void setInitFile(const char * file);
+        static MainWindow *_mainWindow;
+        static MainWindow *getMainWindow();
 
-	protected:
-		void dropEvent(QDropEvent *ev) Q_DECL_OVERRIDE;
-		void dragEnterEvent(QDragEnterEvent *ev) Q_DECL_OVERRIDE;
+        template<typename FuncPointer>
+        QAction *createAction(const QString &name, FuncPointer func, const QString &iconPath = "",
+                             const QKeySequence &shortcut = QKeySequence());
 
-	public slots:
+    protected:
+        void dropEvent(QDropEvent *ev) qoverride;
+        void dragEnterEvent(QDragEnterEvent *ev) qoverride;
 
-		void loadInitFile();
-		void matrixSizeChanged(int maxScrollTime, double maxScrollLine, int vX, double vY);
-		void play();
-		void playStop();
-		void stop(bool autoConfirmRecord = false, bool addEvents = true, bool resetPause = true);
-		void pause();
-		void forward();
-		void back();
-		void backToBegin();
-		void load();
-		void loadFile(QString file);
-		void openFile(QString filePath);
-		void save();
-		void saveas();
-		void undo();
-		void redo();
-		void muteAllChannels();
-		void unmuteAllChannels();
-		void allChannelsVisible();
-		void allChannelsInvisible();
-		void muteAllTracks();
-		void unmuteAllTracks();
-		void allTracksVisible();
-		void allTracksInvisible();
-		void donate();
-		void about();
-		void setFileLengthMs();
-		void scrollPositionsChanged(int x, int y);
-		void record();
-		void newFile();
-		void panic();
-		void screenLockPressed(bool enable);
-		void scaleSelection();
-		void alignLeft();
-		void alignRight();
-		void equalize();
-		void deleteSelectedEvents();
-		void deleteChannel(QAction *action);
-		void moveSelectedEventsToChannel(QAction *action);
-		void moveSelectedEventsToTrack(QAction *action);
-		void updateRecentPathsList();
-		void openRecent(QAction *action);
-		void updateChannelMenu();
-		void updateTrackMenu();
-		void muteChannel(QAction *action);
-		void soloChannel(QAction *action);
-		void viewChannel(QAction *action);
-		void instrumentChannel(QAction *action);
+    public slots:
+        void initUI();
+        void loadInitFile();
+       // void matrixSizeChanged(int maxScrollTime, double maxScrollLine, int vX, double vY);
+        void play();
+        void playStop();
+        void stop();
+        void stop(bool autoConfirmRecord, bool addEvents = true, bool resetPause = true);
+        void pause();
+        void forward();
+        void back();
+        // Alert that the input and output ports are ready.
+        // This lets us load the UI without having to wait as long.
+        void ioReady(bool isInput);
+        void backToBegin();
+        void load();
+        void loadFile(const QString &file);
+        void openFile(const QString &filePath);
+        void save();
+        void saveas();
+        void undo();
+        void redo();
+        void muteAllChannels();
+        void unmuteAllChannels();
+        void allChannelsVisible();
+        void allChannelsInvisible();
+        void muteAllTracks();
+        void unmuteAllTracks();
+        void allTracksVisible();
+        void allTracksInvisible();
+        void donate();
+        void about();
+        void setFileLengthMs();
+        void scrollPositionsChanged(int x, int y);
+        void record();
+        void newFile();
+        void panic();
+        void screenLockPressed(bool enable);
+        void scaleSelection();
+        void alignLeft();
+        void alignRight();
+        void equalize();
+        void deleteSelectedEvents();
+        void deleteChannel(QAction *action);
+        void moveSelectedEventsToChannel(QAction *action);
+        void moveSelectedEventsToTrack(QAction *action);
+        void updateRecentPathsList();
+        void openRecent(QAction *action);
+        void updateChannelMenu();
+        void updateTrackMenu();
+        void muteChannel(QAction *action);
+        void soloChannel(QAction *action);
+        void viewChannel(QAction *action);
+        void instrumentChannel(QAction *action);
 
-		void renameTrackMenuClicked(QAction *action);
-		void removeTrackMenuClicked(QAction *action);
-		void showEventWidget(bool show);
-		void showTrackMenuClicked(QAction *action);
-		void muteTrackMenuClicked(QAction *action);
+        void renameTrackMenuClicked(QAction *action);
+        void removeTrackMenuClicked(QAction *action);
+        void showEventWidget(bool show);
+        void showTrackMenuClicked(QAction *action);
+        void muteTrackMenuClicked(QAction *action);
 
-		void renameTrack(int tracknumber);
-		void removeTrack(int tracknumber);
+        void renameTrack(ushort tracknumber);
+        void removeTrack(ushort tracknumber);
 
-		void setInstrumentForChannel(int i);
-		void spreadSelection();
-		void copy();
-		void paste();
+        void setInstrumentForChannel(ubyte i);
+        void spreadSelection();
+        void copy();
+        void paste();
 
-		void addTrack();
+        void addTrack();
 
-		void selectAll();
+        void selectAll();
 
-		void transposeNSemitones();
+        void transposeNSemitones();
 
-		void markEdited(bool modified);
+        void markEdited(bool modified);
 
-		void colorsByChannel();
-		void colorsByTrack();
+        void colorsByChannel();
+        void colorsByTrack();
 
-		void editChannel(int i, bool assign = true);
-		void editTrack(int i, bool assign = true);
-		void editTrackAndChannel(MidiTrack *track);
+        void editChannel(int i);
+        void editTrack(int i);
+        void editChannel(ubyte i, bool assign);
+        void editTrack(ushort i, bool assign);
+        void editTrackAndChannel(MidiTrack *track);
 
-		void manual();
+        void manual();
 
-		void changeMiscMode(int mode);
-		void selectModeChanged(QAction *action);
+        void changeMiscMode(int mode);
+        void selectModeChanged(QAction *action);
 
-		void pasteToChannel(QAction *action);
-		void pasteToTrack(QAction *action);
+        void pasteToChannel(QAction *action);
+        void pasteToTrack(QAction *action);
 
-		void selectAllFromChannel(QAction *action);
-		void selectAllFromTrack(QAction *action);
+        void selectAllFromChannel(QAction *action);
+        void selectAllFromTrack(QAction *action);
 
-		void divChanged(QAction* action);
-		void quantizationChanged(QAction*);
+        void divChanged(QAction* action);
+        void quantizationChanged(QAction*);
 
-		void enableMagnet(bool enable);
+        void enableMagnet(bool enable);
 
-		void openConfig();
+        void openConfig();
 
-		void enableMetronome(bool enable);
-		void enableThru(bool enable);
+        void enableMetronome(bool enable);
+        void enableThru(bool enable);
 
-		void quantizeSelection();
-		void quantizeNtoleDialog();
-		void quantizeNtole();
+        void quantizeSelection();
+        void quantizeNtoleDialog();
+        void quantizeNtole();
 
-		void setSpeed(QAction*);
+        void setSpeed(QAction*);
 
-		void checkEnableActionsForSelection();
-		void toolChanged();
-		void copiedEventsChanged();
+        void checkEnableActionsForSelection();
+        void toolChanged();
+        void copiedEventsChanged();
 
-		void updateDetected(Update *update);
+        void updateDetected(Update *update);
+#ifdef ENABLE_GBA
+        void showMidFixDialog();
+#endif
+    protected:
+        void closeEvent(QCloseEvent *event) qoverride;
+        void keyPressEvent(QKeyEvent* e) qoverride;
+        void keyReleaseEvent(QKeyEvent *event) qoverride;
 
-		void showMidFixDialog();
+    private:
+        QToolBar *setupActions(QWidget *parent);
+        int quantize(int t, QList<int> ticks);
+        bool saveDialog();
 
-	protected:
-		void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
-		void keyPressEvent(QKeyEvent* e) Q_DECL_OVERRIDE;
-		void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+        QList<QAction*> _activateWithSelections;
 
-	private:
-		MatrixWidget *mw_matrixWidget;
-		TimelineWidget *mw_timelineWidget;
-		PianoWidget *mw_pianoWidget;
-		QScrollBar *vert, *hori;
-		QScrollArea *matrixArea, *timelineArea, *pianoArea, *miscArea;
-		ChannelListWidget *channelWidget;
-		ProtocolWidget *protocolWidget;
-		TrackListWidget *_trackWidget;
-		MidiFile *file;
-		QString startDirectory,_initFile;
-		EventWidget *_eventWidget;
-		QSettings *_settings;
-		QStringList _recentFilePaths;
-		QMenu *_recentPathsMenu, *_deleteChannelMenu,
-			*_moveSelectedEventsToTrackMenu, *_moveSelectedEventsToChannelMenu,
-			*_pasteToTrackMenu, *_pasteToChannelMenu, *_selectAllFromTrackMenu, *_selectAllFromChannelMenu;
+        MatrixWidget *mw_matrixWidget;
+        TimelineWidget *mw_timelineWidget;
+        PianoWidget *mw_pianoWidget;
+        QScrollBar *vert, *hori;
+        QScrollArea *matrixArea, *timelineArea, *pianoArea, *miscArea;
+        ChannelListWidget *channelWidget;
+        ProtocolWidget *protocolWidget;
+        TrackListWidget *_trackWidget;
+        MidiFile *file;
+        QString startDirectory, _initFile;
+        EventWidget *_eventWidget;
+        QStringList _recentFilePaths;
+        QMenu *_recentPathsMenu, *_deleteChannelMenu,
+            *_moveSelectedEventsToTrackMenu, *_moveSelectedEventsToChannelMenu,
+            *_pasteToTrackMenu, *_pasteToChannelMenu, *_selectAllFromTrackMenu, *_selectAllFromChannelMenu;
 
-		QTabWidget *lowerTabWidget;
-		QAction *_colorsByChannel, *_colorsByTracks;
+        QTabWidget *lowerTabWidget;
+        QAction *_colorsByChannel, *_colorsByTracks;
 
-		QComboBox *_chooseEditTrack, *_chooseEditChannel;
+        QComboBox *_chooseEditTrack, *_chooseEditChannel;
 
 #ifdef ENABLE_REMOTE
-		RemoteServer *_remoteServer;
+        RemoteServer *_remoteServer;
 #endif
 
-		QWidget *_miscWidgetControl;
-		QGridLayout *_miscControlLayout;
+        QWidget *_miscWidgetControl;
+        QGridLayout *_miscControlLayout;
 
-		QComboBox *_miscMode, *_miscController, *_miscChannel;
-		QAction *setSingleMode, *setLineMode, *setFreehandMode, *_allChannelsVisible, *_allChannelsInvisible, *_allTracksAudible, *_allTracksMute,
-			*_allChannelsAudible, *_allChannelsMute, *_allTracksVisible, *_allTracksInvisible, *stdToolAction, *undoAction, *redoAction, *_pasteAction, *pasteActionTB;
-		MiscWidget *_miscWidget;
+        QComboBox *_miscMode, *_miscController, *_miscChannel;
+        QAction *setSingleMode, *setLineMode, *setFreehandMode, *_allChannelsVisible, *_allChannelsInvisible, *_allTracksAudible, *_allTracksMute,
+            *_allChannelsAudible, *_allChannelsMute, *_allTracksVisible, *_allTracksInvisible, *stdToolAction, *undoAction, *redoAction, *_pasteAction, *pasteActionTB;
+        MiscWidget *_miscWidget;
 
-		QToolBar *setupActions(QWidget *parent);
-#ifdef Q_OS_MAC
-//		QMacToolBar *setupMacActions();
-#endif
-		int _quantizationGrid;
-		int quantize(int t, QList<int> ticks);
-		QList<QAction*> _activateWithSelections;
-		bool inputIsReady, outputIsReady;
+        #ifdef NO_BIT_PACK
+            bool inputIsReady;
+            bool outputIsReady;
+        #else
+            bool inputIsReady : 1;
+            bool outputIsReady : 1;
+        #endif
 
-		bool saveDialog();
+
 };
 
 #endif

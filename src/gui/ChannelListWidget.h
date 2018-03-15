@@ -26,6 +26,7 @@
 #include <QColor>
 #include <QResizeEvent>
 #include <QPushButton>
+#include "../Utils.h"
 
 class QAction;
 class MidiFile;
@@ -33,69 +34,69 @@ class QLabel;
 
 class ChannelListWidget;
 
-const int ROW_HEIGHT = 85;
+const ubyte ROW_HEIGHT = 85;
 
 class ColoredWidget : public QWidget {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		ColoredWidget(QColor color, QWidget *parent = Q_NULLPTR);
-		void setColor(QColor c) { _color = c; update(); }
+    public:
+        ColoredWidget(const QColor &color, QWidget *parent = qnullptr);
+        void setColor(const QColor &c) { _color = c; update(); }
 
-	protected:
-		void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    protected:
+        void paintEvent(QPaintEvent *event) qoverride;
 
-	private:
-		QColor _color;
+    private:
+        QColor _color;
 };
 
 
 class ChannelListItem : public QWidget {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		ChannelListItem(int channel, ChannelListWidget *parent);
-		void onBeforeUpdate();
+    public:
+        ChannelListItem(ubyte channel, ChannelListWidget *parent);
+        void onBeforeUpdate();
 
-	signals:
-		void selectInstrumentClicked(int channel);
-		void channelStateChanged();
+    signals:
+        void selectInstrumentClicked(int channel);
+        void channelStateChanged();
 
-	public slots:
-		void toggleVisibility(bool visible);
-		void toggleAudibility(bool audible);
-		void toggleSolo(bool solo);
-		void instrument();
+    public slots:
+        void toggleVisibility(bool visible);
+        void toggleAudibility(bool audible);
+        void toggleSolo(bool solo);
+        void instrument();
 
-	private:
-		QLabel *instrumentLabel;
-		ChannelListWidget *channelList;
-		int channel;
-		ColoredWidget *colored;
-		QAction *visibleAction, *loudAction, *soloAction;
+    private:
+        QLabel *instrumentLabel;
+        ChannelListWidget *channelList;
+        ubyte channel;
+        ColoredWidget *colored;
+        QAction *visibleAction, *loudAction, *soloAction;
 };
 
 class ChannelListWidget : public QListWidget {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		ChannelListWidget(QWidget *parent = Q_NULLPTR);
-		void setFile(MidiFile *f);
-		MidiFile *midiFile();
+    public:
+        ChannelListWidget(QWidget *parent = qnullptr);
+        void setFile(MidiFile *f);
+        MidiFile *midiFile();
 
-	signals:
-		void channelStateChanged();
-		void selectInstrumentClicked(int channel);
+    signals:
+        void channelStateChanged();
+        void selectInstrumentClicked(ubyte channel);
 
-	public slots:
-		void update();
+    public slots:
+        void update();
 
-	private:
-		MidiFile *file;
-		QList<ChannelListItem*> items;
+    private:
+        MidiFile *file;
+        QList<ChannelListItem*> items;
 };
 
 #endif

@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -36,11 +38,11 @@ SingleNotePlayer::SingleNotePlayer() {
 	connect(timer, &QTimer::timeout, this, &SingleNotePlayer::stop);
 }
 
-void SingleNotePlayer::play(NoteOnEvent *event){
+void SingleNotePlayer::play(NoteOnEvent *event) {
 	if (MidiPlayer::instance()->isPlaying()) {
 		return;
 	}
-	if(playing){
+	if (playing) {
 		MidiOutput::instance()->sendCommand(offMessage);
 		timer->stop();
 	}
@@ -50,7 +52,7 @@ void SingleNotePlayer::play(NoteOnEvent *event){
 	timer->start();
 }
 
-void SingleNotePlayer::stop(){
+void SingleNotePlayer::stop() {
 	MidiOutput::instance()->sendCommand(offMessage);
 	timer->stop();
 	playing = false;

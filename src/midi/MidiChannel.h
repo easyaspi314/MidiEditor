@@ -29,6 +29,7 @@
 
 #include "../protocol/ProtocolEntry.h"
 #include <QMultiMap>
+#include "../Utils.h"
 
 class MidiFile;
 class MidiEvent;
@@ -53,148 +54,160 @@ class NoteOnEvent;
  */
 class MidiChannel : public ProtocolEntry {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
+    public:
 
-		/**
-		 * \brief creates a new MidiChannel with number num.
-		 *
-		 * Sets the channels file to f.
-		 */
-		MidiChannel(MidiFile *f, int num);
+        /**
+         * \brief creates a new MidiChannel with number num.
+         *
+         * Sets the channels file to f.
+         */
+        MidiChannel(MidiFile *f, ubyte num);
 
-		/**
-		 * \brief creates a copy of other.
-		 */
-		MidiChannel(const MidiChannel &other);
+        /**
+         * \brief creates a copy of other.
+         */
+        MidiChannel(const MidiChannel &other);
 
-		/**
-		 * \brief returns the channels file.
-		 */
-		MidiFile *file() Q_DECL_OVERRIDE;
+        /**
+         * \brief returns the channels file.
+         */
+        MidiFile *file() qoverride;
 
-		/**
-		 * \brief returns the channels number.
-		 *
-		 * 0-15 are MidiChannels, 16 for general Events, 17 for TempoChanges
-		 * and 18 for TimeSignatureEvents.
-		 */
-		int number();
+        /**
+         * \brief returns the channels number.
+         *
+         * 0-15 are MidiChannels, 16 for general Events, 17 for TempoChanges
+         * and 18 for TimeSignatureEvents.
+         */
+        ubyte number();
 
-		/**
-		 * \brief returns the channels color.
-		 *
-		 * The color only depends on the channel number.
-		 */
-		QColor color();
+        /**
+         * \brief returns the channels color.
+         *
+         * The color only depends on the channel number.
+         */
+        QColor color();
 
-		/**
-		 * \brief returns the eventMap of the channel.
-		 *
-		 * This contains all MidiEvents of the channel.
-		 */
-		QMultiMap<int, MidiEvent*> *eventMap();
+        /**
+         * \brief returns the eventMap of the channel.
+         *
+         * This contains all MidiEvents of the channel.
+         */
+        QMultiMap<int, MidiEvent*> *eventMap();
 
-		/**
-		 * \brief inserts a note to this channel.
-		 */
-		NoteOnEvent* insertNote(int note, int startTick, int endTick, int velocity, MidiTrack *track);
+        /**
+         * \brief inserts a note to this channel.
+         */
+        NoteOnEvent* insertNote(ubyte note, int startTick, int endTick, ubyte velocity, MidiTrack *track);
 
-		/**
-		 * \brief inserts event into the channels map.
-		 */
-		void insertEvent(MidiEvent *event, int tick);
+        /**
+         * \brief inserts event into the channels map.
+         */
+        void insertEvent(MidiEvent *event, int tick);
 
-		/**
-		 * \brief removes event from the eventMap.
-		 */
-		bool removeEvent(MidiEvent *event);
+        /**
+         * \brief removes event from the eventMap.
+         */
+        bool removeEvent(MidiEvent *event);
 
-		/**
-		 * \brief returns the program number of the midi program at tick.
-		 */
-		int progAtTick(int tick);
+        /**
+         * \brief returns the program number of the midi program at tick.
+         */
+        ubyte progAtTick(int tick);
 
-		/**
-		 * \brief returns whether the channel is visible in the MatrixWidget.
-		 */
-		bool visible();
+        /**
+         * \brief returns whether the channel is visible in the MatrixWidget.
+         */
+        bool visible();
 
-		/**
-		 * \brief sets the channels visibility to b.
-		 */
-		void setVisible(bool b);
+        /**
+         * \brief sets the channels visibility to b.
+         */
+        void setVisible(bool b);
 
-		/**
-		 * \brief returns whether the channel is muted.
-		 */
-		bool mute();
+        /**
+         * \brief returns whether the channel is muted.
+         */
+        bool mute();
 
-		/**
-		 * \brief sets the channel mute or makes it loud.
-		 */
-		void setMute(bool b);
+        /**
+         * \brief sets the channel mute or makes it loud.
+         */
+        void setMute(bool b);
 
-		/**
-		 * \brief returns whether the channel is playing in solo mode.
-		 *
-		 * If the channel is in solo mode, all other channels are muted.
-		 */
-		bool solo();
+        /**
+         * \brief returns whether the channel is playing in solo mode.
+         *
+         * If the channel is in solo mode, all other channels are muted.
+         */
+        bool solo();
 
-		/**
-		 * \brief sets the solo mode to b.
-		 */
-		void setSolo(bool b);
+        /**
+         * \brief sets the solo mode to b.
+         */
+        void setSolo(bool b);
 
 
-		/**
-		 * \brief removes all events of the channel.
-		 */
-		void deleteAllEvents();
+        /**
+         * \brief removes all events of the channel.
+         */
+        void deleteAllEvents();
 
-		/**
-		 * \brief returns the color of the channel with the given number.
-		 */
-		static QColor colorByChannelNumber(int number);
+        /**
+         * \brief returns the color of the channel with the given number.
+         */
+        static QColor colorByChannelNumber(ubyte number);
 
-		/*
-		 * The following methods reimplement methods from the superclass
-		 * ProtocolEntry
-		 */
-		ProtocolEntry *copy() Q_DECL_OVERRIDE;
+        /*
+         * The following methods reimplement methods from the superclass
+         * ProtocolEntry
+         */
+        ProtocolEntry *copy() qoverride;
 
-		void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
+        void reloadState(ProtocolEntry *entry) qoverride;
 
-	protected:
+    protected:
 
-		/**
-		 * \brief the midiFile of this channel.
-		 */
-		MidiFile *_midiFile;
+        /**
+         * \brief the midiFile of this channel.
+         */
+        MidiFile *_midiFile;
 
-		/**
-		 * \brief the flags solo, mute and visible.
-		 */
-		bool _visible, _mute, _solo;
+        /**
+         * \brief contains all MidiEvents of the channel sorted by their tick.
+         */
+        QMultiMap<int, MidiEvent*> *_events;
 
-		/**
-		 * \brief contains all MidiEvents of the channel sorted by their tick.
-		 */
-		QMultiMap<int, MidiEvent*> *_events;
-
-		/**
-		 * \brief the channels color.
-		 *
-		 * This color is used to paint the channel in the matrix widget.
-		 */
-		QColor *_color;
-
-		/**
-		 * \brief the channels number.
-		 */
-		int _num;
+        /**
+         * \brief the channels color.
+         *
+         * This color is used to paint the channel in the matrix widget.
+         */
+        QColor *_color;
+        #ifdef NO_BIT_PACK
+            /**
+             * \brief the channels number.
+             */
+            ubyte _num;
+            /**
+             * \brief the flags solo, mute and visible.
+             */
+            bool _visible;
+            bool _mute;
+            bool _solo;
+        #else
+            /**
+             * \brief the channels number.
+             */
+            ubyte _num : 5;
+            /**
+             * \brief the flags solo, mute and visible.
+             */
+            bool _visible : 1;
+            bool _mute : 1;
+            bool _solo : 1;
+        #endif
 };
-
 #endif

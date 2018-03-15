@@ -23,33 +23,33 @@
 
 class TimeSignatureEvent : public MidiEvent {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		TimeSignatureEvent(int channel, int num, int denom, int midiClocks,
-				int num32In4, MidiTrack *track);
-		TimeSignatureEvent(const TimeSignatureEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+    public:
+        TimeSignatureEvent(ubyte channel, ubyte num, ubyte denom, ubyte midiClocks,
+                ubyte num32In4, MidiTrack *track);
+        TimeSignatureEvent(const TimeSignatureEvent &other);
+        EventType type() const qoverride;
 
-		int num();
-		int denom();
-		int midiClocks();
-		int num32In4();
-		int measures(int tick, int *ticksLeft = Q_NULLPTR);
-		int ticksPerMeasure();
+        ubyte num();
+        ubyte denom();
+        ubyte midiClocks();
+        ubyte num32In4();
+        int measures(int tick, int *ticksLeft = qnullptr);
+        int ticksPerMeasure();
 
-		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
-		int line() Q_DECL_OVERRIDE;
-		QByteArray save() Q_DECL_OVERRIDE;
+        virtual ProtocolEntry *copy() qoverride;
+        virtual void reloadState(ProtocolEntry *entry) qoverride;
+        ubyte line() qoverride;
+        const QByteArray save() qoverride;
 
-		void setDenominator(int d);
-		void setNumerator(int n);
+        void setDenominator(ubyte d);
+        void setNumerator(ubyte n);
 
-		QString typeString() Q_DECL_OVERRIDE;
+        const QString typeString() qoverride;
 
-	private:
-		int numerator, denominator, midiClocksPerMetronome, num32In4th;
+    private:
+        ubyte numerator, denominator, midiClocksPerMetronome, num32In4th;
 };
 
 #endif

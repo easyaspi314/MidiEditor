@@ -21,39 +21,39 @@
 
 #include <QObject>
 #include <QSoundEffect>
+#include "../Utils.h"
 
 class MidiFile;
 
 class Metronome : public QObject {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		void setFile(MidiFile *file);
-		static Metronome *instance();
-		static bool enabled();
-		static void setEnabled(bool b);
+    public:
+        void setFile(MidiFile *file);
+        static Metronome *instance();
+        static void setEnabled(bool b);
 
-	public slots:
-		void measureUpdate(int measure, int tickInMeasure);
-		void meterChanged(int n, int d);
-		void playbackStarted();
-		void playbackStopped();
-		void doClick();
+    public slots:
+        void measureUpdate(int measure, int tickInMeasure);
+        void meterChanged(ubyte n, ubyte d);
+        void playbackStarted();
+        void playbackStopped();
+        void doClick();
 
-	signals:
-		void click();
+    signals:
+        void click();
 
 
-	private:
-		Metronome(QObject *parent = 0);
-		static Metronome *createInstance();
-		MidiFile *_file;
-		void reset();
-		int num, denom, lastPos, lastMeasure;
-		static bool _enable;
-		static QSoundEffect *clickSound;
-		int delay;
+    private:
+        Metronome(QObject *parent = qnullptr);
+        static Metronome *createInstance();
+        void reset();
+        MidiFile *_file;
+        static QSoundEffect *clickSound;
+
+        int lastPos, lastMeasure;
+        ubyte num, denom;
 };
 
 #endif

@@ -26,34 +26,33 @@ class SelectTool;
 class SizeChangeTool;
 class NewNoteTool;
 
+enum struct StandardActionType : ubyte {
+            NoAction = 0,
+            SizeChangeAction,
+            MoveAction
+        };
 class StandardTool :public EventTool {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		enum StandardActionType {
-			NoAction = 0,
-			SizeChangeAction,
-			MoveAction
-		};
-		StandardTool();
-		StandardTool(StandardTool &other);
-		Tool::ToolType type() const Q_DECL_OVERRIDE;
+    public:
 
-		void draw(QPainter *painter) Q_DECL_OVERRIDE;
-		bool press(bool leftClick) Q_DECL_OVERRIDE;
-		bool move(qreal mouseX, qreal mouseY) Q_DECL_OVERRIDE;
-		bool release() Q_DECL_OVERRIDE;
+        StandardTool();
+        StandardTool(StandardTool &other);
+        ToolType type() const qoverride;
 
-		static bool selectAndMoveEnabled;
+        void draw(QPainter *painter) qoverride;
+        bool press(bool leftClick) qoverride;
+        bool move(qreal mouseX, qreal mouseY) qoverride;
+        bool release() qoverride;
 
-		ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
-		bool showsSelection() Q_DECL_OVERRIDE;
-	private:
-		EventMoveTool *moveTool;
-		SelectTool *selectTool;
-		SizeChangeTool *sizeChangeTool;
-		NewNoteTool *newNoteTool;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
+        bool showsSelection() qoverride;
+    private:
+        EventMoveTool *moveTool;
+        SelectTool *selectTool;
+        SizeChangeTool *sizeChangeTool;
+        NewNoteTool *newNoteTool;
 };
 #endif

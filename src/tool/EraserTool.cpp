@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -25,59 +27,59 @@
 #include "../protocol/Protocol.h"
 #include "Selection.h"
 
-EraserTool::EraserTool() : EventTool(){
-	setImage(":/run_environment/graphics/tool/eraser.png");
-	setToolTipText("Eraser (remove Events)");
+EraserTool::EraserTool() : EventTool() {
+    setImage(":/run_environment/graphics/tool/eraser.png");
+    setToolTipText("Eraser (remove Events)");
 }
 
-EraserTool::EraserTool(EraserTool &other) : EventTool(other){
-	return;
+EraserTool::EraserTool(EraserTool &other) : EventTool(other) {
+    return;
 }
 
-Tool::ToolType EraserTool::type() const {
-	return Tool::Eraser;
+ToolType EraserTool::type() const {
+    return ToolType::Eraser;
 }
 
-ProtocolEntry *EraserTool::copy(){
-	return new EraserTool(*this);
+ProtocolEntry *EraserTool::copy() {
+    return new EraserTool(*this);
 }
 
-void EraserTool::reloadState(ProtocolEntry *entry){
-	EraserTool *other = qobject_cast<EraserTool*>(entry);
-	if(!other){
-		return;
-	}
-	EventTool::reloadState(entry);
+void EraserTool::reloadState(ProtocolEntry *entry) {
+    EraserTool *other = qobject_cast<EraserTool*>(entry);
+    if (!other) {
+        return;
+    }
+    EventTool::reloadState(entry);
 }
 
-void EraserTool::draw(QPainter *painter){
-	foreach(MidiEvent *ev, *(matrixWidget->activeEvents())){
-		if(pointInRect( mouseX, mouseY, ev->x(), ev->y(), ev->x()+ev->width(),
-				ev->y()+ev->height()))
-		{
-			painter->fillRect(qRectF(ev->x(), ev->y(), ev->width(), ev->height()), Qt::black);
-		}
-	}
+void EraserTool::draw(QPainter *painter) {
+    for (MidiEvent *ev : *(matrixWidget->activeEvents())) {
+        if (pointInRect( mouseX, mouseY, ev->x(), ev->y(), ev->x()+ev->width(),
+                ev->y()+ev->height()))
+        {
+            painter->fillRect(qRectF(ev->x(), ev->y(), ev->width(), ev->height()), Qt::black);
+        }
+    }
 }
 
-bool EraserTool::move(qreal mouseX, qreal mouseY){
-	EventTool::move(mouseX, mouseY);
-	return true;
+bool EraserTool::move(qreal mouseX, qreal mouseY) {
+    EventTool::move(mouseX, mouseY);
+    return true;
 }
 
-bool EraserTool::release(){
-	currentProtocol()->startNewAction("Remove event", image());
-	foreach(MidiEvent *ev, *(matrixWidget->activeEvents())){
-		if(pointInRect(mouseX, mouseY, ev->x(), ev->y(), ev->x()+ev->width(),
-				ev->y()+ev->height()))
-		{
-			file()->channel(ev->channel())->removeEvent(ev);
-			if(Selection::instance()->selectedEvents().contains(ev)){
-				deselectEvent(ev);
-			}
-		}
-	}
-	currentProtocol()->endAction();
-	return true;
+bool EraserTool::release() {
+    currentProtocol()->startNewAction("Remove event", image());
+    for (MidiEvent *ev : *(matrixWidget->activeEvents())) {
+        if (pointInRect(mouseX, mouseY, ev->x(), ev->y(), ev->x()+ev->width(),
+                ev->y()+ev->height()))
+        {
+            file()->channel(ev->channel())->removeEvent(ev);
+            if (Selection::instance()->selectedEvents().contains(ev)) {
+                deselectEvent(ev);
+            }
+        }
+    }
+    currentProtocol()->endAction();
+    return true;
 }
 

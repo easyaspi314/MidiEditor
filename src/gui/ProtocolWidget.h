@@ -22,28 +22,34 @@
 #include <QListWidget>
 #include <QPaintEvent>
 
+#include "../Utils.h"
+
 class MidiFile;
 class ProtocolStep;
 
 class ProtocolWidget : public QListWidget {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		ProtocolWidget(QWidget *parent = Q_NULLPTR);
-		void setFile(MidiFile *f);
+    public:
+        ProtocolWidget(QWidget *parent = qnullptr);
+        void setFile(MidiFile *f);
 
-	public slots:
-		void protocolChanged();
-		void update();
-		void stepClicked(QListWidgetItem *item);
+    public slots:
+        void protocolChanged();
+        void update();
+        void stepClicked(QListWidgetItem *item);
 
-	private:
-		MidiFile *file;
-		bool protocolHasChanged, nextChangeFromList;
+    private:
+        MidiFile *file;
+        #ifdef NO_BIT_PACK
+            bool protocolHasChanged, nextChangeFromList;
+        #else
+            bool protocolHasChanged : 1, nextChangeFromList : 1;
+        #endif
 
-	//protected:
-	//	void paintEvent(QPaintEvent *event);
+    //protected:
+    //	void paintEvent(QPaintEvent *event);
 };
 
 #endif

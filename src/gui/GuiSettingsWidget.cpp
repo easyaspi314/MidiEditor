@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -21,57 +23,45 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <QCheckBox>
-#include <QSettings>
 
 #include "MatrixWidget.h"
 #include "../tool/StandardTool.h"
 #include "../tool/NewNoteTool.h"
 
-GuiSettingsWidget::GuiSettingsWidget(QSettings *settings, QWidget *parent) : SettingsWidget("Interface Settings", parent) {
+GuiSettingsWidget::GuiSettingsWidget( QWidget *parent) : SettingsWidget("Interface Settings", parent) {
 
-		_settings = settings;
+        QGridLayout *layout = new QGridLayout(this);
+        setLayout(layout);
 
-		QGridLayout *layout = new QGridLayout(this);
-		setLayout(layout);
+        int row = 0;
 
-		int row = 0;
+        layout->addWidget(new QLabel(QStringLiteral("Editor settings"), this), row++, 0, 1, 2);
 
-		layout->addWidget(new QLabel("Editor settings", this), row++, 0, 1, 2);
+        _selectAndMove = new QCheckBox(QStringLiteral("Select and move simultaneously in the Standard Tool"), this);
+        _selectAndMove->setChecked(_settings.select_and_move);
+        connect(_selectAndMove, &QCheckBox::toggled, this, [=](bool enable){ _settings.select_and_move = enable; });
+        layout->addWidget(_selectAndMove, row++, 0, 1, 2);
 
-		_selectAndMove = new QCheckBox("Select and move simultaneously in the Standard Tool", this);
-		_selectAndMove->setChecked(StandardTool::selectAndMoveEnabled);
-		connect(_selectAndMove, SIGNAL(toggled(bool)), this, SLOT(setSelectAndMove(bool)));
-		layout->addWidget(_selectAndMove, row++, 0, 1, 2);
+        layout->addWidget(separator(), row++, 0, 1, 2);
 
-		layout->addWidget(separator(), row++, 0, 1, 2);
+        layout->addWidget(new QLabel(QStringLiteral("Visual settings"), this), row++, 0, 1, 2);
 
-		layout->addWidget(new QLabel("Visual settings", this), row++, 0, 1, 2);
+        _antiAliasingBox = new QCheckBox(QStringLiteral("Use antialiasing in the editor"), this);
+        _antiAliasingBox->setChecked(_settings.antialiasing);
 
-		_antiAliasingBox = new QCheckBox("Use antialiasing in the editor", this);
-		_antiAliasingBox->setChecked(MatrixWidget::antiAliasingEnabled);
+        connect(_antiAliasingBox, &QCheckBox::toggled, this,
+                [=](bool enable) {
+                    _settings.antialiasing = enable;
+                    QPixmapCache::clear();
+                });
+        layout->addWidget(_antiAliasingBox, row++, 0, 1, 2);
 
-		connect(_antiAliasingBox, SIGNAL(toggled(bool)), this, SLOT(setAntiAliasing(bool)));
-		layout->addWidget(_antiAliasingBox, row++, 0, 1, 2);
+        _velocityDraggingBox = new QCheckBox(QStringLiteral("Set velocity of new notes by dragging up and down (beta)"), this);
+        _velocityDraggingBox->setChecked(_settings.velocityDragging);
 
-		_velocityDraggingBox = new QCheckBox("Set velocity of new notes by dragging up and down (beta)", this);
-		_velocityDraggingBox->setChecked(NewNoteTool::enableVelocityDragging);
+        connect(_velocityDraggingBox, &QCheckBox::toggled, this, [=](bool enable) { _settings.velocityDragging = enable;});
+        layout->addWidget(_velocityDraggingBox, row++, 0, 1, 2);
 
-		connect(_velocityDraggingBox, SIGNAL(toggled(bool)), this, SLOT(setVelocityDragging(bool)));
-		layout->addWidget(_velocityDraggingBox, row++, 0, 1, 2);
+        layout->setRowStretch(row++, 4);
 
-		layout->setRowStretch(row++, 4);
-
-}
-
-void GuiSettingsWidget::setAntiAliasing(bool enable) {
-	MatrixWidget::antiAliasingEnabled = enable;
-	QPixmapCache::clear();
-}
-
-void GuiSettingsWidget::setSelectAndMove(bool enable) {
-	StandardTool::selectAndMoveEnabled = enable;
-}
-
-void GuiSettingsWidget::setVelocityDragging(bool enable) {
-	NewNoteTool::enableVelocityDragging = enable;
 }

@@ -23,12 +23,14 @@
 #include <QObject>
 #include <QWidget>
 
+#include "../Utils.h"
+
 class DonateDialog : public QDialog {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		DonateDialog(QWidget *parent = Q_NULLPTR);
+    public:
+        DonateDialog(QWidget *parent = qnullptr);
 };
 
 #endif

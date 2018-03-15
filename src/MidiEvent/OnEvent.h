@@ -25,24 +25,24 @@ class OffEvent;
 
 class OnEvent : public MidiEvent{
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		OnEvent(int ch, MidiTrack *track);
-		OnEvent(const OnEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+    public:
+        OnEvent(ubyte ch, MidiTrack *track);
+        OnEvent(const OnEvent &other);
+        EventType type() const qoverride;
 
-		void setOffEvent(OffEvent *event);
-		OffEvent *offEvent();
-		virtual QByteArray saveOffEvent();
-		virtual QString offEventMessage();
-		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
+        void setOffEvent(OffEvent *event);
+        OffEvent *offEvent();
+        virtual const QByteArray saveOffEvent();
+        virtual const QString offEventMessage();
+        virtual ProtocolEntry *copy() qoverride;
+        virtual void reloadState(ProtocolEntry *entry) qoverride;
 
-		void moveToChannel(int channel) Q_DECL_OVERRIDE;
+        void moveToChannel(ubyte channel) qoverride;
 
-	protected:
-		OffEvent *_offEvent;
+    protected:
+        OffEvent *_offEvent;
 
 };
 

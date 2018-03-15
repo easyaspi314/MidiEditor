@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -18,60 +20,60 @@
 
 #include "ChannelPressureEvent.h"
 
-ChannelPressureEvent::ChannelPressureEvent(int channel, int value, MidiTrack *track) :
-		MidiEvent(channel, track)
+ChannelPressureEvent::ChannelPressureEvent(ubyte channel, ubyte value, MidiTrack *track) :
+        MidiEvent(channel, track)
 {
-	_value = value;
+    _value = value;
 }
 
 ChannelPressureEvent::ChannelPressureEvent(const ChannelPressureEvent &other) :
-		MidiEvent(other)
+        MidiEvent(other)
 {
-	_value = other._value;
+    _value = other._value;
 }
 
-MidiEvent::EventType ChannelPressureEvent::type() const {
-	return ChannelPressureEventType;
+EventType ChannelPressureEvent::type() const {
+    return ChannelPressureEventType;
 }
 
-int ChannelPressureEvent::line(){
-	return CHANNEL_PRESSURE_LINE;
+ubyte ChannelPressureEvent::line(){
+    return ChannelPressureEventLine;
 }
 
-QString ChannelPressureEvent::toMessage(){
-	return "";
+const QString ChannelPressureEvent::toMessage(){
+    return QString();
 }
 
-QByteArray ChannelPressureEvent::save() {
-	QByteArray array = QByteArray();
-	array.append(byte(0xD0 | channel()));
-	array.append(byte(_value));
-	return array;
+const QByteArray ChannelPressureEvent::save() {
+    QByteArray array = QByteArray();
+    append(array, 0xD0 | channel());
+    append(array, _value);
+    return array;
 }
 
 ProtocolEntry *ChannelPressureEvent::copy(){
-	return new ChannelPressureEvent(*this);
+    return new ChannelPressureEvent(*this);
 }
 
 void ChannelPressureEvent::reloadState(ProtocolEntry *entry){
-	ChannelPressureEvent *other = qobject_cast<ChannelPressureEvent*>(entry);
-	if(!other){
-		return;
-	}
-	MidiEvent::reloadState(entry);
-	_value = other->_value;
+    ChannelPressureEvent *other = qobject_cast<ChannelPressureEvent*>(entry);
+    if(!other){
+        return;
+    }
+    MidiEvent::reloadState(entry);
+    _value = other->_value;
 }
 
-QString ChannelPressureEvent::typeString(){
-	return "Channel Pressure Event";
+const QString ChannelPressureEvent::typeString(){
+    return "Channel Pressure Event";
 }
 
-void ChannelPressureEvent::setValue(int v){
-	ProtocolEntry *toCopy = copy();
-	_value = v;
-	protocol(toCopy, this);
+void ChannelPressureEvent::setValue(ubyte v){
+    ProtocolEntry *toCopy = copy();
+    _value = v;
+    protocol(toCopy, this);
 }
 
-int ChannelPressureEvent::value(){
-	return _value;
+ubyte ChannelPressureEvent::value(){
+    return _value;
 }

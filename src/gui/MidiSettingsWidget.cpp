@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -25,7 +27,6 @@
 #include <QLineEdit>
 #include <QGridLayout>
 #include <QCheckBox>
-#include <QSettings>
 #include <QTextEdit>
 #include <QSpinBox>
 #include "../midi/MidiOutput.h"
@@ -36,118 +37,111 @@
 
 MidiSettingsWidget::MidiSettingsWidget(QWidget *parent) : SettingsWidget("Midi I/O", parent) {
 
-	QGridLayout *layout = new QGridLayout(this);
-	setLayout(layout);
+    QGridLayout *layout = new QGridLayout(this);
+    setLayout(layout);
 
-	int row = 0;
+    int row = 0;
 
-	QWidget *playerModeInfo = createInfoBox("Choose the Midi ports on your machine to which MidiEditor connects in order to play and record Midi data.");
-	layout->addWidget(playerModeInfo, row++, 0, 1, 6);
+    QWidget *playerModeInfo = createInfoBox("Choose the Midi ports on your machine to which MidiEditor connects in order to play and record Midi data.");
+    layout->addWidget(playerModeInfo, row++, 0, 1, 6);
 
-	// output
-	layout->addWidget(new QLabel("Midi output: ", this), row, 0, 1, 2);
-	// input
-	layout->addWidget(new QLabel("Midi input: ", this), row,3,1,2);
+    // output
+    layout->addWidget(new QLabel("Midi output: ", this), row, 0, 1, 2);
+    // input
+    layout->addWidget(new QLabel("Midi input: ", this), row,3,1,2);
 
-	_outList = new QListWidget(this);
-	connect(_outList, SIGNAL(itemChanged(QListWidgetItem*)), this,
-			SLOT(outputChanged(QListWidgetItem*)));
+    _outList = new QListWidget(this);
+    connect(_outList, &QListWidget::itemChanged, this, &MidiSettingsWidget::outputChanged);
 
-	_inList = new QListWidget(this);
-	connect(_inList, SIGNAL(itemChanged(QListWidgetItem*)), this,
-			SLOT(inputChanged(QListWidgetItem*)));
+    _inList = new QListWidget(this);
+    connect(_inList, &QListWidget::itemChanged, this, &MidiSettingsWidget::inputChanged);
 
-	QPushButton *reloadOutputList = new QPushButton();
-	reloadOutputList->setToolTip("Refresh port list");
-	reloadOutputList->setFlat(true);
-	reloadOutputList->setIcon(QIcon(":/run_environment/graphics/tool/refresh.png"));
-	reloadOutputList->setFixedSize(30, 30);
-	layout->addWidget(reloadOutputList, row, 2, 1, 1);
-	connect(reloadOutputList, SIGNAL(clicked()), this,
-			SLOT(reloadOutputPorts()));
-	reloadOutputPorts();
+    QPushButton *reloadOutputList = new QPushButton();
+    reloadOutputList->setToolTip("Refresh port list");
+    reloadOutputList->setFlat(true);
+    reloadOutputList->setIcon(QIcon(":/run_environment/graphics/tool/refresh.png"));
+    reloadOutputList->setFixedSize(30, 30);
+    layout->addWidget(reloadOutputList, row, 2, 1, 1);
+    connect(reloadOutputList, &QPushButton::clicked, this, &MidiSettingsWidget::reloadOutputPorts);
+    reloadOutputPorts();
 
-	QPushButton *reloadInputList = new QPushButton();
-	reloadInputList->setFlat(true);
-	layout->addWidget(reloadInputList, row++, 5, 1, 1);
-	reloadInputList->setToolTip("Refresh port list");
-	reloadInputList->setIcon(QIcon(":/run_environment/graphics/tool/refresh.png"));
-	reloadInputList->setFixedSize(30, 30);
-	connect(reloadInputList, SIGNAL(clicked()), this, SLOT(reloadInputPorts()));
-	reloadInputPorts();
+    QPushButton *reloadInputList = new QPushButton();
+    reloadInputList->setFlat(true);
+    layout->addWidget(reloadInputList, row++, 5, 1, 1);
+    reloadInputList->setToolTip("Refresh port list");
+    reloadInputList->setIcon(QIcon(":/run_environment/graphics/tool/refresh.png"));
+    reloadInputList->setFixedSize(30, 30);
+    connect(reloadInputList, &QPushButton::clicked, this, &MidiSettingsWidget::reloadInputPorts);
+    reloadInputPorts();
 
-	layout->addWidget(_outList, row, 0, 1, 3);
-	layout->addWidget(_inList, row++, 3, 1, 3);
+    layout->addWidget(_outList, row, 0, 1, 3);
+    layout->addWidget(_inList, row++, 3, 1, 3);
 }
 
-void MidiSettingsWidget::reloadInputPorts(){
+void MidiSettingsWidget::reloadInputPorts() {
 
-	disconnect(_inList, SIGNAL(itemChanged(QListWidgetItem*)), this,
-			SLOT(inputChanged(QListWidgetItem*)));
+    disconnect(_inList, &QListWidget::itemChanged, this, &MidiSettingsWidget::inputChanged);
 
-	// clear the list
-	_inList->clear();
+    // clear the list
+    _inList->clear();
 
-	foreach(QString name, MidiInput::instance()->inputPorts()){
+    for (const QString &name : MidiInput::instance()->inputPorts()) {
 
-		QListWidgetItem *item = new QListWidgetItem(name, _inList,
-				QListWidgetItem::UserType);
-		item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled |
-				Qt::ItemIsUserCheckable);
+        QListWidgetItem *item = new QListWidgetItem(name, _inList,
+                QListWidgetItem::UserType);
+        item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled |
+                Qt::ItemIsUserCheckable);
 
-		if(name == MidiInput::instance()->inputPort()){
-			item->setCheckState(Qt::Checked);
-		} else {
-			item->setCheckState(Qt::Unchecked);
-		}
-		_inList->addItem(item);
-	}
-	connect(_inList, SIGNAL(itemChanged(QListWidgetItem*)), this,
-			SLOT(inputChanged(QListWidgetItem*)));
+        if (name == MidiInput::instance()->inputPort()) {
+            item->setCheckState(Qt::Checked);
+        } else {
+            item->setCheckState(Qt::Unchecked);
+        }
+        _inList->addItem(item);
+    }
+    connect(_inList, &QListWidget::itemChanged, this, &MidiSettingsWidget::inputChanged);
 }
 
-void MidiSettingsWidget::reloadOutputPorts(){
+void MidiSettingsWidget::reloadOutputPorts() {
 
-	disconnect(_outList, SIGNAL(itemChanged(QListWidgetItem*)), this,
-			SLOT(outputChanged(QListWidgetItem*)));
+    disconnect(_outList, &QListWidget::itemChanged, this, &MidiSettingsWidget::outputChanged);
 
-	// clear the list
-	_outList->clear();
+    // clear the list
+    _outList->clear();
 
-	foreach(QString name, MidiOutput::instance()->outputPorts()){
+    for (const QString &name : MidiOutput::instance()->outputPorts()) {
 
-		QListWidgetItem *item = new QListWidgetItem(name, _outList,
-				QListWidgetItem::UserType);
-		item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled |
-				Qt::ItemIsUserCheckable);
+        QListWidgetItem *item = new QListWidgetItem(name, _outList,
+                QListWidgetItem::UserType);
+        item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled |
+                Qt::ItemIsUserCheckable);
 
-		if(name == MidiOutput::instance()->outputPort()){
-			item->setCheckState(Qt::Checked);
-		} else {
-			item->setCheckState(Qt::Unchecked);
-		}
-		_outList->addItem(item);
-	}
-	connect(_outList, SIGNAL(itemChanged(QListWidgetItem*)), this,
-			SLOT(outputChanged(QListWidgetItem*)));
+        if (name == MidiOutput::instance()->outputPort()) {
+            item->setCheckState(Qt::Checked);
+        } else {
+            item->setCheckState(Qt::Unchecked);
+        }
+        _outList->addItem(item);
+    }
+    connect(_outList, &QListWidget::itemChanged, this, &MidiSettingsWidget::outputChanged);
 }
 
-void MidiSettingsWidget::inputChanged(QListWidgetItem *item){
+void MidiSettingsWidget::inputChanged(QListWidgetItem *item) {
 
-	if(item->checkState() == Qt::Checked){
+    if (item->checkState() == Qt::Checked) {
 
-		MidiInput::instance()->setInputPort(item->text());
-
-		reloadInputPorts();
-	}
+        MidiInput::instance()->setInputPort(item->text());
+        _settings.in_port = item->text();
+        reloadInputPorts();
+    }
 }
 
-void MidiSettingsWidget::outputChanged(QListWidgetItem *item){
+void MidiSettingsWidget::outputChanged(QListWidgetItem *item) {
 
-	if(item->checkState() == Qt::Checked){
+    if (item->checkState() == Qt::Checked) {
 
-		MidiOutput::instance()->setOutputPort(item->text());
-
-		reloadOutputPorts();
-	}
+        MidiOutput::instance()->setOutputPort(item->text());
+        _settings.out_port = item->text();
+        reloadOutputPorts();
+    }
 }

@@ -25,31 +25,31 @@ class OffEvent;
 
 class NoteOnEvent : public OnEvent{
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		NoteOnEvent(int note, int velocity, int ch, MidiTrack *track);
-		NoteOnEvent(const NoteOnEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+    public:
+        NoteOnEvent(ubyte note, ubyte velocity, ubyte ch, MidiTrack *track);
+        NoteOnEvent(const NoteOnEvent &other);
+        EventType type() const qoverride;
 
-		int note();
-		int velocity();
-		int line() Q_DECL_OVERRIDE;
+        ubyte note();
+        ubyte velocity();
+        ubyte line() qoverride;
 
-		void setNote(int n);
-		void setVelocity(int v);
-		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
-		QString toMessage() Q_DECL_OVERRIDE;
-		QString offEventMessage() Q_DECL_OVERRIDE;
-		QByteArray save() Q_DECL_OVERRIDE;
-		QByteArray play() Q_DECL_OVERRIDE;
-		QByteArray saveOffEvent() Q_DECL_OVERRIDE;
+        void setNote(ubyte n);
+        void setVelocity(ubyte v);
+        virtual ProtocolEntry *copy() qoverride;
+        virtual void reloadState(ProtocolEntry *entry) qoverride;
+        const QString toMessage() qoverride;
+        const QString offEventMessage() qoverride;
+        const QByteArray save() qoverride;
+        const QByteArray play() qoverride;
+        const QByteArray saveOffEvent() qoverride;
 
-		QString typeString() Q_DECL_OVERRIDE;
+        const QString typeString() qoverride;
 
-	protected:
-		int _note, _velocity;
+    protected:
+        ubyte _note, _velocity;
 };
 
 #endif

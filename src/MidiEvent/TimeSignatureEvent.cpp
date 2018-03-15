@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -17,99 +19,105 @@
  */
 
 #include "TimeSignatureEvent.h"
-#include "math.h"
+#include <QtMath>
 #include "../midi/MidiFile.h"
 
-TimeSignatureEvent::TimeSignatureEvent(int channel, int num, int denom,
-		int midiClocks, int num32In4, MidiTrack *track) : MidiEvent(channel, track)
+TimeSignatureEvent::TimeSignatureEvent(ubyte channel, ubyte num, ubyte denom,
+        ubyte midiClocks, ubyte num32In4, MidiTrack *track) : MidiEvent(channel, track)
 {
-	numerator = num;
-	denominator = denom;
-	midiClocksPerMetronome = midiClocks;
-	num32In4th = num32In4;
+    numerator = num;
+    denominator = denom;
+    midiClocksPerMetronome = midiClocks;
+    num32In4th = num32In4;
 }
 
 TimeSignatureEvent::TimeSignatureEvent(const TimeSignatureEvent &other):
-		MidiEvent(other)
+        MidiEvent(other)
 {
-	numerator = other.numerator;
-	denominator = other.denominator;
-	midiClocksPerMetronome = other.midiClocksPerMetronome;
-	num32In4th = other.num32In4th;
+    numerator = other.numerator;
+    denominator = other.denominator;
+    midiClocksPerMetronome = other.midiClocksPerMetronome;
+    num32In4th = other.num32In4th;
 }
 
-MidiEvent::EventType TimeSignatureEvent::type() const {
-	return TimeSignatureEventType;
+EventType TimeSignatureEvent::type() const {
+    return TimeSignatureEventType;
 }
-int TimeSignatureEvent::num(){
-	return numerator;
-}
-
-int TimeSignatureEvent::denom(){
-	return denominator;
+ubyte TimeSignatureEvent::num(){
+    return numerator;
 }
 
-int TimeSignatureEvent::midiClocks(){
-	return midiClocksPerMetronome;
+ubyte TimeSignatureEvent::denom(){
+    return denominator;
 }
 
-int TimeSignatureEvent::num32In4(){
-	return num32In4th;
+ubyte TimeSignatureEvent::midiClocks(){
+    return midiClocksPerMetronome;
+}
+
+ubyte TimeSignatureEvent::num32In4(){
+    return num32In4th;
 }
 
 int TimeSignatureEvent::ticksPerMeasure(){
-	return (4*numerator*file()->ticksPerQuarter())/powf(2, denominator);
+    return (4*numerator*file()->ticksPerQuarter())/qPow(2, denominator);
 }
 
 int TimeSignatureEvent::measures(int ticks, int *ticksLeft){
-	//int numTicks = tick-midiTime();
-	if(ticksLeft){
-		*ticksLeft = ticks % ticksPerMeasure();
-	}
-	return ticks/ticksPerMeasure();
+    //int numTicks = tick-midiTime();
+    int tpm = ticksPerMeasure();
+    if (tpm == 0) {
+        qWarning("ticksPerMeasure is 0. We can't divide by zero now, can we?");
+        return 0;
+    }
+    if (ticksLeft) {
+        *ticksLeft = ticks % tpm;
+    }
+
+    return ticks/tpm;
 }
 
 ProtocolEntry *TimeSignatureEvent::copy(){
-	return new TimeSignatureEvent(*this);
+    return new TimeSignatureEvent(*this);
 }
 
 void TimeSignatureEvent::reloadState(ProtocolEntry *entry){
-	TimeSignatureEvent *other = qobject_cast<TimeSignatureEvent*>(entry);
-	if(!other){
-		return;
-	}
-	MidiEvent::reloadState(entry);
-	numerator = other->numerator;
-	denominator = other->denominator;
-	midiClocksPerMetronome = other->midiClocksPerMetronome;
-	num32In4th = other->num32In4th;
+    TimeSignatureEvent *other = qobject_cast<TimeSignatureEvent*>(entry);
+    if(!other){
+        return;
+    }
+    MidiEvent::reloadState(entry);
+    numerator = other->numerator;
+    denominator = other->denominator;
+    midiClocksPerMetronome = other->midiClocksPerMetronome;
+    num32In4th = other->num32In4th;
 }
-int TimeSignatureEvent::line(){
-	return MidiEvent::TIME_SIGNATURE_EVENT_LINE;
-}
-
-void TimeSignatureEvent::setNumerator(int n){
-	numerator = n;
-	protocol(copy(), this);
+ubyte TimeSignatureEvent::line(){
+    return TimeSignatureEventLine;
 }
 
-void TimeSignatureEvent::setDenominator(int d){
-	denominator = d;
-	protocol(copy(), this);
+void TimeSignatureEvent::setNumerator(ubyte n){
+    numerator = n;
+    protocol(copy(), this);
 }
 
-QByteArray TimeSignatureEvent::save(){
-	QByteArray array = QByteArray();
-	array.append(byte(0xFF));
-	array.append(byte(0x58));
-	array.append(byte(0x04));
-	array.append(byte(numerator));
-	array.append(byte(denominator));
-	array.append(byte(midiClocksPerMetronome));
-	array.append(byte(num32In4th));
-	return array;
+void TimeSignatureEvent::setDenominator(ubyte d){
+    denominator = d;
+    protocol(copy(), this);
 }
 
-QString TimeSignatureEvent::typeString(){
-	return "Time Signature Event";
+const QByteArray TimeSignatureEvent::save(){
+    QByteArray array = QByteArray();
+    append(array, 0xFF);
+    append(array, 0x58);
+    append(array, 0x04);
+    append(array, numerator);
+    append(array, denominator);
+    append(array, midiClocksPerMetronome);
+    append(array, num32In4th);
+    return array;
+}
+
+const QString TimeSignatureEvent::typeString(){
+    return "Time Signature Event";
 }

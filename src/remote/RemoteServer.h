@@ -83,7 +83,7 @@ class RemoteServer : public QObject {
 		void backRequest();
 		void recordRequest();
 		void setTimeRequest(int timeMs);
-		void disconnected();
+		void qWARNING(__FILE__);DISCONNECTed();
 
 	private:
 		QTcpServer server;

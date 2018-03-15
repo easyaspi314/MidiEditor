@@ -32,26 +32,26 @@ class ProtocolEntry;
  */
 class ProtocolItem  {
 
-	public:
-		/**
-		 * \brief Creates a new ProtocolItem.
-		 */
-		ProtocolItem(ProtocolEntry *oldObj, ProtocolEntry *newObj);
+    public:
+        /**
+         * \brief Creates a new ProtocolItem.
+         */
+        ProtocolItem(ProtocolEntry *oldObj, ProtocolEntry *newObj);
 
-		/**
-		 * \brief reloads the state of oldObj on newObj.
-		 *
-		 * Will call newObj.reloadState(newObj) and return a new ProtocolItem.
-		 * This new ProtocolItem will store the reverse order: it contains the
-		 * information needed to load the state of the new Object to the old
-		 * Object.
-		 */
-		ProtocolItem* release();
-		
-	private:
-		/**
-		 * \brief Both states of the Object.
-		 */
-		ProtocolEntry *_oldObject, *_newObject;
+        /**
+         * \brief reloads the state of oldObj on newObj.
+         *
+         * Will call newObj.reloadState(newObj) and return a new ProtocolItem.
+         * This new ProtocolItem will store the reverse order: it contains the
+         * information needed to load the state of the new Object to the old
+         * Object.
+         */
+        ProtocolItem* release();
+
+    private:
+        /**
+         * \brief Both states of the Object.
+         */
+        ProtocolEntry *_oldObject, *_newObject;
 };
 #endif

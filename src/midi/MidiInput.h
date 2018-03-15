@@ -36,44 +36,43 @@ class MidiTrack;
 
 class MidiInput : public QObject {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		static MidiInput *instance();
+    public:
+        static MidiInput *instance();
 
-		void sendCommand(QByteArray array);
-		void sendCommand(MidiEvent *e);
+        void sendCommand(const QByteArray &array);
+        void sendCommand(MidiEvent *e);
 
-		QStringList inputPorts();
-		bool setInputPort(QString name);
-		QString inputPort();
+        const QStringList inputPorts();
+        bool setInputPort(const QString &name);
+        QString inputPort();
 
-		void startInput();
-		QMultiMap<int, MidiEvent*> endInput(MidiTrack *track);
+        void startInput();
+        QMultiMap<int, MidiEvent*> endInput(MidiTrack *track);
 
-		static void receiveMessage(double deltatime,
-					std::vector<ubyte> *message, void *userData = Q_NULLPTR);
+        static void receiveMessage(double deltatime,
+                    std::vector<ubyte> *message, void *userData = qnullptr);
 
-		void setTime(int ms);
+        void setTime(int ms);
 
-		bool recording();
-		void setThruEnabled(bool b);
-		bool thru();
+        bool recording();
 
-	public slots:
-		void init();
 
-	private:
-		QString _inPort;
-		RtMidiIn *_midiIn;
-		QMultiMap<int, std::vector<ubyte> > *_messages;
-		int _currentTime;
-		bool _recording;
-		QList<int> toUnique(QList<int> in);
-		bool _thru;
+    public slots:
+        void init();
 
-		MidiInput();
-		static MidiInput *createInstance();
+    private:
+        const QList<int> toUnique(const QList<int> &in);
+        MidiInput();
+        static MidiInput *createInstance();
+
+        QString _inPort;
+        RtMidiIn *_midiIn;
+        QMultiMap<int, std::vector<ubyte> > *_messages;
+        int _currentTime;
+        bool _recording;
+
 };
 
 #endif

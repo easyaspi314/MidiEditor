@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -32,133 +34,138 @@
 PlayerThread *MidiPlayer::_playerThread = new PlayerThread();
 
 MidiPlayer::MidiPlayer() : QObject() {
-	playing = false;
-	_speed = 1;
-	_playbackDelay = 0;
+    //_playerThread = new PlayerThread();
+    playing = false;
+    _speed = 1;
 }
 
 void MidiPlayer::play(MidiFile *file) {
-	if (isPlaying() || SingleNotePlayer::instance()->isPlaying()) {
-		stop();
-	}
+    if (isPlaying() || SingleNotePlayer::instance()->isPlaying()) {
+        stop();
+    }
 // I don't know why we are reinstancing this.
 #ifdef Q_OS_WIN32
-	delete _playerThread;
-	_playerThread = new PlayerThread();
+    delete _playerThread;
+    _playerThread = new PlayerThread();
 
-	connect(_playerThread,
-			SIGNAL(measureChanged(int, int)), Metronome::instance(), SLOT(measureUpdate(int,
-					int)));
-	connect(_playerThread,
-			SIGNAL(measureUpdate(int, int)), Metronome::instance(), SLOT(measureUpdate(int,
-					int)));
-	connect(_playerThread,
-			SIGNAL(meterChanged(int, int)), Metronome::instance(), SLOT(meterChanged(int,
-					int)));
-	connect(_playerThread,
-			SIGNAL(playerStopped()), Metronome::instance(), SLOT(playbackStopped()));
-	connect(_playerThread,
-			SIGNAL(playerStarted()), Metronome::instance(), SLOT(playbackStarted()));
+    connect(_playerThread,
+            SIGNAL(measureChanged(int, int)), Metronome::instance(), SLOT(measureUpdate(int,
+                    int)));
+    connect(_playerThread,
+            SIGNAL(measureUpdate(int, int)), Metronome::instance(), SLOT(measureUpdate(int,
+                    int)));
+    connect(_playerThread,
+            SIGNAL(meterChanged(int, int)), Metronome::instance(), SLOT(meterChanged(int,
+                    int)));
+    connect(_playerThread,
+            SIGNAL(playerStopped()), Metronome::instance(), SLOT(playbackStopped()));
+    connect(_playerThread,
+            SIGNAL(playerStarted()), Metronome::instance(), SLOT(playbackStarted()));
 #endif
 
-	int tickFrom = file->cursorTick();
-	if (file->pauseTick() >= 0) {
-		tickFrom = file->pauseTick();
-	}
-	file->preparePlayerData(tickFrom);
-	if (!MidiOutput::sender()->isRunning()) {
-		MidiOutput::sender()->start(QThread::TimeCriticalPriority);
-	}
-	_playerThread->setFile(file);
-	_playerThread->start(QThread::TimeCriticalPriority);
-	playing = true;
+    int tickFrom = file->cursorTick();
+    if (file->pauseTick() >= 0) {
+        tickFrom = file->pauseTick();
+    }
+    file->preparePlayerData(tickFrom);
+    if (!MidiOutput::sender()->isRunning()) {
+        MidiOutput::sender()->start(QThread::TimeCriticalPriority);
+    }
+    _playerThread->setFile(file);
+    _playerThread->start(QThread::TimeCriticalPriority);
+    playing = true;
 }
 
 void MidiPlayer::play(NoteOnEvent *event) {
-	SingleNotePlayer::instance()->play(event);
+    SingleNotePlayer::instance()->play(event);
 }
 
 void MidiPlayer::stop() {
-	playing = false;
-	if (SingleNotePlayer::instance()->isPlaying()) {
-		SingleNotePlayer::instance()->stop();
-	}
-	if (MidiOutput::sender()->isRunning()) {
-		MidiOutput::sender()->stop();
-	}
-	if (_playerThread->isRunning()) {
-		_playerThread->stop();
-	}
+    playing = false;
+    if (SingleNotePlayer::instance()->isPlaying()) {
+        SingleNotePlayer::instance()->stop();
+    }
+    if (MidiOutput::sender()->isRunning()) {
+        MidiOutput::sender()->stop();
+    }
+    if (_playerThread->isRunning()) {
+        _playerThread->stop();
+    }
 }
 
 PlayerThread *MidiPlayer::player() {
-	return _playerThread;
+    return _playerThread;
 }
 
 bool MidiPlayer::isPlaying() {
-	return playing;
+    return playing;
 }
 
 int MidiPlayer::timeMs() {
-	return _playerThread->timeMs();
+    return _playerThread->timeMs();
 }
 
 MidiPlayer *MidiPlayer::createInstance() {
-	return new MidiPlayer();
+    return new MidiPlayer();
 }
 
 MidiPlayer *MidiPlayer::instance() {
-	return Singleton<MidiPlayer>::instance(MidiPlayer::createInstance);
+    return Singleton<MidiPlayer>::instance(MidiPlayer::createInstance);
 }
 
 void MidiPlayer::panic() {
 #ifdef DEBUG
-	qWarning("panic");
+    qWarning("panic");
 #endif
-	if (isPlaying()){
-		stop();
-	}
-	// set all channels note off / sounds off
-	for (int i = 0; i < 16; i++) {
-		// value (third number) should be 0, but doesn't work
-		QByteArray array;
-		array.append(byte(0xB0 | i));
-		array.append(byte(123));
-		array.append(byte(127));
+    MidiOutput *instance = MidiOutput::instance();
+    if (isPlaying()) {
+        stop();
+    }
+    // set all channels note off / sounds off
+    for (ubyte i = 0; i < 16; i++) {
+        // value (third number) should be 0, but doesn't work
+        QByteArray array;
+        append(array, 0xB0 | i);
+        append(array, 123);
+        append(array, 127);
 
-		MidiOutput::instance()->sendCommand(array);
+        instance->sendCommand(array);
 
-		array.clear();
-		array.append(byte(0xB0 | i));
-		array.append(byte(120));
-		array.append(char(0));
-		MidiOutput::instance()->sendCommand(array);
-	}
-	if (MidiOutput::isAlternativePlayer()) {
-		foreach (int channel, MidiOutput::instance()->playedNotes.keys()) {
-			foreach (int note, MidiOutput::instance()->playedNotes.value(channel)) {
-				QByteArray array;
-				array.append(byte(0x80 | channel));
-				array.append(byte(note));
-				array.append(char(0));
-				MidiOutput::instance()->sendCommand(array);
-			}
-		}
-	}
+        array.clear();
+        append(array, 0xB0 | i);
+        append(array, 120);
+        append(array, 0);
+        instance->sendCommand(array);
+    }
+    if (_settings.alt_stop) {
+        /*foreach (int channel, MidiOutput::instance()->playedNotes.keys()) {
+            foreach (int note, MidiOutput::instance()->playedNotes.value(channel)) {
+                QByteArray array;
+                append(array, 0x80 | channel);
+                append(array, note);
+                array.append(char(0));
+                MidiOutput::instance()->sendCommand(array);
+            }
+        }*/
+        const QMap<ubyte, QList<ubyte> > map = instance->playedNotes;
+        QMap<ubyte, QList<ubyte> >::const_iterator i;
+        QList<ubyte>::const_iterator j;
+        for (i = map.constBegin(); i != map.constEnd(); ++i) {
+            for (j = i.value().constBegin(); j != i.value().constEnd(); ++j) {
+                QByteArray array;
+                append(array, 0x80 | i.key());
+                append(array, *j);
+                append(array, 0);
+                instance->sendCommand(array);
+            }
+        }
+    }
 }
 
-qreal MidiPlayer::speedScale() {
-	return _speed;
+float MidiPlayer::speedScale() {
+    return _speed;
 }
 
-void MidiPlayer::setSpeedScale(double d) {
-	_speed = d;
-}
-
-int MidiPlayer::playbackDelay() {
-	return MidiPlayer::instance()->_playbackDelay;
-}
-
-void MidiPlayer::setPlaybackDelay(int delay) {
-	MidiPlayer::instance()->_playbackDelay = delay;
+void MidiPlayer::setSpeedScale(float d) {
+    _speed = d;
 }

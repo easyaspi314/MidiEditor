@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -23,103 +25,103 @@
 #include "EditorTool.h"
 #include "../gui/GraphicObject.h"
 
-EditorTool *Tool::_currentTool = Q_NULLPTR;
-MidiFile *Tool::_currentFile = Q_NULLPTR;
+EditorTool *Tool::_currentTool = qnullptr;
+MidiFile *Tool::_currentFile = qnullptr;
 
 Tool::Tool(QObject *parent) : ProtocolEntry(parent) {
-	_image = Q_NULLPTR;
-	_button = Q_NULLPTR;
-	_toolTip = "";
-	_standardTool = Q_NULLPTR;
+
+    _button = qnullptr;
+    _toolTip = QString();
+    _standardTool = qnullptr;
 }
 
-Tool::Tool(Tool &other) : ProtocolEntry(other) {
-	_image = other._image;
-	_button = other._button;
-	_toolTip = other._toolTip;
-	_standardTool = other._standardTool;
+Tool::Tool(Tool &other)/* : ProtocolEntry(other)*/ {
+    _image = other._image;
+    _button = other._button;
+    _toolTip = other._toolTip;
+    _standardTool = other._standardTool;
 }
 
-Tool::ToolType Tool::type() const {
-	return Tool::None;
+ToolType Tool::type() const {
+    return ToolType::None;
 }
 
-void Tool::buttonClick(){
-	return;
+void Tool::buttonClick() {
+    return;
 }
 
-void Tool::setImage(QString name){
-	_image = new QImage(name);
+void Tool::setImage(const QString &name) {
+    _image = QImage(name);
 }
 
-QImage *Tool::image(){
-	return _image;
+QImage *Tool::image() {
+    return &_image;
 }
 
-void Tool::setToolTipText(QString text){
-	_toolTip = text;
+void Tool::setToolTipText(const QString &text) {
+    _toolTip = text;
 }
 
-bool Tool::selected(){
-	return false;
+bool Tool::selected() {
+    return false;
 }
 
-QString Tool::toolTip(){
-	return _toolTip;
+QString Tool::toolTip() {
+    return _toolTip;
 }
 
-ProtocolEntry *Tool::copy(){
-	Tool *t = new Tool(*this);
-	return t;
+ProtocolEntry *Tool::copy() {
+    Tool *t = new Tool(*this);
+    return t;
 }
 
 void Tool::reloadState(ProtocolEntry *entry) {
-	Tool *other = (Tool*)entry;
-	if(!other){
-		return;
-	}
-	_image = other->_image;
-	_button = other->_button;
-	_toolTip = other->_toolTip;
-	_standardTool = other->_standardTool;
+    Tool *other = qobject_cast<Tool*>(entry);
+    if (!other) {
+        return;
+    }
+    _image = other->_image;
+    _button = other->_button;
+    _toolTip = other->_toolTip;
+    _standardTool = other->_standardTool;
 }
 
-MidiFile *Tool::currentFile(){
-	return _currentFile;
+MidiFile *Tool::currentFile() {
+    return _currentFile;
 }
 
-MidiFile *Tool::file(){
-	return currentFile();
+MidiFile *Tool::file() {
+    return currentFile();
 }
 
-void Tool::setCurrentTool(EditorTool *tool){
-	_currentTool = tool;
-	_currentTool->select();
+void Tool::setCurrentTool(EditorTool *editorTool) {
+    _currentTool = editorTool;
+    _currentTool->select();
 }
 
-Protocol *Tool::currentProtocol(){
-	if(currentFile()){
-		return currentFile()->protocol();
-	}
-	return Q_NULLPTR;
+Protocol *Tool::currentProtocol() {
+    if (currentFile()) {
+        return currentFile()->protocol();
+    }
+    return qnullptr;
 }
 
-void Tool::setButton(ToolButton *b){
-	_button = b;
+void Tool::setButton(ToolButton *b) {
+    _button = b;
 }
 
-ToolButton *Tool::button(){
-	return _button;
+ToolButton *Tool::button() {
+    return _button;
 }
 
 EditorTool *Tool::currentTool() {
-	return _currentTool;
+    return _currentTool;
 }
 
-void Tool::setStandardTool(StandardTool *stdTool){
-	_standardTool = stdTool;
+void Tool::setStandardTool(StandardTool *stdTool) {
+    _standardTool = stdTool;
 }
 
-void Tool::setFile(MidiFile *file){
-	_currentFile = file;
+void Tool::setFile(MidiFile *file) {
+    _currentFile = file;
 }

@@ -20,6 +20,7 @@
 #define INSTRUMENTCHOOSER_H_
 
 #include <QDialog>
+#include "../Utils.h"
 
 class MidiFile;
 class QComboBox;
@@ -27,19 +28,19 @@ class QCheckBox;
 
 class InstrumentChooser : public QDialog {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		InstrumentChooser(MidiFile *f, int channel, QWidget *parent = Q_NULLPTR);
+    public:
+        InstrumentChooser(MidiFile *f, ubyte channel, QWidget *parent = qnullptr);
 
-	public slots:
-		void accept() Q_DECL_OVERRIDE;
+    public slots:
+        void accept() qoverride;
 
-	private:
-		MidiFile *_file;
-		QComboBox *_box;
-		QCheckBox *_removeOthers;
-		int _channel;
+    private:
+        MidiFile *_file;
+        QComboBox *_box;
+        QCheckBox *_removeOthers;
+        ubyte _channel;
 };
 
 #endif

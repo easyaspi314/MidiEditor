@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -21,91 +23,81 @@
 #include "../midi/MidiFile.h"
 #include "../midi/MidiTrack.h"
 
-TextEvent::TextEvent(int channel, MidiTrack *track) : MidiEvent(channel, track) {
-	_type = TextTextEventType;
-	_text = "";
+TextEvent::TextEvent(ubyte channel, MidiTrack *track, TextType type, const QString &text) : MidiEvent(channel, track) {
+    _type = type;
+    _text = text;
 }
 
 TextEvent::TextEvent(const TextEvent &other) : MidiEvent(other) {
-	_type = other._type;
-	_text = other._text;
+    _type = other._type;
+    _text = other._text;
 }
 
-MidiEvent::EventType TextEvent::type() const {
-	return TextEventType;
+EventType TextEvent::type() const {
+    return TextEventType;
 }
 
-QString TextEvent::text(){
-	return _text;
+const QString &TextEvent::text(){
+    return _text;
 }
 
-void TextEvent::setText(QString text){
-	_text = text;
-	protocol(copy(), this);
+void TextEvent::setText(const QString &text){
+    _text = text;
+    protocol(copy(), this);
 }
 
-TextEvent::TextType TextEvent::textType(){
-	return _type;
+TextType TextEvent::textType(){
+    return _type;
 }
 
-void TextEvent::setTextType(TextEvent::TextType type){
-	_type = type;
-	protocol(copy(), this);
+void TextEvent::setTextType(TextType type){
+    _type = type;
+    protocol(copy(), this);
 }
 
-int TextEvent::line(){
-	return TEXT_EVENT_LINE;
+ubyte TextEvent::line(){
+    return TextEventLine;
 }
 
-QByteArray TextEvent::save(){
-	mbstate_t mbs;
-	mbrlen(Q_NULLPTR, 0, &mbs);
+const QByteArray TextEvent::save(){
+    QByteArray array;
+    QByteArray textArray = _text.toUtf8();
 
-	QByteArray array = QByteArray();
+    append(array, 0xFF);
+    append(array, _type);
+    array.append(MidiFile::writeVariableLengthValue(textArray.size()));
+    array.append(textArray);
 
-	array.append(byte(0xFF));
-	array.append(byte(_type));
-	array.append(MidiFile::writeVariableLengthValue(_text.length()));
-
-	wchar_t *text_wchar  = new wchar_t[_text.length()];
-	_text.toWCharArray(text_wchar);
-
-	for(int i = 0; i < _text.length(); i++){
-		char buffer [16];
-		wcrtomb(buffer, text_wchar[i], &mbs);
-		array.append(buffer);
-	}
-	delete[] text_wchar;
-	return array;
+    return array;
 }
 
-QString TextEvent::typeString(){
-	return "Text Event";
+const QString TextEvent::typeString(){
+    return "Text Event";
 }
 
 ProtocolEntry *TextEvent::copy(){
-	return new TextEvent(*this);
+    return new TextEvent(*this);
 }
 
 void TextEvent::reloadState(ProtocolEntry *entry){
-	TextEvent *other = qobject_cast<TextEvent*>(entry);
-	if(!other){
-		return;
-	}
-	MidiEvent::reloadState(entry);
-	_text = other->_text;
-	_type = other->_type;
+    TextEvent *other = qobject_cast<TextEvent*>(entry);
+    if(!other){
+        return;
+    }
+    MidiEvent::reloadState(entry);
+    _text = other->_text;
+    _type = other->_type;
 }
 
-QString TextEvent::textTypeString(int type){
-	switch(type){
-		case TextTextEventType: return "General text";
-		case CopyrightTextEventType: return "Copyright";
-		case TrackNameTextEventType: return "Trackname";
-		case InstrumentTextEventType: return "Instrument name";
-		case LyricTextEventType: return "Lyric";
-		case MarkerTextEventType: return "Marker";
-		case CommentTextEventType: return "Comment";
-	}
-	return QString();
+const QString TextEvent::textTypeString(ubyte type){
+    switch(TextType(type)){
+        case TextTextEventType: return "General text";
+        case CopyrightTextEventType: return "Copyright";
+        case TrackNameTextEventType: return "Trackname";
+        case InstrumentTextEventType: return "Instrument name";
+        case LyricTextEventType: return "Lyric";
+        case MarkerTextEventType: return "Marker";
+        case CommentTextEventType: return "Comment";
+    }
+    return QString();
 }

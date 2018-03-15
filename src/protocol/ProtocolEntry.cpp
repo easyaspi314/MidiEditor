@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -23,36 +25,38 @@
 
 void ProtocolEntry::protocol(ProtocolEntry *oldObj, ProtocolEntry *newObj) {
 
-	if(oldObj->file() && oldObj->file()->protocol()){
-		oldObj->file()->protocol()->enterUndoStep(
-			new ProtocolItem(oldObj, newObj));
-	}
+    if (oldObj->file() && oldObj->file()->protocol()) {
+        oldObj->file()->protocol()->enterUndoStep(
+            new ProtocolItem(oldObj, newObj));
+    }
 }
 
-MidiFile *ProtocolEntry::file(){
-	// This has to be implemented in the Subclasses
-	return Q_NULLPTR;
+MidiFile *ProtocolEntry::file() {
+    // This has to be implemented in the Subclasses
+    return qnullptr;
 }
 
 void ProtocolEntry::reloadState(ProtocolEntry *entry) {
 
-	Q_UNUSED(entry);
+    Q_UNUSED(entry);
 
-	// This has to be implemented in the Subclasses
-	return;
+    // This has to be implemented in the Subclasses
+    return;
 }
 
 ProtocolEntry::ProtocolEntry(QObject *parent) : QObject(parent) {
 }
 
 ProtocolEntry::ProtocolEntry(const ProtocolEntry &other) {
-	Q_UNUSED(other);
+    Q_UNUSED(other);
+
+    qWarning("Don't call this directly!");
 }
 
 ProtocolEntry *ProtocolEntry::copy() {
 
-	// This has to be implemented in the Subclasses
-	return Q_NULLPTR;
+    // This has to be implemented in the Subclasses
+    return qnullptr;
 }
 
 ProtocolEntry::~ProtocolEntry() {

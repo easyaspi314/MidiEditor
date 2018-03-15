@@ -24,24 +24,33 @@
 #include <QPainter>
 #include <QImage>
 
+#include "../Utils.h"
+
 class ClickButton  : public QPushButton {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		ClickButton(QString imageName, QWidget *parent = Q_NULLPTR);
-		void setImageName(QString imageName);
+    public:
+        ClickButton(const QString &imageName, QWidget *parent = qnullptr);
+        void setImageName(const QString &imageName);
 
-	public slots:
-		void buttonClick();
+    public slots:
+        void buttonClick();
 
-	protected:
-		void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
-		void enterEvent(QEvent *event) Q_DECL_OVERRIDE;
-		void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
+    protected:
+        void paintEvent(QPaintEvent *event) qoverride;
+        void enterEvent(QEvent *event) qoverride;
+        void leaveEvent(QEvent *event) qoverride;
 
-	private:
-		bool button_mouseInButton, button_mouseClicked;
-		QImage *image;
+    private:
+        QImage *image;
+        #ifdef NO_BIT_PACK
+            bool button_mouseInButton;
+            bool button_mouseClicked;
+        #else
+            bool button_mouseInButton : 1;
+            bool button_mouseClicked : 1;
+        #endif
+
 };
 #endif

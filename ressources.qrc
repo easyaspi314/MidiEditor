@@ -51,7 +51,6 @@
         <file>run_environment/graphics/tool/zoom_hor_out.png</file>
         <file>run_environment/graphics/tool/zoom_ver_in.png</file>
         <file>run_environment/graphics/tool/zoom_ver_out.png</file>
-        <file>run_environment/metronome/metronome-01.wav</file>
         <file>run_environment/graphics/channelwidget/loud.png</file>
         <file>run_environment/graphics/channelwidget/instrument.png</file>
         <file>run_environment/graphics/channelwidget/solo.png</file>
@@ -64,5 +63,6 @@
         <file>run_environment/graphics/midieditor.png</file>
         <file>run_environment/MidiEditor.icns</file>
         <file>run_environment/macos.qss</file>
+        <file>run_environment/metronome/metronome-01.wav</file>
     </qresource>
 </RCC>

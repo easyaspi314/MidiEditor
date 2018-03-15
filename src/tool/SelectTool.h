@@ -22,39 +22,40 @@
 #include "EventTool.h"
 
 class MidiEvent;
-
+enum struct SelectionType : ubyte {
+    Right = 0,
+    Left,
+    Box,
+    Single
+};
 class SelectTool: public EventTool {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		enum SelectionType {
-			SelectionTypeRight = 0,
-			SelectionTypeLeft,
-			SelectionTypeBox,
-			SelectionTypeSingle
-		};
-		SelectTool(int type);
-		SelectTool(SelectTool &other);
-		Tool::ToolType type() const Q_DECL_OVERRIDE;
+    public:
 
-		void draw(QPainter *painter) Q_DECL_OVERRIDE;
+        SelectTool(SelectionType type);
+        SelectTool(SelectTool &other);
+        ToolType type() const qoverride;
 
-		bool press(bool leftClick) Q_DECL_OVERRIDE;
-		bool release() Q_DECL_OVERRIDE;
-		bool releaseOnly() Q_DECL_OVERRIDE;
+        void draw(QPainter *painter) qoverride;
 
-		bool move(qreal mouseX, qreal mouseY) Q_DECL_OVERRIDE;
+        bool press(bool leftClick) qoverride;
+        bool release() qoverride;
+        bool releaseOnly() qoverride;
 
-		ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
-		bool inRect(MidiEvent *event, qreal x_start, qreal y_start, qreal x_end, qreal y_end);
+        bool move(qreal mouseX, qreal mouseY) qoverride;
 
-		bool showsSelection() Q_DECL_OVERRIDE;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
+        bool inRect(MidiEvent *event, qreal x_start, qreal y_start, qreal x_end, qreal y_end);
 
-	protected:
-		int stool_type;
-		qreal x_rect, y_rect;
+        bool showsSelection() qoverride;
+
+    protected:
+        qreal x_rect, y_rect;
+        SelectionType stool_type;
+
 };
 
 #endif

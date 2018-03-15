@@ -20,80 +20,81 @@
 #define TERMINAL_H_
 
 #include <QObject>
+#include "Utils.h"
 
 class QProcess;
 class QTextEdit;
 
 class Terminal : public QObject {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
+    public:
 
-		Terminal(QObject *parent = Q_NULLPTR);
+        Terminal(QObject *parent = qnullptr);
 
-		/**
-		 * \brief creates the terminal.
-		 *
-		 * tries to start a process with the given startstring - on success
-		 * it will try to open the ports starting with the given values.
-		 */
-		static void initTerminal(QString startString, QString inPort,
-				QString outPort);
+        /**
+         * \brief creates the terminal.
+         *
+         * tries to start a process with the given startstring - on success
+         * it will try to open the ports starting with the given values.
+         */
+        static void initTerminal(const QString &startString, const QString &inPort,
+                const QString &outPort);
 
-		/**
-		 * \brief returns the terminal
-		 */
-		static Terminal *terminal();
+        /**
+         * \brief returns the terminal
+         */
+        static Terminal *terminal();
 
-		/**
-		 * \brief writes message to the terminal.
-		 */
-		void writeString(QString message);
+        /**
+         * \brief writes message to the terminal.
+         */
+        void writeString(const QString &message);
 
-		/**
-		 * \brief executes the given string.
-		 *
-		 * Will connect to the ports starting with the given values if
-		 * they are not empty.
-		 * Will stop the current process.
-		 */
-		void execute(QString startString, QString inPort,
-				QString outPort);
+        /**
+         * \brief executes the given string.
+         *
+         * Will connect to the ports starting with the given values if
+         * they are not empty.
+         * Will stop the current process.
+         */
+        void execute(const QString &startString, const QString &inPort,
+                const QString &outPort);
 
-		/**
-		 * \brief the console.
-		 */
-		QTextEdit *console();
+        /**
+         * \brief the console.
+         */
+        QTextEdit *console();
 
-	public slots:
+    public slots:
 
-		/**
-		 * \brief Called, when a process has been finished.
-		 */
-		void processStarted();
+        /**
+         * \brief Called, when a process has been finished.
+         */
+        void processStarted();
 
-		/**
-		 * \brief print text from the process to the terminal.
-		 */
-		void printToTerminal();
+        /**
+         * \brief print text from the process to the terminal.
+         */
+        void printToTerminal();
 
-		/**
-		 * \brief print error from the process to the terminal.
-		 */
-		void printErrorToTerminal();
+        /**
+         * \brief print error from the process to the terminal.
+         */
+        void printErrorToTerminal();
 
-	private:
+    private:
 
-		static Terminal *_terminal;
+        static Terminal *_terminal;
 
-		QProcess *_process;
+        QProcess *_process;
 
-		QTextEdit *_textEdit;
+        QTextEdit *_textEdit;
 
-		QString _inPort, _outPort;
+        QString _inPort, _outPort;
 
-		  static int retries;
+        static ubyte retries;
 };
 
 #endif

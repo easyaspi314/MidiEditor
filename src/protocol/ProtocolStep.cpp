@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -22,51 +24,52 @@
 #include <QUuid>
 #include "ProtocolItem.h"
 
-ProtocolStep::ProtocolStep(QString description, QImage *img, bool modified){
-	_stepDescription = description;
-	_modified = modified;
-	_itemStack = new QStack<ProtocolItem*>;
-	_image = img;
-	_uuid = QUuid::createUuid().toString();
+ProtocolStep::ProtocolStep(const QString &description, QImage *img, bool modified) {
+    _stepDescription = description;
+    _modified = modified;
+    _itemStack = new QStack<ProtocolItem*>;
+    _image = img;
+    // we want this to be 14 bits for the pictureId struct in MatrixWidget.
+    _uuid = QUuid::createUuid().data1 & 0x3FFF;
 }
 
-ProtocolStep::~ProtocolStep(){
-	delete _itemStack;
+ProtocolStep::~ProtocolStep() {
+    delete _itemStack;
 }
 
-void ProtocolStep::addItem(ProtocolItem *item){
-	_itemStack->push(item);
+void ProtocolStep::addItem(ProtocolItem *item) {
+    _itemStack->push(item);
 }
 
-ProtocolStep *ProtocolStep::releaseStep(){
+ProtocolStep *ProtocolStep::releaseStep() {
 
-	// create the invere Step
-	ProtocolStep *step = new ProtocolStep(_stepDescription, _image);
+    // create the invere Step
+    ProtocolStep *step = new ProtocolStep(_stepDescription, _image);
 
-	// Copy the Single steps and release them
-	while(!_itemStack->isEmpty()){
-		ProtocolItem *item = _itemStack->pop();
-		step->addItem(item->release());
-	}
-	return step;
+    // Copy the Single steps and release them
+    while(!_itemStack->isEmpty()) {
+        ProtocolItem *item = _itemStack->pop();
+        step->addItem(item->release());
+    }
+    return step;
 }
 
 int ProtocolStep::items() {
-	return _itemStack->size();
+    return _itemStack->size();
 }
 
-QString ProtocolStep::description(){
-	return _stepDescription;
+QString ProtocolStep::description() {
+    return _stepDescription;
 }
 
-QImage *ProtocolStep::image(){
-	return _image;
+QImage *ProtocolStep::image() {
+    return _image;
 }
 
 bool ProtocolStep::modified() {
-	return _modified;
+    return _modified;
 }
 
-QString ProtocolStep::id() {
-	return _uuid;
+ushort ProtocolStep::id() {
+    return _uuid;
 }

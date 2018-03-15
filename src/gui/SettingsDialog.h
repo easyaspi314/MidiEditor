@@ -20,7 +20,6 @@
 #define SETTINGSDIALOG_H_
 
 #include <QDialog>
-#include <QSettings>
 
 class QListWidget;
 class QWidget;
@@ -33,24 +32,24 @@ class RemoteServer;
 
 class SettingsDialog : public QDialog {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		SettingsDialog(QString title, QSettings *settings,
-			   #ifdef ENABLE_REMOTE
-					   RemoteServer *server,
-			   #endif
-					   QWidget *parent);
-		void addSetting(SettingsWidget *settingsWidget);
+    public:
+        SettingsDialog(const QString &title,
+               #ifdef ENABLE_REMOTE
+                       RemoteServer *server,
+               #endif
+                       QWidget *parent);
+        void addSetting(SettingsWidget *settingsWidget);
 
-	public slots:
-		void rowChanged(int row);
-		void submit();
+    public slots:
+        void rowChanged(int row);
+        void submit();
 
-	protected:
-		QListWidget *_listWidget;
-		QList<SettingsWidget*> *_settingsWidgets;
-		QStackedWidget *_container;
+    protected:
+        QListWidget *_listWidget;
+        QList<SettingsWidget*> *_settingsWidgets;
+        QStackedWidget *_container;
 };
 
 #endif

@@ -22,33 +22,34 @@
 #include <QDialog>
 #include <QMultiMap>
 
+#include "../Utils.h"
+
 class MidiFile;
 class MidiEvent;
 class QCheckBox;
 class QComboBox;
 class QListWidget;
-class QSettings;
 
 class RecordDialog : public QDialog {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		RecordDialog(MidiFile *file, QMultiMap<int, MidiEvent*> data, QSettings *settings,
-				QWidget *parent = Q_NULLPTR);
+    public:
+        RecordDialog(MidiFile *file, const QMultiMap<int, MidiEvent*> &data,
+                QWidget *parent = qnullptr);
 
-	public slots:
-		void enter();
-		void cancel();
+    public slots:
+        void enter();
+        void cancel();
 
-	private:
-		MidiFile *_file;
-		QMultiMap<int, MidiEvent*> _data;
-		QComboBox *_channelBox;
-		QComboBox *_trackBox;
-		QListWidget *addTypes;
-		QSettings *_settings;
-		void addListItem(QListWidget *w, QString title, int line, bool enabled);
+    private:
+        void addListItem(QListWidget *w, const QString &title, int line, bool enabled);
+
+        MidiFile *_file;
+        QMultiMap<int, MidiEvent*> _data;
+        QComboBox *_channelBox;
+        QComboBox *_trackBox;
+        QListWidget *addTypes;
 
 };
 

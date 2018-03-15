@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -20,71 +22,71 @@
 
 #include "../gui/EventWidget.h"
 
-Selection *Selection::_selectionInstance = new Selection(Q_NULLPTR);
-EventWidget *Selection::_eventWidget = Q_NULLPTR;
+Selection *Selection::_selectionInstance = new Selection(qnullptr);
+EventWidget *Selection::_eventWidget = qnullptr;
 
-Selection::Selection(MidiFile *file){
-	_file = file;
-	if(_eventWidget){
-		_eventWidget->setEvents(_selectedEvents);
-		_eventWidget->reload();
-	}
+Selection::Selection(MidiFile *file) {
+    _file = file;
+    if (_eventWidget) {
+        _eventWidget->setEvents(_selectedEvents);
+        _eventWidget->reload();
+    }
 }
 
-Selection::Selection(Selection &other){
-	_file = other._file;
-	_selectedEvents = other._selectedEvents;
+Selection::Selection(Selection &other) {
+    _file = other._file;
+    _selectedEvents = other._selectedEvents;
 }
 
-ProtocolEntry *Selection::copy(){
-	return new Selection(*this);
+ProtocolEntry *Selection::copy() {
+    return new Selection(*this);
 }
 
-void Selection::reloadState(ProtocolEntry *entry){
-	Selection *other = qobject_cast<Selection*>(entry);
-	if(!other){
-		return;
-	}
-	_selectedEvents = other->_selectedEvents;
-	if(_eventWidget){
-		_eventWidget->setEvents(_selectedEvents);
-		//_eventWidget->reload();
-	}
+void Selection::reloadState(ProtocolEntry *entry) {
+    Selection *other = qobject_cast<Selection*>(entry);
+    if (!other) {
+        return;
+    }
+    _selectedEvents = other->_selectedEvents;
+    if (_eventWidget) {
+        _eventWidget->setEvents(_selectedEvents);
+        //_eventWidget->reload();
+    }
 }
 
-MidiFile *Selection::file(){
-	return _file;
+MidiFile *Selection::file() {
+    return _file;
 }
 
-Selection *Selection::instance(){
-	return _selectionInstance;
+Selection *Selection::instance() {
+    return _selectionInstance;
 }
 
-void Selection::setFile(MidiFile *file){
+void Selection::setFile(MidiFile *file) {
 
-	// create new selection
-	_selectionInstance = new Selection(file);
+    // create new selection
+    _selectionInstance = new Selection(file);
 }
 
-QList<MidiEvent*> Selection::selectedEvents(){
-	return _selectedEvents;
+const QList<MidiEvent*> &Selection::selectedEvents() {
+    return _selectedEvents;
 }
 
-void Selection::setSelection(QList<MidiEvent*> selections){
-	ProtocolEntry *toCopy = copy();
-	_selectedEvents = selections;
-	protocol(toCopy, this);
-	if(_eventWidget){
-		_eventWidget->setEvents(_selectedEvents);
-		//_eventWidget->reload();
-	}
-	emit selectionChanged();
+void Selection::setSelection(const QList<MidiEvent*> &selections) {
+    ProtocolEntry *toCopy = copy();
+    _selectedEvents = selections;
+    protocol(toCopy, this);
+    if (_eventWidget) {
+        _eventWidget->setEvents(_selectedEvents);
+        //_eventWidget->reload();
+    }
+    emit selectionChanged();
 }
 
-void Selection::clearSelection(){
-	setSelection(QList<MidiEvent*>());
-	if(_eventWidget){
-		_eventWidget->setEvents(_selectedEvents);
-		//_eventWidget->reload();
-	}
+void Selection::clearSelection() {
+    setSelection(QList<MidiEvent*>());
+    if (_eventWidget) {
+        _eventWidget->setEvents(_selectedEvents);
+        //_eventWidget->reload();
+    }
 }

@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -22,63 +24,66 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QButtonGroup>
+#include <QSpinBox>
+
+#include <QRadioButton>
 
 #include "../MidiEvent/NoteOnEvent.h"
 #include "../midi/MidiFile.h"
 #include "../protocol/Protocol.h"
 
-TransposeDialog::TransposeDialog(QList<NoteOnEvent*> toTranspose, MidiFile *file, QWidget *parent){
-	Q_UNUSED(parent)
+TransposeDialog::TransposeDialog(const QList<NoteOnEvent*> &toTranspose, MidiFile *file, QWidget *parent) {
+    Q_UNUSED(parent)
 
-	QLabel *text = new QLabel("Number of semitones: ", this);
-	_valueBox = new QSpinBox(this);
-	_valueBox->setMinimum(0);
-	_valueBox->setMaximum(2147483647);
-	_valueBox->setValue(0);
+    QLabel *text = new QLabel("Number of semitones: ", this);
+    _valueBox = new QSpinBox(this);
+    _valueBox->setMinimum(0);
+    _valueBox->setMaximum(2147483647);
+    _valueBox->setValue(0);
 
-	QButtonGroup *group = new QButtonGroup();
-	_up = new QRadioButton("up", this);
-	_down = new QRadioButton("down", this);
-	_up->setChecked(true);
-	group->addButton(_up);
-	group->addButton(_down);
+    QButtonGroup *group = new QButtonGroup();
+    _up = new QRadioButton("up", this);
+    _down = new QRadioButton("down", this);
+    _up->setChecked(true);
+    group->addButton(_up);
+    group->addButton(_down);
 
-	QPushButton *breakButton = new QPushButton("Cancel");
-	connect(breakButton, SIGNAL(clicked()), this, SLOT(hide()));
-	QPushButton *acceptButton = new QPushButton("Accept");
-	connect(acceptButton, SIGNAL(clicked()), this, SLOT(accept()));
+    QPushButton *breakButton = new QPushButton(tr("&Cancel"));
+    connect(breakButton, &QPushButton::clicked, this, &TransposeDialog::hide);
+    QPushButton *acceptButton = new QPushButton(tr("&Accept"));
+    connect(acceptButton, &QPushButton::clicked, this, &TransposeDialog::accept);
 
-	QGridLayout *layout = new QGridLayout(this);
-	layout->addWidget(text,0,0,1,1);
-	layout->addWidget(_valueBox, 0, 1, 1, 2);
-	layout->addWidget(_up, 1, 0, 1, 1);
-	layout->addWidget(_down, 1, 2, 1, 1);
-	layout->addWidget(breakButton, 2, 0, 1, 1);
-	layout->addWidget(acceptButton, 2, 2, 1, 1);
-	layout->setColumnStretch(1, 1);
+    QGridLayout *layout = new QGridLayout(this);
+    layout->addWidget(text,0,0,1,1);
+    layout->addWidget(_valueBox, 0, 1, 1, 2);
+    layout->addWidget(_up, 1, 0, 1, 1);
+    layout->addWidget(_down, 1, 2, 1, 1);
+    layout->addWidget(breakButton, 2, 0, 1, 1);
+    layout->addWidget(acceptButton, 2, 2, 1, 1);
+    layout->setColumnStretch(1, 1);
 
-	_valueBox->setFocus();
-	_toTranspose = toTranspose;
-	_file = file;
+    _valueBox->setFocus();
+    _toTranspose = toTranspose;
+    _file = file;
 }
 
-void TransposeDialog::accept(){
+void TransposeDialog::accept() {
 
-	_file->protocol()->startNewAction("Transpose selection");
+    _file->protocol()->startNewAction("Transpose selection");
 
-	int num = _valueBox->value();
-	if(_down->isChecked()){
-		num*=-1;
-	}
-	foreach(NoteOnEvent* onEvent, _toTranspose){
-		int oldVal = onEvent->note();
+    int num = _valueBox->value();
+    if (_down->isChecked()) {
+        num*=-1;
+    }
+    for (NoteOnEvent* onEvent : qAsConst(_toTranspose)) {
+        int oldVal = onEvent->note();
 
-		if(oldVal + num >= 0 && oldVal + num < 128){
-			onEvent->setNote(oldVal+num);
-		}
-	}
-	hide();
+        if (oldVal + num >= 0 && oldVal + num < 128) {
+            onEvent->setNote(oldVal + num);
+        }
+    }
+    hide();
 
 
-	_file->protocol()->endAction();
+    _file->protocol()->endAction();
 }

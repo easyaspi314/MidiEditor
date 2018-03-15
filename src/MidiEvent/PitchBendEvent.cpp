@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -20,67 +22,66 @@
 
 #include "../midi/MidiFile.h"
 
-PitchBendEvent::PitchBendEvent(int channel, int value, MidiTrack *track) :
-		MidiEvent(channel, track)
+PitchBendEvent::PitchBendEvent(ubyte channel, ushort value, MidiTrack *track) :
+        MidiEvent(channel, track)
 {
-	_value = value;
+    _value = value;
 }
 
 PitchBendEvent::PitchBendEvent(const PitchBendEvent &other) :
-		MidiEvent(other)
+        MidiEvent(other)
 {
-	_value = other._value;
+    _value = other._value;
 }
 
-MidiEvent::EventType PitchBendEvent::type() const {
-	return PitchBendEventType;
+EventType PitchBendEvent::type() const {
+    return PitchBendEventType;
 }
 
-int PitchBendEvent::line(){
-	return PITCH_BEND_LINE;
+ubyte PitchBendEvent::line(){
+    return PitchBendEventLine;
 }
 
-QString PitchBendEvent::toMessage(){
-	return "cc "+QString::number(channel())+" "+
-			QString::number(_value);
+const QString PitchBendEvent::toMessage(){
+    return _("cc %1 %2").arg(QString::number(channel()), QString::number(_value));
 }
 
-QByteArray PitchBendEvent::save(){
-	QByteArray array = QByteArray();
-	array.append(byte(0xE0 | channel()));
-	array.append(byte(_value & 0x7F));
-	array.append(byte((_value >> 7) & 0x7F));
-	return array;
+const QByteArray PitchBendEvent::save(){
+    QByteArray array = QByteArray();
+    append(array, 0xE0 | channel());
+    append(array, _value & 0x7F);
+    append(array, (_value >> 7) & 0x7F);
+    return array;
 }
 
 ProtocolEntry *PitchBendEvent::copy(){
-	return new PitchBendEvent(*this);
+    return new PitchBendEvent(*this);
 }
 
 void PitchBendEvent::reloadState(ProtocolEntry *entry){
-	PitchBendEvent *other = qobject_cast<PitchBendEvent*>(entry);
-	if(!other){
-		return;
-	}
-	MidiEvent::reloadState(entry);
-	_value = other->_value;
+    PitchBendEvent *other = qobject_cast<PitchBendEvent*>(entry);
+    if(!other){
+        return;
+    }
+    MidiEvent::reloadState(entry);
+    _value = other->_value;
 }
 
-QString PitchBendEvent::typeString(){
-	return "Pitch Bend Event";
+const QString PitchBendEvent::typeString(){
+    return "Pitch Bend Event";
 }
 
-int PitchBendEvent::value(){
-	return _value;
+ushort PitchBendEvent::value(){
+    return _value;
 }
 
-void PitchBendEvent::setValue(int v){
-	ProtocolEntry *toCopy = copy();
-	_value = v;
-	protocol(toCopy, this);
+void PitchBendEvent::setValue(ushort v){
+    ProtocolEntry *toCopy = copy();
+    _value = v;
+    protocol(toCopy, this);
 }
 
 bool PitchBendEvent::isOnEvent(){
 //	return (_control < 64 && _control> 69) || _value > 64;
-	return false;
+    return false;
 }

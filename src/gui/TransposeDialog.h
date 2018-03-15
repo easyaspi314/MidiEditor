@@ -22,27 +22,29 @@
 
 #include <QDialog>
 #include <QList>
-#include <QSpinBox>
-#include <QRadioButton>
 
+#include "../Utils.h"
+
+class QSpinBox;
+class QRadioButton;
 class NoteOnEvent;
 class MidiFile;
 
 class TransposeDialog : public QDialog {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		TransposeDialog(QList<NoteOnEvent*> toTranspose, MidiFile *file, QWidget *parent = Q_NULLPTR);
+    public:
+        TransposeDialog(const QList<NoteOnEvent*> &toTranspose, MidiFile *file, QWidget *parent = qnullptr);
 
-	public slots:
-		void accept() Q_DECL_OVERRIDE;
+    public slots:
+        void accept() qoverride;
 
-	private:
-		QList<NoteOnEvent*> _toTranspose;
-		QSpinBox *_valueBox;
-		QRadioButton *_up, *_down;
-		MidiFile *_file;
+    private:
+        QList<NoteOnEvent*> _toTranspose;
+        QSpinBox *_valueBox;
+        QRadioButton *_up, *_down;
+        MidiFile *_file;
 };
 
 #endif

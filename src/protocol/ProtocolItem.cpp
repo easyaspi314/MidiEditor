@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -21,21 +23,21 @@
 #include "../midi/MidiFile.h"
 #include "../midi/MidiTrack.h"
 
-ProtocolItem::ProtocolItem(ProtocolEntry *oldObj, ProtocolEntry *newObj){
-	_oldObject = oldObj;
-	_newObject = newObj;
+ProtocolItem::ProtocolItem(ProtocolEntry *oldObj, ProtocolEntry *newObj) {
+    _oldObject = oldObj;
+    _newObject = newObj;
 }
 
-ProtocolItem *ProtocolItem::release(){
+ProtocolItem *ProtocolItem::release() {
 
-	ProtocolEntry *entry = _newObject->copy();
-	_newObject->reloadState(_oldObject);
+    ProtocolEntry *entry = _newObject->copy();
+    _newObject->reloadState(_oldObject);
 
-	//files can be protocolled too but they must not be deleted
-	if(!qobject_cast<MidiTrack*>(entry)){
-		if(_oldObject->file()!=_oldObject){
-			delete _oldObject;
-		}
-	}
-	return new ProtocolItem(entry, _newObject);
+    //files can be protocolled too but they must not be deleted
+    if (!qobject_cast<MidiTrack*>(entry)) {
+        if (_oldObject->file()!=_oldObject) {
+            delete _oldObject;
+        }
+    }
+    return new ProtocolItem(entry, _newObject);
 }

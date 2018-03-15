@@ -19,67 +19,64 @@
 #ifndef UPDATEMANAGER_H
 #define UPDATEMANAGER_H
 
+#include <QNetworkAccessManager>
 #include <QObject>
 #include <QStringList>
+#include "Utils.h"
 
-#include <QByteArray>
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkRequest>
-#include <QtNetwork/QNetworkReply>
+class QNetworkReply;
 
 class Update {
 
-	public:
-		Update() {}
-		void setVersionID(int newUpdate) { _versionID = newUpdate; }
-		void setChangelog(QString changelog) {_changelog = changelog; }
-		void setDownloadPath(QString path) {_path = path; }
-		void setVersionString(QString newVersionString) { _versionString = newVersionString; }
+    public:
+        Update() {}
+        void setVersionID(int newUpdate) { _versionID = newUpdate; }
+        void setChangelog(const QString &changelog) {_changelog = changelog; }
+        void setDownloadPath(const QString &path) {_path = path; }
+        void setVersionString(const QString &newVersionString) { _versionString = newVersionString; }
 
-		int versionID() {return _versionID; }
-		QString path() {return _path; }
-		QString changelog() { return _changelog; }
-		QString versionString() { return _versionString; }
+        int versionID() const { return _versionID; }
+        const QString &path() const { return _path; }
+        const QString &changelog() const { return _changelog; }
+        const QString &versionString() const { return _versionString; }
 
-	private:
-		int _versionID;
-		QString _path;
-		QString _changelog;
-		QString _versionString;
+    private:
+        QString _path;
+        QString _changelog;
+        QString _versionString;
+        int _versionID;
 };
 
 class UpdateManager : public QObject {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		void init();
-		static UpdateManager *instance();
-		static bool autoCheckForUpdates();
-		static void setAutoCheckUpdatesEnabled(bool b);
-		QString versionString();
-		QString date();
+    public:
+        void init();
+        static UpdateManager *instance();
+        QString versionString();
+        QString date();
 
-	public slots:
-		void checkForUpdates();
-		void fileDownloaded(QNetworkReply*);
+    public slots:
+        void checkForUpdates();
+        void fileDownloaded(QNetworkReply*);
 
-	signals:
-		void updateDetected(Update *update);
+    signals:
+        void updateDetected(Update *update);
 
-	private:
-		UpdateManager(QObject *parent = Q_NULLPTR);
-		static UpdateManager *createInstance();
-		QStringList _mirrors;
-		static bool _autoMode;
-		bool _inited;
-		QString _versionString, _date, _system;
-		int _updateID;
+    private:
+        UpdateManager(QObject *parent = qnullptr);
+        static UpdateManager *createInstance();
+        void tryNextMirror();
 
-		int listIndex;
-		void tryNextMirror();
+        QNetworkAccessManager _webCtrl;
+        QStringList _mirrors;
+        QString _versionString, _date, _system;
 
-		QNetworkAccessManager _webCtrl;
+        int _updateID;
+        int listIndex;
+
+        bool _inited;
 };
 
 #endif

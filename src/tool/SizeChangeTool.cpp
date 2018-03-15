@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -30,184 +32,187 @@
 #include "Selection.h"
 
 SizeChangeTool::SizeChangeTool() : EventTool() {
-	inDrag = false;
-	xPos = 0;
-	dragsOnEvent = false;
-	setImage(":/run_environment/graphics/tool/change_size.png");
-	setToolTipText("Change the duration of the selected event");
+    inDrag = false;
+    xPos = 0;
+    dragsOnEvent = false;
+    setImage(":/run_environment/graphics/tool/change_size.png");
+    setToolTipText("Change the duration of the selected event");
 }
 
-SizeChangeTool::SizeChangeTool(SizeChangeTool &other) : EventTool(other){
-	return;
+SizeChangeTool::SizeChangeTool(SizeChangeTool &other) : EventTool(other) {
+    xPos = other.xPos;
+    inDrag = other.inDrag;
+    dragsOnEvent = other.dragsOnEvent;
+    return;
 }
 
-Tool::ToolType SizeChangeTool::type() const {
-	return Tool::SizeChange;
+ToolType SizeChangeTool::type() const {
+    return ToolType::SizeChange;
 }
 
-ProtocolEntry *SizeChangeTool::copy(){
-	return new SizeChangeTool(*this);
+ProtocolEntry *SizeChangeTool::copy() {
+    return new SizeChangeTool(*this);
 }
 
-void SizeChangeTool::reloadState(ProtocolEntry *entry){
-	SizeChangeTool *other = qobject_cast<SizeChangeTool*>(entry);
-	if(!other){
-		return;
-	}
-	EventTool::reloadState(entry);
+void SizeChangeTool::reloadState(ProtocolEntry *entry) {
+    SizeChangeTool *other = qobject_cast<SizeChangeTool*>(entry);
+    if (!other) {
+        return;
+    }
+    EventTool::reloadState(entry);
 }
 
-void SizeChangeTool::draw(QPainter *painter){
+void SizeChangeTool::draw(QPainter *painter) {
 
-	int currentX = rasteredX(mouseX);
+    int currentX = rasteredX(mouseX);
 
-	matrixWidget->setCursor(Qt::ArrowCursor);
-	if(!inDrag){
-		paintSelectedEvents(painter);
-		return;
-	} else {
-		painter->setPen(Qt::gray);
-		painter->drawLine(qLineF(currentX, 0, currentX, matrixWidget->height()));
-		painter->setPen(Qt::black);
-	}
-	int endEventShift = 0;
-	int startEventShift = 0;
-	if(dragsOnEvent){
-		startEventShift = currentX-xPos;
-	} else {
-		endEventShift = currentX-xPos;
-	}
-	foreach(MidiEvent* event, Selection::instance()->selectedEvents()){
-		bool show = event->shown();
-		if(!show){
-			OnEvent *ev = qobject_cast<OnEvent*>(event);
-			if(ev){
-				show = ev->offEvent() && ev->offEvent()->shown();
-			}
-		}
-		if(show){
-			painter->fillRect(qRectF(event->x()+startEventShift, event->y(),
-					event->width()-startEventShift+endEventShift,
-					event->height()), Qt::black);
-			if(pointInRect(mouseX, mouseY, event->x()+event->width()-2+
-					endEventShift, event->y(), event->x()+event->width()+2+
-					endEventShift, event->y()+event->height()))
-			{
-				matrixWidget->setCursor(Qt::SplitHCursor);
-			}
-			if(pointInRect(mouseX, mouseY, event->x()-2+
-					startEventShift, event->y(), event->x()+2+
-					startEventShift, event->y()+event->height()))
-			{
-				matrixWidget->setCursor(Qt::SplitHCursor);
-			}
-		}
-	}
+    matrixWidget->setCursor(Qt::ArrowCursor);
+    if (!inDrag) {
+        paintSelectedEvents(painter);
+        return;
+    } else {
+        painter->setPen(Qt::gray);
+        painter->drawLine(qLineF(currentX, 0, currentX, matrixWidget->height()));
+        painter->setPen(Qt::black);
+    }
+    int endEventShift = 0;
+    int startEventShift = 0;
+    if (dragsOnEvent) {
+        startEventShift = currentX-xPos;
+    } else {
+        endEventShift = currentX-xPos;
+    }
+    for (MidiEvent* event : Selection::instance()->selectedEvents()) {
+        bool show = event->shown();
+        if (!show) {
+            OnEvent *ev = qobject_cast<OnEvent*>(event);
+            if (ev) {
+                show = ev->offEvent() && ev->offEvent()->shown();
+            }
+        }
+        if (show) {
+            painter->fillRect(qRectF(event->x()+startEventShift, event->y(),
+                    event->width()-startEventShift+endEventShift,
+                    event->height()), Qt::black);
+            if (pointInRect(mouseX, mouseY, event->x()+event->width()-2+
+                    endEventShift, event->y(), event->x()+event->width()+2+
+                    endEventShift, event->y()+event->height()))
+            {
+                matrixWidget->setCursor(Qt::SplitHCursor);
+            }
+            if (pointInRect(mouseX, mouseY, event->x()-2+
+                    startEventShift, event->y(), event->x()+2+
+                    startEventShift, event->y()+event->height()))
+            {
+                matrixWidget->setCursor(Qt::SplitHCursor);
+            }
+        }
+    }
 }
 
-bool SizeChangeTool::press(bool leftClick){
+bool SizeChangeTool::press(bool leftClick) {
 
-	Q_UNUSED(leftClick);
+    Q_UNUSED(leftClick);
 
-	inDrag = false;
-	xPos = mouseX;
-	foreach(MidiEvent* event, Selection::instance()->selectedEvents()){
-		if(pointInRect(mouseX, mouseY, event->x()-2, event->y(), event->x()+2,
-				event->y()+event->height()))
-		{
-			dragsOnEvent = true;
-			xPos = event->x();
-			inDrag = true;
-			return true;
-		}
-		if(pointInRect(mouseX, mouseY, event->x()+event->width()-2, event->y(),
-				event->x()+event->width()+2, event->y()+event->height()))
-		{
-			dragsOnEvent = false;
-			inDrag = true;
-			xPos = event->x()+event->width();
-			return true;
-		}
-	}
+    inDrag = false;
+    xPos = mouseX;
+    for (MidiEvent* event : Selection::instance()->selectedEvents()) {
+        if (pointInRect(mouseX, mouseY, event->x()-2, event->y(), event->x()+2,
+                event->y()+event->height()))
+        {
+            dragsOnEvent = true;
+            xPos = event->x();
+            inDrag = true;
+            return true;
+        }
+        if (pointInRect(mouseX, mouseY, event->x()+event->width()-2, event->y(),
+                event->x()+event->width()+2, event->y()+event->height()))
+        {
+            dragsOnEvent = false;
+            inDrag = true;
+            xPos = event->x()+event->width();
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
-bool SizeChangeTool::release(){
+bool SizeChangeTool::release() {
 
-	int currentX = rasteredX(mouseX);
+    int currentX = rasteredX(mouseX);
 
-	inDrag = false;
-	qreal endEventShift = 0;
-	qreal startEventShift = 0;
-	if(dragsOnEvent){
-		startEventShift = currentX-xPos;
-	} else {
-		endEventShift = currentX-xPos;
-	}
-	xPos = 0;
-	if(Selection::instance()->selectedEvents().count()>0) {
-		currentProtocol()->startNewAction("Change event duration", image());
-		foreach(MidiEvent* event,  Selection::instance()->selectedEvents()){
-			OnEvent *on = qobject_cast<OnEvent*>(event);
-			OffEvent *off = qobject_cast<OffEvent*>(event);
-			if(on){
-				int onTick = file()->tick(file()->msOfTick(on->midiTime())-
-						matrixWidget->timeMsOfWidth(qRound(-startEventShift)));
-				int offTick = file()->tick(file()->msOfTick(on->offEvent()->
-						midiTime())-matrixWidget->timeMsOfWidth(qRound(-endEventShift)));
-				if(onTick<offTick){
-					if(dragsOnEvent){
-						changeTick(on, -startEventShift);
-					} else {
-						changeTick(on->offEvent(), -endEventShift);
-					}
-				}
-			} else if(off){
-				// do nothing; endEvents are shifted when touching their OnEvent
-				continue;
-			} else if(dragsOnEvent){
-				// normal events will be moved as normal
-				changeTick(event, -startEventShift);
-			}
-		}
-		currentProtocol()->endAction();
-	}
-	matrixWidget->setCursor(Qt::ArrowCursor);
-	if(_standardTool){
-		Tool::setCurrentTool(_standardTool);
-		_standardTool->move(mouseX, mouseY);
-		_standardTool->release();
-	}
-	return true;
+    inDrag = false;
+    qreal endEventShift = 0;
+    qreal startEventShift = 0;
+    if (dragsOnEvent) {
+        startEventShift = currentX-xPos;
+    } else {
+        endEventShift = currentX-xPos;
+    }
+    xPos = 0;
+    if (Selection::instance()->selectedEvents().count()>0) {
+        currentProtocol()->startNewAction("Change event duration", image());
+        for (MidiEvent* event : Selection::instance()->selectedEvents()) {
+            OnEvent *on = qobject_cast<OnEvent*>(event);
+            OffEvent *off = qobject_cast<OffEvent*>(event);
+            if (on) {
+                int onTick = file()->tick(file()->msOfTick(on->midiTime())-
+                        matrixWidget->timeMsOfWidth(qRound(-startEventShift)));
+                int offTick = file()->tick(file()->msOfTick(on->offEvent()->
+                        midiTime())-matrixWidget->timeMsOfWidth(qRound(-endEventShift)));
+                if (onTick<offTick) {
+                    if (dragsOnEvent) {
+                        changeTick(on, -startEventShift);
+                    } else {
+                        changeTick(on->offEvent(), -endEventShift);
+                    }
+                }
+            } else if (off) {
+                // do nothing; endEvents are shifted when touching their OnEvent
+                continue;
+            } else if (dragsOnEvent) {
+                // normal events will be moved as normal
+                changeTick(event, -startEventShift);
+            }
+        }
+        currentProtocol()->endAction();
+    }
+    matrixWidget->setCursor(Qt::ArrowCursor);
+    if (_standardTool) {
+        Tool::setCurrentTool(_standardTool);
+        _standardTool->move(mouseX, mouseY);
+        _standardTool->release();
+    }
+    return true;
 }
 
-bool SizeChangeTool::move(qreal mouseX, qreal mouseY){
-	EventTool::move(mouseX, mouseY);
-	foreach(MidiEvent* event, Selection::instance()->selectedEvents()){
-		if(pointInRect(mouseX, mouseY, event->x()-2, event->y(), event->x()+2,
-				event->y()+event->height()))
-		{
-			matrixWidget->setCursor(Qt::SplitHCursor);
-			return inDrag;
-		}
-		if(pointInRect(mouseX, mouseY, event->x()+event->width()-2, event->y(),
-				event->x()+event->width()+2, event->y()+event->height()))
-		{
-			matrixWidget->setCursor(Qt::SplitHCursor);
-			return inDrag;
-		}
-	}
-	matrixWidget->setCursor(Qt::ArrowCursor);
-	return inDrag;
+bool SizeChangeTool::move(qreal mouseX, qreal mouseY) {
+    EventTool::move(mouseX, mouseY);
+    for (MidiEvent* event : Selection::instance()->selectedEvents()) {
+        if (pointInRect(mouseX, mouseY, event->x()-2, event->y(), event->x()+2,
+                event->y()+event->height()))
+        {
+            matrixWidget->setCursor(Qt::SplitHCursor);
+            return inDrag;
+        }
+        if (pointInRect(mouseX, mouseY, event->x()+event->width()-2, event->y(),
+                event->x()+event->width()+2, event->y()+event->height()))
+        {
+            matrixWidget->setCursor(Qt::SplitHCursor);
+            return inDrag;
+        }
+    }
+    matrixWidget->setCursor(Qt::ArrowCursor);
+    return inDrag;
 }
 
-bool SizeChangeTool::releaseOnly(){
-	inDrag = false;
-	xPos = 0;
-	return true;
+bool SizeChangeTool::releaseOnly() {
+    inDrag = false;
+    xPos = 0;
+    return true;
 }
 
-bool SizeChangeTool::showsSelection(){
-	return true;
+bool SizeChangeTool::showsSelection() {
+    return true;
 }

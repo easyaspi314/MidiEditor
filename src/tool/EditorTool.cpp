@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -21,123 +23,127 @@
 #include "../gui/MatrixWidget.h"
 #include "../gui/MainWindow.h"
 
-MatrixWidget *EditorTool::matrixWidget = Q_NULLPTR;
-MainWindow *EditorTool::_mainWindow = Q_NULLPTR;
+MatrixWidget *EditorTool::matrixWidget = qnullptr;
+MainWindow *EditorTool::_mainWindow = qnullptr;
 
-EditorTool::EditorTool() : Tool(){
-	etool_selected = false;
-	mouseIn = false;
+EditorTool::EditorTool() : Tool() {
+    mouseX = 0;
+    mouseY = 0;
+    etool_selected = false;
+    mouseIn = false;
 }
 
-EditorTool::EditorTool(EditorTool &other):Tool(other){
-	etool_selected = other.etool_selected;
-	mouseIn = other.mouseIn;
+EditorTool::EditorTool(EditorTool &other):Tool(other) {
+    mouseX = other.mouseX;
+    mouseY = other.mouseY;
+    etool_selected = other.etool_selected;
+    mouseIn = other.mouseIn;
 }
 
-Tool::ToolType EditorTool::type() const {
-	return Tool::Editor;
+ToolType EditorTool::type() const {
+    return ToolType::Editor;
 }
 
-void EditorTool::draw(QPainter *painter){
-	Q_UNUSED(painter);
-	return;
+void EditorTool::draw(QPainter *painter) {
+    Q_UNUSED(painter);
+    return;
 }
 
-bool EditorTool::press(bool leftClick){
-	Q_UNUSED(leftClick);
-	return false;
+bool EditorTool::press(bool leftClick) {
+    Q_UNUSED(leftClick);
+    return false;
 }
 
-bool EditorTool::pressKey(int key){
-	Q_UNUSED(key);
-	return false;
+bool EditorTool::pressKey(int key) {
+    Q_UNUSED(key);
+    return false;
 }
 
-bool EditorTool::releaseKey(int key){
-	Q_UNUSED(key);
-	return false;
+bool EditorTool::releaseKey(int key) {
+    Q_UNUSED(key);
+    return false;
 }
 
-bool EditorTool::release(){
-	return false;
+bool EditorTool::release() {
+    return false;
 }
 
-bool EditorTool::move(qreal mouseX, qreal mouseY){
-	if (MatrixWidget::antiAliasingEnabled) {
-		this->mouseX = mouseX;
-		this->mouseY = mouseY;
-	} else {
-		this->mouseX = mouseX;
-		this->mouseY = mouseY;
-	}
-	return false;
+bool EditorTool::move(qreal mouseX, qreal mouseY) {
+    if (_settings.antialiasing) {
+        this->mouseX = mouseX;
+        this->mouseY = mouseY;
+    } else {
+        this->mouseX = short(mouseX);
+        this->mouseY = short(mouseY);
+    }
+    return false;
 }
 
-void EditorTool::exit(){
-	mouseIn = false;
-	return;
+void EditorTool::exit() {
+    mouseIn = false;
+    return;
 }
 
-void EditorTool::enter(){
-	mouseIn = true;
-	return;
+void EditorTool::enter() {
+    mouseIn = true;
+    return;
 }
 
-void EditorTool::deselect(){
-	etool_selected = false;
-	if(_button){
-		_button->setChecked(false);
-	}
+void EditorTool::deselect() {
+    etool_selected = false;
+    if (_button) {
+        _button->setChecked(false);
+    }
 }
 
-void EditorTool::select(){
-	etool_selected = true;
-	if(_button){
-		_button->setChecked(true);
-	}
-	_mainWindow->toolChanged();
+void EditorTool::select() {
+    etool_selected = true;
+    if (_button) {
+        _button->setChecked(true);
+    }
+    _mainWindow->toolChanged();
 }
 
-bool EditorTool::selected(){
-	return etool_selected;
+bool EditorTool::selected() {
+    return etool_selected;
 }
 
-void EditorTool::buttonClick(){
-	if(_currentTool){
-		_currentTool->deselect();
-	}
-	_currentTool = this;
-	select();
+void EditorTool::buttonClick() {
+    if (_currentTool) {
+        _currentTool->deselect();
+    }
+    _currentTool = this;
+    select();
 }
 
-ProtocolEntry *EditorTool::copy(){
-	return new EditorTool(*this);
+ProtocolEntry *EditorTool::copy() {
+    return new EditorTool(*this);
 }
 
-void EditorTool::reloadState(ProtocolEntry *entry){
+void EditorTool::reloadState(ProtocolEntry *entry) {
 
-	Tool::reloadState(entry);
+    Tool::reloadState(entry);
 
-	EditorTool *other = qobject_cast<EditorTool*>(entry);
-	if(!other){
-		return;
-	}
-	etool_selected = other->etool_selected;
-	mouseIn = other->mouseIn;
+    EditorTool *other = qobject_cast<EditorTool*>(entry);
+    if (!other) {
+        return;
+    }
+    etool_selected = other->etool_selected;
+    mouseIn = other->mouseIn;
 }
 
-void EditorTool::setMatrixWidget(MatrixWidget *w){
-	matrixWidget = w;
+void EditorTool::setMatrixWidget(MatrixWidget *w) {
+    matrixWidget = w;
 }
 
-void EditorTool::setMainWindow(MainWindow *mw){
-	_mainWindow = mw;
+void EditorTool::setMainWindow(MainWindow *mw) {
+    _mainWindow = mw;
 }
 
-bool EditorTool::pointInRect(qreal x, qreal y, qreal x_start, qreal y_start, qreal x_end, qreal y_end){
-	return x>=x_start && x<x_end && y>=y_start && y<=y_end;
+bool EditorTool::pointInRect(qreal x, qreal y, qreal x_start, qreal y_start, qreal x_end, qreal y_end) {
+    return x >= x_start && x < x_end && y >= y_start && y <= y_end;
 }
 
-bool EditorTool::releaseOnly(){
-	return false;
+bool EditorTool::releaseOnly() {
+    return false;
 }

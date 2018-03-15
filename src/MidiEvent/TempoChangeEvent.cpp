@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -19,67 +21,81 @@
 #include "TempoChangeEvent.h"
 #include "../midi/MidiFile.h"
 
-TempoChangeEvent::TempoChangeEvent(int channel, int value, MidiTrack *track) : MidiEvent(channel, track){
-	_beats = 60000000/value;
+TempoChangeEvent::TempoChangeEvent(ubyte channel, int value, MidiTrack *track) : MidiEvent(channel, track){
+    if (value == 0) {
+        qWarning("Error! TempoChangeEvent is trying to divide by zero!");
+        _beats = 60000000/120;
+    } else {
+        _beats = 60000000/value;
+    }
 }
 
 TempoChangeEvent::TempoChangeEvent(const TempoChangeEvent &other) : MidiEvent(other){
-	_beats = other._beats;
+    _beats = other._beats;
 }
 
-MidiEvent::EventType TempoChangeEvent::type() const {
-	return TempoChangeEventType;
+EventType TempoChangeEvent::type() const {
+    return TempoChangeEventType;
 }
 
 int TempoChangeEvent::beatsPerQuarter(){
-	return _beats;
+    return _beats;
 }
 
-qreal TempoChangeEvent::msPerTick(){
-	qreal quarters_per_second = qreal(_beats)/60;
-	qreal ticks_per_second = qreal(file()->ticksPerQuarter()) *
-			quarters_per_second;
-	return 1000/(ticks_per_second);
+int TempoChangeEvent::msPerTick(){
+    int quarters_per_second = int(_beats)/60;
+    int ticks_per_second = int(file()->ticksPerQuarter()) * quarters_per_second;
+    if (ticks_per_second == 0) {
+        qWarning("TempoChangeEvent::msPerTick(): Trying to divide by zero!");
+        return 1000/192;
+    }
+    return 1000/(ticks_per_second);
 }
 
 ProtocolEntry *TempoChangeEvent::copy(){
-	return new TempoChangeEvent(*this);
+    return new TempoChangeEvent(*this);
 }
 
 void TempoChangeEvent::reloadState(ProtocolEntry *entry){
-	TempoChangeEvent *other = qobject_cast<TempoChangeEvent*>(entry);
-	if(!other){
-		return;
-	}
-	MidiEvent::reloadState(entry);
-	_beats = other->_beats;
+    TempoChangeEvent *other = qobject_cast<TempoChangeEvent*>(entry);
+    if(!other){
+        return;
+    }
+    MidiEvent::reloadState(entry);
+    _beats = other->_beats;
 }
 
-int TempoChangeEvent::line(){
-	return MidiEvent::TEMPO_CHANGE_EVENT_LINE;
+ubyte TempoChangeEvent::line(){
+    return MidiEventLine::TempoChangeEventLine;
 }
 
-QByteArray TempoChangeEvent::save(){
-	QByteArray array = QByteArray();
+const QByteArray TempoChangeEvent::save(){
+    QByteArray array = QByteArray();
 
-	array.append(byte(0xFF));
-	array.append(byte(0x51));
-	array.append(byte(0x03));
-	int value = 60000000/_beats;
-	for(int i = 2; i >=0; i--){
-		array.append(byte((value) & (0xFF << 8*i) >>8*i));
-	}
+    append(array, 0xFF);
+    append(array, 0x51);
+    append(array, 0x03);
+    int value;
+    if (_beats == 0) {
+        qWarning("TempoChangeEvent::save(): Trying to divide by zero!");
+        value = 60000000/120;
+    } else {
+        value = 60000000/_beats;
+    }
+    for(int i = 2; i >= 0; i--){
+        append(array, (value) & (0xFF << 8*i) >>8*i);
+    }
 
-	return array;
+    return array;
 }
 
 void TempoChangeEvent::setBeats(int beats){
-	ProtocolEntry *toCopy = copy();
-	_beats = beats;
-	file()->calcMaxTime();
-	protocol(toCopy, this);
+    ProtocolEntry *toCopy = copy();
+    _beats = beats;
+    file()->calcMaxTime();
+    protocol(toCopy, this);
 }
 
-QString TempoChangeEvent::typeString(){
-	return "Tempo Change Event";
+const QString TempoChangeEvent::typeString(){
+    return "Tempo Change Event";
 }

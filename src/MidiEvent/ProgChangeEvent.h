@@ -23,27 +23,27 @@
 
 class ProgChangeEvent : public MidiEvent {
 
-	Q_OBJECT
-	public:
-		ProgChangeEvent(int channel, int prog, MidiTrack *track);
-		ProgChangeEvent(const ProgChangeEvent &other);
-		MidiEvent::EventType type() const;
+    Q_OBJECT
+    public:
+        ProgChangeEvent(ubyte channel, ubyte prog, MidiTrack *track);
+        ProgChangeEvent(const ProgChangeEvent &other);
+        EventType type() const qoverride;
 
-		virtual int line();
+        virtual ubyte line() qoverride;
 
-		QString toMessage();
-		QByteArray save();
+        const QString toMessage() qoverride;
+        const QByteArray save() qoverride;
 
-		virtual ProtocolEntry *copy();
-		virtual void reloadState(ProtocolEntry *entry);
+        virtual ProtocolEntry *copy() qoverride;
+        virtual void reloadState(ProtocolEntry *entry) qoverride;
 
-		QString typeString();
+        const QString typeString() qoverride;
 
-		int program();
-		void setProgram(int prog);
+        ubyte program();
+        void setProgram(ubyte prog);
 
-	private:
-		int _program;
+    private:
+        ubyte _program;
 };
 
 #endif

@@ -6,24 +6,17 @@
 
 class QWidget;
 class QCheckBox;
-class QSettings;
 
 class GuiSettingsWidget : public SettingsWidget {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	GuiSettingsWidget(QSettings *settings, QWidget *parent = Q_NULLPTR);
-
-public slots:
-	void setAntiAliasing(bool enable);
-	void setSelectAndMove(bool enable);
-	void setVelocityDragging(bool enable);
+    GuiSettingsWidget(QWidget *parent = qnullptr);
 
 private:
-	QSettings *_settings;
-	QCheckBox *_selectAndMove;
-	QCheckBox *_antiAliasingBox;
-	QCheckBox *_velocityDraggingBox;
+    QCheckBox *_selectAndMove;
+    QCheckBox *_antiAliasingBox;
+    QCheckBox *_velocityDraggingBox;
 };
 
 #endif // GUISETTINGSWIDGET_H

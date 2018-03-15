@@ -23,6 +23,7 @@
 
 #include <QObject>
 #include <QString>
+#include "../Utils.h"
 
 class TextEvent;
 class MidiFile;
@@ -30,52 +31,61 @@ class QColor;
 
 class MidiTrack : public ProtocolEntry {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
+    public:
 
-		MidiTrack(MidiFile *file);
-		MidiTrack(const MidiTrack &other);
-		virtual ~MidiTrack() Q_DECL_OVERRIDE;
+        MidiTrack(MidiFile *file);
+        MidiTrack(const MidiTrack &other);
+        virtual ~MidiTrack() qoverride;
 
-		QString name();
-		void setName(QString name);
+        QString name();
+        void setName(const QString &name);
 
-		int number();
-		void setNumber(int number);
+        ushort number();
+        void setNumber(ushort number);
 
-		void setNameEvent(TextEvent *nameEvent);
-		TextEvent *nameEvent();
+        void setNameEvent(TextEvent *nameEvent);
+        TextEvent *nameEvent();
 
-		MidiFile *file() Q_DECL_OVERRIDE;
+        MidiFile *file() qoverride;
 
-		void assignChannel(int ch);
-		int assignedChannel();
+        void assignChannel(ubyte ch);
+        ubyte assignedChannel();
 
-		void setHidden(bool hidden);
-		bool hidden();
+        void setHidden(bool hidden);
+        bool hidden();
 
-		void setMuted(bool muted);
-		bool muted();
+        void setMuted(bool muted);
+        bool muted();
 
-		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
+        virtual ProtocolEntry *copy() qoverride;
+        virtual void reloadState(ProtocolEntry *entry) qoverride;
 
-		QColor *color();
+        QColor *color();
 
-		MidiTrack *copyToFile(MidiFile *file);
+        MidiTrack *copyToFile(MidiFile *file);
 
-	signals:
-		void trackChanged();
+    signals:
+        void trackChanged();
 
-	private:
-		int _number;
-		TextEvent *_nameEvent;
-		MidiFile *_file;
-		bool _hidden, _muted;
-		QColor *_color;
+    private:
+        TextEvent *_nameEvent;
+        MidiFile *_file;
+        QColor *_color;
 
-		int _assignedChannel;
+        ushort _number;
+
+        #ifdef NO_BIT_PACK
+            ubyte _assignedChannel;
+            bool _hidden;
+            bool _muted;
+        #else
+            ubyte _assignedChannel : 5;
+            bool _hidden : 1;
+            bool _muted : 1;
+        #endif
+
 };
 
 #endif

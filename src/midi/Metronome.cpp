@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -30,117 +32,105 @@
 #include <QSoundEffect>
 #include <QTime>
 
-bool Metronome::_enable = false;
 QSoundEffect *Metronome::clickSound = 0;
 
 Metronome::Metronome(QObject *parent) : QObject(parent) {
-	if (!clickSound){
-		clickSound = new QSoundEffect();
-		clickSound->setSource(QUrl::fromLocalFile(":/run_environment/metronome/metronome-01.wav"));
-	}
-	_file = 0;
-	num = 4;
-	denom = 2;
-	lastMeasure = -1;
-	lastPos = -1;
-
-	// Metronome would rather not keep loading this value.
-	delay = MidiPlayer::playbackDelay();
+    if (!clickSound) {
+        clickSound = new QSoundEffect();
+        clickSound->setSource(QUrl::fromLocalFile(":/run_environment/metronome/metronome-01.wav"));
+    }
+    _file = 0;
+    num = 4;
+    denom = 2;
+    lastMeasure = -1;
+    lastPos = -1;
 }
 
 void Metronome::setFile(MidiFile *file) {
-	_file = file;
+    _file = file;
 }
 
 void Metronome::measureUpdate(int measure, int tickInMeasure) {
 
-	// compute pos
-	if (!_file) {
-		return;
-	}
+    // compute pos
+    if (!_file) {
+        return;
+    }
 
-	int ticksPerClick = int((_file->ticksPerQuarter() * 4) / qPow(2, denom));
-	int pos = tickInMeasure / ticksPerClick;
+    int ticksPerClick = int((_file->ticksPerQuarter() * 4) / qPow(2, denom));
+    int pos = tickInMeasure / ticksPerClick;
 
-	if (lastMeasure < measure) {
-		QTimer::singleShot(delay, this, SLOT(doClick()));
-		lastMeasure = measure;
-		lastPos = 0;
-		return;
-	} else {
-		if (pos > lastPos) {
-			QTimer::singleShot(delay, this, SLOT(doClick()));
-			lastPos = pos;
-			return;
-		}
-	}
+    if (lastMeasure < measure) {
+        QTimer::singleShot(_settings.playbackDelay, this, &Metronome::doClick);
+        lastMeasure = measure;
+        lastPos = 0;
+        return;
+    } else {
+        if (pos > lastPos) {
+            QTimer::singleShot(_settings.playbackDelay, this, &Metronome::doClick);
+            lastPos = pos;
+            return;
+        }
+    }
 }
 
-void Metronome::meterChanged(int n, int d) {
-	num = n;
-	denom = d;
+void Metronome::meterChanged(ubyte n, ubyte d) {
+    num = n;
+    denom = d;
 }
 
 void Metronome::doClick() {
-	emit click();
+    emit click();
 }
 
 void Metronome::playbackStarted() {
-	reset();
+    reset();
 }
 
 void Metronome::playbackStopped() {
 
 }
 Metronome *Metronome::createInstance() {
-	return new Metronome();
+    return new Metronome();
 }
 Metronome *Metronome::instance() {
-	return Singleton<Metronome>::instance(Metronome::createInstance);
+    return Singleton<Metronome>::instance(Metronome::createInstance);
 }
 
 void Metronome::reset() {
-	lastPos = 0;
-	lastMeasure = -1;
-	delay = MidiPlayer::playbackDelay();
-}
-
-bool Metronome::enabled() {
-	return _enable;
+    lastPos = 0;
+    lastMeasure = -1;
 }
 
 void Metronome::setEnabled(bool b) {
-	if (b) {
-		// metronome
-		connect(MidiPlayer::player(),
-				SIGNAL(measureChanged(int, int)), Metronome::instance(), SLOT(measureUpdate(int, int)));
-		connect(MidiPlayer::player(),
-				SIGNAL(measureUpdate(int, int)), Metronome::instance(), SLOT(measureUpdate(int, int)));
-		connect(MidiPlayer::player(),
-				SIGNAL(meterChanged(int, int)), Metronome::instance(), SLOT(meterChanged(int, int)));
-		connect(MidiPlayer::player(),
-				SIGNAL(playerStopped()), Metronome::instance(), SLOT(playbackStopped()));
-		connect(MidiPlayer::player(),
-				SIGNAL(playerStarted()), Metronome::instance(), SLOT(playbackStarted()));
-		connect(Metronome::instance(), SIGNAL(click()),
-				clickSound, SLOT(play()), Qt::DirectConnection);
-	} else {
-		// metronome
-		disconnect(MidiPlayer::player(),
-				SIGNAL(measureChanged(int, int)), Metronome::instance(), SLOT(measureUpdate(int,
-						int)));
-		disconnect(MidiPlayer::player(),
-				SIGNAL(measureUpdate(int, int)), Metronome::instance(), SLOT(measureUpdate(int,
-						int)));
-		disconnect(MidiPlayer::player(),
-				SIGNAL(meterChanged(int, int)), Metronome::instance(), SLOT(meterChanged(int,
-						int)));
-		disconnect(MidiPlayer::player(),
-				SIGNAL(playerStopped()), Metronome::instance(), SLOT(playbackStopped()));
-		disconnect(MidiPlayer::player(),
-				SIGNAL(playerStarted()), Metronome::instance(), SLOT(playbackStarted()));
-		disconnect(Metronome::instance(), SIGNAL(click()),
-					clickSound, SLOT(play()));
-	}
-	_enable = b;
+    if (b) {
+        // metronome
+        connect(MidiPlayer::player(), &PlayerThread::measureChanged,
+                Metronome::instance(), &Metronome::measureUpdate);
+        connect(MidiPlayer::player(), &PlayerThread::measureUpdate,
+                Metronome::instance(), &Metronome::measureUpdate);
+        connect(MidiPlayer::player(), &PlayerThread::meterChanged,
+                Metronome::instance(), &Metronome::meterChanged);
+        connect(MidiPlayer::player(), &PlayerThread::playerStopped,
+                Metronome::instance(), &Metronome::playbackStopped);
+        connect(MidiPlayer::player(), &PlayerThread::playerStarted,
+                Metronome::instance(), &Metronome::playbackStarted);
+        connect(Metronome::instance(), &Metronome::click,
+                clickSound, &QSoundEffect::play, Qt::DirectConnection);
+    } else {
+        // metronome
+        disconnect(MidiPlayer::player(), &PlayerThread::measureChanged,
+                   Metronome::instance(), &Metronome::measureUpdate);
+        disconnect(MidiPlayer::player(), &PlayerThread::measureUpdate,
+                   Metronome::instance(), &Metronome::measureUpdate);
+        disconnect(MidiPlayer::player(), &PlayerThread::meterChanged,
+                   Metronome::instance(), &Metronome::meterChanged);
+        disconnect(MidiPlayer::player(), &PlayerThread::playerStopped,
+                   Metronome::instance(), &Metronome::playbackStopped);
+        disconnect(MidiPlayer::player(), &PlayerThread::playerStarted,
+                   Metronome::instance(), &Metronome::playbackStarted);
+        disconnect(Metronome::instance(), &Metronome::click,
+                   clickSound, &QSoundEffect::play);
+    }
+    _settings.metronome = b;
 }

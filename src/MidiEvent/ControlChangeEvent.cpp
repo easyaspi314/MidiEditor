@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -20,104 +22,105 @@
 
 #include "../midi/MidiOutput.h"
 #include "../midi/MidiFile.h"
+#include <QtMath>
 
-ControlChangeEvent::ControlChangeEvent(int channel, int control, int value, MidiTrack *track) :
-		MidiEvent(channel, track)
+ControlChangeEvent::ControlChangeEvent(ubyte channel, ubyte control, ubyte value, MidiTrack *track) :
+        MidiEvent(channel, track)
 {
-	_control = control;
-	_value = value;
+    _control = control;
+    _value = value;
 }
 
 ControlChangeEvent::ControlChangeEvent(const ControlChangeEvent &other) :
-		MidiEvent(other)
+        MidiEvent(other)
 {
-	_value = other._value;
-	_control = other._control;
+    _value = other._value;
+    _control = other._control;
 }
 
-MidiEvent::EventType ControlChangeEvent::type() const {
-	return ControlChangeEventType;
+EventType ControlChangeEvent::type() const {
+    return ControlChangeEventType;
 }
 
-int ControlChangeEvent::line(){
-	return CONTROLLER_LINE;
+ubyte ControlChangeEvent::line(){
+    return ControlChangeEventLine;
 }
 
-QString ControlChangeEvent::toMessage(){
-	return "cc "+QString::number(channel())+" "+QString::number(_control)+" "+
-			QString::number(_value);
+const QString ControlChangeEvent::toMessage(){
+    return _("cc %1 %2 %3").arg(QString::number(channel()), QString::number(_control), QString::number(_value));
 }
 
-QByteArray ControlChangeEvent::save(){
-	QByteArray array = QByteArray();
-	array.append(byte(0xB0 | channel()));
-	array.append(byte(_control));
-	array.append(byte(_value));
-	return array;
+const QByteArray ControlChangeEvent::save(){
+    QByteArray array = QByteArray();
+    append(array, 0xB0 | channel());
+    append(array, _control);
+    append(array, _value);
+    return array;
 }
 
-QByteArray ControlChangeEvent::play() {
-	if (!MidiOutput::isGBAMode())
-		return save();
+const QByteArray ControlChangeEvent::play() {
+    if (_settings.gba_mode)
+        return save();
 
-	int value = _value;
-	if (_control == 1) {
-		if (value > 0) {
-			value = 10 * value;
-			if (value > 127)
-				value = 127;
-		}
+    ubyte value = _value;
+    if (_control == 1 /* Modulation */) {
+        // Modulation is amplified a lot on the GBA
+        if (value > 0) {
+            value = 10 * value;
+            if (value > 127)
+                value = 127;
+        }
 
-	} else if (_control == 7) {
-		value = qRound(sqrt(127.0 * value));
-	}
+    } else if (_control == 7 /* Channel Volume */) {
+        value = qRound(sqrt(127.0 * value));
+    }
 
-	QByteArray array = QByteArray();
-	array.append(byte(0xB0 | channel()));
-	array.append(byte(_control));
-	array.append(byte(value));
-	//qWarning(toMessage().toUtf8());
-	return array;
+    QByteArray array = QByteArray();
+    append(array, 0xB0 | channel());
+    append(array, _control);
+    append(array, value);
+
+    return array;
 }
 
 ProtocolEntry *ControlChangeEvent::copy(){
-	return new ControlChangeEvent(*this);
+    return new ControlChangeEvent(*this);
 }
 
 void ControlChangeEvent::reloadState(ProtocolEntry *entry){
-	ControlChangeEvent *other = qobject_cast<ControlChangeEvent*>(entry);
-	if(!other){
-		return;
-	}
-	MidiEvent::reloadState(entry);
-	_control = other->_control;
-	_value = other->_value;
+    ControlChangeEvent *other = qobject_cast<ControlChangeEvent*>(entry);
+    if(!other){
+        return;
+    }
+    MidiEvent::reloadState(entry);
+    _control = other->_control;
+    _value = other->_value;
 }
 
-QString ControlChangeEvent::typeString(){
-	return "Control Change Event";
+const QString ControlChangeEvent::typeString(){
+    return "Control Change Event";
 }
 
-int ControlChangeEvent::value(){
-	return _value;
+ubyte ControlChangeEvent::value(){
+    return _value;
 }
 
-int ControlChangeEvent::control(){
-	return _control;
+ubyte ControlChangeEvent::control(){
+    return _control;
 }
 
-void ControlChangeEvent::setValue(int v){
-	ProtocolEntry *toCopy = copy();
-	_value = v;
-	protocol(toCopy, this);
+void ControlChangeEvent::setValue(ubyte v){
+    ProtocolEntry *toCopy = copy();
+    _value = v;
+    protocol(toCopy, this);
 }
 
-void ControlChangeEvent::setControl(int c){
-	ProtocolEntry *toCopy = copy();
-	_control = c;
-	protocol(toCopy, this);
+void ControlChangeEvent::setControl(ubyte c){
+    ProtocolEntry *toCopy = copy();
+    _control = c;
+    protocol(toCopy, this);
 }
 
 bool ControlChangeEvent::isOnEvent(){
-	return false;
+    return false;
 }

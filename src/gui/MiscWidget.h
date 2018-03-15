@@ -20,6 +20,7 @@
 #define MISCWIDGET_H
 
 #include "PaintWidget.h"
+#include "../Utils.h"
 
 class MatrixWidget;
 class MidiEvent;
@@ -30,87 +31,113 @@ class NoteOnEvent;
 #include <QPair>
 #include <QList>
 
+enum struct MiscWidgetMode : ubyte {
+
+    VelocityEditor = 0,
+    ControlEditor,
+    PitchBendEditor,
+    KeyPressureEditor,
+    ChannelPressureEditor,
+    MiscModeEnd
+};
+
+enum struct MiscWidgetEditMode : ubyte {
+    SingleMode = 0,
+    LineMode,
+    FreehandMode
+};
+
 class MiscWidget : public PaintWidget {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		enum MiscWidgetEditMode {
-			SingleMode = 0,
-			LineMode,
-			FreehandMode
-		};
-		enum MiscWidgetMode {
-			VelocityEditor = 0,
-			ControlEditor,
-			PitchBendEditor,
-			KeyPressureEditor,
-			ChannelPressureEditor,
-			MiscModeEnd,
-		};
+    public:
 
-		MiscWidget(MatrixWidget *mw, QWidget *parent = Q_NULLPTR);
 
-		static QString modeToString(int mode);
-		void setMode(int mode);
-		void setEditMode(int mode);
-		void setFile(MidiFile *midiFile);
+        MiscWidget(MatrixWidget *mw, QWidget *parent = qnullptr);
 
-	public slots:
-		void setChannel(int);
-		void setControl(int ctrl);
-		void redraw();
+        static const QString modeToString(ubyte mode);
+        void setMode(MiscWidgetMode mode);
+        void setEditMode(MiscWidgetEditMode mode);
+        void setFile(MidiFile *midiFile);
 
-	protected:
-		void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
-		void keyPressEvent(QKeyEvent* e) Q_DECL_OVERRIDE;
-		void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+    public slots:
+        void setChannel(int);
+        void setControl(int ctrl);
+        void redraw();
 
-		void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-		void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-		void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
-		void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    protected:
+        void startProtocol();
+        void paintEvent(QPaintEvent *event) qoverride;
+        void keyPressEvent(QKeyEvent* e) qoverride;
+        void keyReleaseEvent(QKeyEvent *event) qoverride;
+        void resizeEvent(QResizeEvent *event) qoverride;
+        void mouseReleaseEvent(QMouseEvent *event) qoverride;
+        void mousePressEvent(QMouseEvent *event) qoverride;
+        void leaveEvent(QEvent *event) qoverride;
+        void mouseMoveEvent(QMouseEvent *event) qoverride;
 
-	private:
-		MatrixWidget *matrixWidget;
+    private:
 
-		// Mode is SINGLE_MODE or LINE_MODE
-		int edit_mode;
-		int mode;
-		int channel;
-		int controller;
 
-		void resetState();
+        void resetState();
+        QList<QPair<qreal, ushort> > getTrack(QList<MidiEvent*> *accordingEvents = qnullptr);
+        void computeMinMax();
+        QPair<qreal, ushort> processEvent(MidiEvent *e, bool *ok);
+        qreal interpolate(const QList<QPair<qreal, qreal> > &track, qreal x);
+        qreal value(qreal y);
+        bool filter(MidiEvent *e);
 
-		QList<QPair<int, int> > getTrack(QList<MidiEvent*> *accordingEvents = Q_NULLPTR);
-		void computeMinMax();
-		QPair<int, int> processEvent(MidiEvent *e, bool *ok);
-		qreal interpolate(QList<QPair<qreal, qreal> > track, qreal x);
-		qreal value(double y);
-		bool filter(MidiEvent *e);
+        // line
+        qreal lineX, lineY;
 
-		int _max, _default;
+        // free hand
+        QList<QPair<qreal, qreal> > freeHandCurve;
 
-		// single
-		int dragY;
-		bool dragging;
-		NoteOnEvent *aboveEvent;
-		SelectTool *_dummyTool;
-		int trackIndex;
+        MatrixWidget *matrixWidget;
+        NoteOnEvent *aboveEvent;
+        SelectTool *_dummyTool;
+        MidiFile *file;
+        QPixmap *pixmap;
 
-		// free hand
-		QList<QPair<qreal, qreal> > freeHandCurve;
-		bool isDrawingFreehand;
+        int trackIndex;
+        // single
+        int dragY;
 
-		// line
-		qreal lineX, lineY;
-		bool isDrawingLine;
+        ushort _max;
+        ushort _default;
 
-		MidiFile *file;
-		QPixmap *pixmap;
-		bool inited;
+        #ifdef NO_BIT_PACK
+            // Mode is SINGLE_MODE or LINE_MODE
+            MiscWidgetEditMode edit_mode;
+            MiscWidgetMode mode;
 
-		const int WIDTH = 7;
+            bool dragging;
+            bool inited;
+            bool isDrawingLine;
+
+            ubyte controller;
+
+            ubyte channel;
+
+            bool isDrawingFreehand;
+
+        #else
+            // Mode is SINGLE_MODE or LINE_MODE
+            MiscWidgetEditMode edit_mode : 2;
+            MiscWidgetMode mode : 3;
+            bool dragging : 1;
+            bool inited : 1;
+            bool isDrawingLine : 1;
+
+            ubyte controller : 7;
+            bool isDrawingFreehand : 1;
+
+            ubyte channel : 4;
+
+        #endif
+        const ubyte WIDTH = 7;
+
 };
 
 #endif

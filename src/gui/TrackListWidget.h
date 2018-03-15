@@ -25,6 +25,8 @@
 #include <QList>
 #include <QColor>
 
+#include "../Utils.h"
+
 class QAction;
 class MidiFile;
 class QLabel;
@@ -35,54 +37,54 @@ class ColoredWidget;
 
 class TrackListItem : public QWidget {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		TrackListItem(MidiTrack *track, TrackListWidget *parent);
-		void onBeforeUpdate();
+    public:
+        TrackListItem(MidiTrack *track, TrackListWidget *parent);
+        void onBeforeUpdate();
 
-	signals:
-		void trackRenameClicked(int tracknumber);
-		void trackRemoveClicked(int tracknumber);
+    signals:
+        void trackRenameClicked(ushort tracknumber);
+        void trackRemoveClicked(ushort tracknumber);
 
-	public slots:
-		void toggleVisibility(bool visible);
-		void toggleAudibility(bool audible);
-		void removeTrack();
-		void renameTrack();
+    public slots:
+        void toggleVisibility(bool visible);
+        void toggleAudibility(bool audible);
+        void removeTrack();
+        void renameTrack();
 
-	private:
-		QLabel *trackNameLabel;
-		TrackListWidget *trackList;
-		MidiTrack *track;
-		ColoredWidget *colored;
-		QAction *visibleAction, *loudAction;
+    private:
+        QLabel *trackNameLabel;
+        TrackListWidget *trackList;
+        MidiTrack *track;
+        ColoredWidget *colored;
+        QAction *visibleAction, *loudAction;
 };
 
 class TrackListWidget : public QListWidget {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		TrackListWidget(QWidget *parent = Q_NULLPTR);
-		void setFile(MidiFile *f);
-		MidiFile *midiFile();
+    public:
+        TrackListWidget(QWidget *parent = qnullptr);
+        void setFile(MidiFile *f);
+        MidiFile *midiFile();
 
-	signals:
-		void trackRenameClicked(int tracknumber);
-		void trackRemoveClicked(int tracknumber);
-		void trackClicked(MidiTrack *track);
+    signals:
+        void trackRenameClicked(ushort tracknumber);
+        void trackRemoveClicked(ushort tracknumber);
+        void trackClicked(MidiTrack *track);
 
-	public slots:
-		void update();
-		void chooseTrack(QListWidgetItem *item);
+    public slots:
+        void update();
+        void chooseTrack(QListWidgetItem *item);
 
-	private:
-		MidiFile *file;
-		QMap<MidiTrack*, TrackListItem*> items;
-		QList<MidiTrack*> trackorder;
+    private:
+        MidiFile *file;
+        QMap<MidiTrack*, TrackListItem*> items;
+        QList<MidiTrack*> trackorder;
 
-		const int ROW_HEIGHT = 85;
+        const ubyte ROW_HEIGHT = 85;
 };
 
 #endif

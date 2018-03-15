@@ -20,6 +20,7 @@
 #define PROTOCOLENTRY_H
 
 #include <QObject>
+#include "../Utils.h"
 
 class MidiFile;
 
@@ -40,45 +41,44 @@ class MidiFile;
  * ProtocolEntry *newObj) has to be called, with "this" as newObj.
  */
 class ProtocolEntry : public QObject {
+    Q_OBJECT
 
-	Q_OBJECT
+    public:
 
-	public:
+        virtual ~ProtocolEntry();
 
-		virtual ~ProtocolEntry();
+        /**
+         * \brief copies the ProtocolEntry.
+         *
+         * copy() should save the ProtocolEntrys state so that it will be able
+         * to reload his old state in reloadState().
+         * All important data has to be saved to the returned object; there is
+         * no need to save Layoutinformation because the program will relayout
+         * after every call of the protocol.
+         */
+        virtual ProtocolEntry *copy();
 
-		/**
-		 * \brief copies the ProtocolEntry.
-		 *
-		 * copy() should save the ProtocolEntrys state so that it will be able
-		 * to reload his old state in reloadState().
-		 * All important data has to be saved to the returned object; there is
-		 * no need to save Layoutinformation because the program will relayout
-		 * after every call of the protocol.
-		 */
-		virtual ProtocolEntry *copy();
+        ProtocolEntry(QObject *parent = qnullptr);
+        ProtocolEntry(const ProtocolEntry &other);
 
-		ProtocolEntry(QObject *parent = Q_NULLPTR);
-		ProtocolEntry(const ProtocolEntry &other);
+        /**
+         * \brief reloads the state of entry.
+         *
+         * This Method has to reload the Objects old state, written to entry in
+         * copy().
+         */
+        virtual void reloadState(ProtocolEntry *entry);
 
-		/**
-		 * \brief reloads the state of entry.
-		 *
-		 * This Method has to reload the Objects old state, written to entry in
-		 * copy().
-		 */
-		virtual void reloadState(ProtocolEntry *entry);
+        /**
+         * \brief writes the old object oldObj and the new object newObj to the
+         * protocol.
+         */
+        virtual void protocol(ProtocolEntry *oldObj, ProtocolEntry *newObj);
 
-		/**
-		 * \brief writes the old object oldObj and the new object newObj to the
-		 * protocol.
-		 */
-		virtual void protocol(ProtocolEntry *oldObj, ProtocolEntry *newObj);
-
-		/**
-		 * \brief return the entries file.
-		 */
-		virtual MidiFile *file();
+        /**
+         * \brief return the entries file.
+         */
+        virtual MidiFile *file();
 };
 
 #endif

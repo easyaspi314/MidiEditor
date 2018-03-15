@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -30,84 +32,86 @@
 #include "../MidiEvent/ProgChangeEvent.h"
 #include "../protocol/Protocol.h"
 
-InstrumentChooser::InstrumentChooser(MidiFile *f, int channel, QWidget *parent) :
-		QDialog(parent)
+InstrumentChooser::InstrumentChooser(MidiFile *f, ubyte channel, QWidget *parent) :
+        QDialog(parent)
 {
 
-	_file = f;
-	_channel = channel;
+    _file = f;
+    _channel = channel;
 
-	QLabel *starttext = new QLabel("Choose Instrument for Channel "+QString::number(channel), this);
+    QLabel *starttext = new QLabel("Choose Instrument for Channel "+QString::number(channel), this);
 
-	QLabel *text = new QLabel("Instrument: ", this);
-	_box = new QComboBox(this);
-	for(int i = 0; i<128; i++){
-		_box->addItem(MidiFile::instrumentName(i));
-	}
-	_box->setCurrentIndex(_file->channel(_channel)->
-				progAtTick(0));
+    QLabel *text = new QLabel("Instrument: ", this);
+    _box = new QComboBox(this);
+    for (ubyte i = 0; i < 128; i++) {
+        _box->addItem(MidiFile::instrumentName(i));
+    }
+    _box->setCurrentIndex(_file->channel(_channel)->progAtTick(0));
 
-	QLabel *endText = new QLabel("<b>Warning:</b> this will edit the event at tick 0 of the file."
-			"<br>If there is a Program Change Event after this tick,"
-			"<br>the instrument selected there will be audible!"
-			"<br>If you want all other Program Change Events to be"
-			"<br>removed, select the box below.");
+    QLabel *endText = new QLabel(_("<b>Warning:</b> this will edit the event at tick 0 of the file."
+            "<br>If there is a Program Change Event after this tick,"
+            "<br>the instrument selected there will be audible!"
+            "<br>If you want all other Program Change Events to be"
+            "<br>removed, select the box below."));
 
-	_removeOthers = new QCheckBox("Remove other Program Change Events", this);
+    _removeOthers = new QCheckBox("Remove other Program Change Events", this);
 
-	QPushButton *breakButton = new QPushButton("Cancel");
-	connect(breakButton, SIGNAL(clicked()), this, SLOT(hide()));
-	QPushButton *acceptButton = new QPushButton("Accept");
-	connect(acceptButton, SIGNAL(clicked()), this, SLOT(accept()));
+    QPushButton *breakButton = new QPushButton(tr("Cancel"));
+    connect(breakButton, &QPushButton::clicked, this, &InstrumentChooser::hide);
+    QPushButton *acceptButton = new QPushButton(tr("Accept"));
+    connect(acceptButton, &QPushButton::clicked, this, &InstrumentChooser::accept);
 
-	QGridLayout *layout = new QGridLayout(this);
-	layout->addWidget(starttext, 0, 0, 1, 3);
-	layout->addWidget(text,1,0,1,1);
-	layout->addWidget(_box, 1, 1, 1, 2);
-	layout->addWidget(endText, 2, 1, 1, 2);
-	layout->addWidget(_removeOthers, 3, 1, 1, 2);
-	layout->addWidget(breakButton, 4, 0, 1, 1);
-	layout->addWidget(acceptButton, 4, 2, 1, 1);
-	layout->setColumnStretch(1, 1);
+    QGridLayout *layout = new QGridLayout(this);
+    layout->addWidget(starttext, 0, 0, 1, 3);
+    layout->addWidget(text,1,0,1,1);
+    layout->addWidget(_box, 1, 1, 1, 2);
+    layout->addWidget(endText, 2, 1, 1, 2);
+    layout->addWidget(_removeOthers, 3, 1, 1, 2);
+    layout->addWidget(breakButton, 4, 0, 1, 1);
+    layout->addWidget(acceptButton, 4, 2, 1, 1);
+    layout->setColumnStretch(1, 1);
 }
 
-void InstrumentChooser::accept(){
+void InstrumentChooser::accept() {
 
-	int program = _box->currentIndex();
-	bool removeOthers = _removeOthers->isChecked();
-	MidiTrack *track = Q_NULLPTR;
+    ubyte program = ubyte(_box->currentIndex());
+    bool removeOthers = _removeOthers->isChecked();
+    MidiTrack *track = qnullptr;
 
-	// get events
-	QList<ProgChangeEvent*> events;
-	foreach(MidiEvent *event, _file->channel(_channel)->eventMap()->values()) {
-		ProgChangeEvent *prg = qobject_cast<ProgChangeEvent*>(event);
-		if(prg){
-			events.append(prg);
-			track = prg->track();
-		}
-	}
-	if(!track){
-		track = _file->track(0);
-	}
+    // get events
+    QList<ProgChangeEvent*> events;
+    auto it = _file->channel(_channel)->eventMap()->constBegin();
+    auto itEnd = _file->channel(_channel)->eventMap()->constEnd();
 
-	ProgChangeEvent *event = Q_NULLPTR;
+    for (; it != itEnd; ++it) {
+        ProgChangeEvent *prg = qobject_cast<ProgChangeEvent*>(it.value());
+        if (prg) {
+            events.append(prg);
+            track = prg->track();
+        }
+    }
+    if (!track) {
+        track = _file->track(0);
+    }
 
-	_file->protocol()->startNewAction("Edited instrument for channel");
-	if(events.size()>0 && events.first()->midiTime() == 0){
-		event = events.first();
-		event->setProgram(program);
-	} else {
-		event = new ProgChangeEvent(_channel, program, track);
-		_file->insertEventInChannel(_channel, event, 0);
-	}
+    ProgChangeEvent *event = qnullptr;
 
-	if(removeOthers){
-		foreach(ProgChangeEvent *toRemove, events){
-			if(toRemove != event){
-				_file->channel(_channel)->removeEvent(toRemove);
-			}
-		}
-	}
-	_file->protocol()->endAction();
-	hide();
+    _file->protocol()->startNewAction("Edited instrument for channel");
+    if (!events.isEmpty() && events.first()->midiTime() == 0) {
+        event = events.first();
+        event->setProgram(program);
+    } else {
+        event = new ProgChangeEvent(_channel, program, track);
+        _file->insertEventInChannel(_channel, event, 0);
+    }
+
+    if (removeOthers) {
+        for (ProgChangeEvent *toRemove : events) {
+            if (toRemove != event) {
+                _file->channel(_channel)->removeEvent(toRemove);
+            }
+        }
+    }
+    _file->protocol()->endAction();
+    hide();
 }

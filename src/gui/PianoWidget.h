@@ -31,40 +31,42 @@ class MatrixWidget;
 
 class PianoWidget : public PaintWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		PianoWidget(QWidget *parent = Q_NULLPTR);
-		void paintPianoKey(QPainter *painter, int number, qreal x, qreal y, qreal width, qreal height);
-		void setMatrixWidget(MatrixWidget *widget);
-		QSize sizeHint() const Q_DECL_OVERRIDE;
-		void setFile(MidiFile *file);
-		enum PianoKey {
-			C = 0,
-			C_Sharp,
-			D,
-			D_Sharp,
-			E,
-			F,
-			F_Sharp,
-			G,
-			G_Sharp,
-			A,
-			A_Sharp,
-			B
-		};
-		enum PianoKeyShape {
-			Black,
-			WhiteBelowBlack,
-			WhiteAboveBlack,
-			WhiteBetweenBlack,
-			WhiteOnly
-		};
-	public slots:
-		void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
-	private:
-		MatrixWidget *matrixWidget;
-		//QCache<PianoKey, QPainterPath> keyCache;
+    public:
+        PianoWidget(QWidget *parent = qnullptr);
+        void paintPianoKey(QPainter *painter, ubyte number, qreal x, qreal y, qreal width, qreal height);
+        void setMatrixWidget(MatrixWidget *widget);
+        QSize sizeHint() const qoverride;
+        void setFile(MidiFile *file);
+        void calcSizes();
+        enum PianoKey : ubyte {
+            C = 0,
+            C_Sharp,
+            D,
+            D_Sharp,
+            E,
+            F,
+            F_Sharp,
+            G,
+            G_Sharp,
+            A,
+            A_Sharp,
+            B
+        };
+        enum PianoKeyShape : ubyte {
+            Black,
+            WhiteBelowBlack,
+            WhiteAboveBlack,
+            WhiteBetweenBlack,
+            WhiteOnly
+        };
+    public slots:
+        void paintEvent(QPaintEvent *event) qoverride;
+       // void mouseMoveEvent(QMouseEvent *event) qoverride;
+    private:
+        MatrixWidget *matrixWidget;
+        //QCache<PianoKey, QPainterPath> keyCache;
 };
 
 #endif // PIANOWIDGET_H

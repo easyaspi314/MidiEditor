@@ -19,31 +19,37 @@
 #ifndef SENDERTHREAD_H_
 #define SENDERTHREAD_H_
 
-#include "../AtomicQueue.h"
 #include <QThread>
 #include <QTimer>
 
 #include "MidiOutput.h"
 
+#include "../readerwriterqueue.h"
+using namespace moodycamel; // dislike this
+
+class RTMidiOut;
+
 class SenderThread : public QThread {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		SenderThread();
-		void run() Q_DECL_OVERRIDE;
-		void enqueue(MidiEvent *event);
+    public:
+        SenderThread();
+        void run() qoverride;
+        void enqueue(MidiEvent *event);
 
 
-	public slots:
-		void stop();
-		void initQueue();
-		void sendCommands();
-	protected:
-	private:
-		AtomicQueue<QByteArray> *_eventQueue;
-		AtomicQueue<QByteArray> *_noteQueue;
-		QTimer *timer;
+    public slots:
+        void stop();
+        void initQueue();
+        void sendCommands();
+    protected:
+    private:
+        ReaderWriterQueue<std::vector<ubyte>* > *_eventQueue;
+        ReaderWriterQueue<std::vector<ubyte>* > *_noteQueue;
+        QTimer *timer;
+        RtMidiOut *_midiOut;
+        MidiOutput *_output;
 };
 
 #endif

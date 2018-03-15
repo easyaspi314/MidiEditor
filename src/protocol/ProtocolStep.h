@@ -44,86 +44,96 @@ class QImage;
  */
 class ProtocolStep {
 
-	public:
-		/**
-		 * \brief creates a new ProtocolStep with the given description.
-		 */
-		ProtocolStep(QString description, QImage *img = Q_NULLPTR, bool modified = true);
+    public:
+        /**
+         * \brief creates a new ProtocolStep with the given description.
+         */
+        ProtocolStep(const QString &description, QImage *img = qnullptr, bool modified = true);
 
-		/**
-		 * \brief deletes the ProtocolStep.
-		 */
-		~ProtocolStep();
+        /**
+         * \brief deletes the ProtocolStep.
+         */
+        ~ProtocolStep();
 
-		/**
-		 * \brief adds item to the steps stack.
-		 *
-		 * Every item added with addItem() will be released on the call of
-		 * releaseStep()
-		 */
-		void addItem(ProtocolItem *item);
+        /**
+         * \brief adds item to the steps stack.
+         *
+         * Every item added with addItem() will be released on the call of
+         * releaseStep()
+         */
+        void addItem(ProtocolItem *item);
 
-		/**
-		 * \brief returns the number of items on the stack.
-		 */
-		int items();
+        /**
+         * \brief returns the number of items on the stack.
+         */
+        int items();
 
-		/**
-		 * \brief returns the steps Description.
-		 */
-		QString description();
+        /**
+         * \brief returns the steps Description.
+         */
+        QString description();
 
-		/**
-		 * \brief returns the steps Image.
-		 */
-		QImage *image();
+        /**
+         * \brief returns the steps Image.
+         */
+        QImage *image();
 
-		/**
-		 * \brief returns if the file should be marked as modified.
-		 */
-		bool modified();
+        /**
+         * \brief returns if the file should be marked as modified.
+         */
+        bool modified();
 
-		/**
-		 * @brief Returns the unique id for this ProtocolStep.
-		 */
-		QString id();
+        /**
+         * @brief Returns the unique id for this ProtocolStep.
+         */
+        ushort id();
 
-		/**
-		 * \brief releases the ProtocolStep.
-		 *
-		 * Every item will be released. Every action will be written onto the
-		 * returned ProtocolStep in reverse order. When calling
-		 * ProtocolStep.releaseStep() from the undo stack, you can write the
-		 * returned ProtoclStep onto the redo stack.
-		 */
-		ProtocolStep *releaseStep();
+        /**
+         * \brief releases the ProtocolStep.
+         *
+         * Every item will be released. Every action will be written onto the
+         * returned ProtocolStep in reverse order. When calling
+         * ProtocolStep.releaseStep() from the undo stack, you can write the
+         * returned ProtoclStep onto the redo stack.
+         */
+        ProtocolStep *releaseStep();
 
-	private:
-		/**
-		 * \brief Holds the Steps Description.
-		 */
-		QString _stepDescription;
+    private:
+        /**
+         * \brief Holds the Steps Description.
+         */
+        QString _stepDescription;
 
-		/**
-		 * /brief Holds whether the file should be marked as "modified" by this change.
-		 */
-		bool _modified;
+        /**
+         * \brief Holds the Steps Image.
+         */
+        QImage *_image;
 
-		/**
-		  * \brief A unique ID for the ProtocolStep. This is for the cache.
-		  */
-		QString _uuid;
+        /**
+         * \brief The itemStack saves all ProtocolItems of the Step.
+         */
+        QStack<ProtocolItem*> *_itemStack;
+        #ifdef NO_BIT_PACK
+            /**
+              * \brief A unique ID for the ProtocolStep. This is for the cache.
+              */
+            ushort _uuid;
 
-		/**
-		 * \brief Holds the Steps Image.
-		 */
-		QImage *_image;
+            /**
+             * /brief Holds whether the file should be marked as "modified" by this change.
+             */
+            bool _modified;
+        #else
+            /**
+              * \brief A unique ID for the ProtocolStep. This is for the cache.
+              */
+            ushort _uuid : 13;
 
-		/**
-		 * \brief The itemStack saves all ProtocolItems of the Step.
-		 */
-		QStack<ProtocolItem*> *_itemStack;
-
+            /**
+             * /brief Holds whether the file should be marked as "modified" by this change.
+             */
+            bool _modified : 1;
+        #endif
 };
 
 #endif

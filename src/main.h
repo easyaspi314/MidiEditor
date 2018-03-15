@@ -1,31 +1,39 @@
 #ifndef MAIN_H
 #define MAIN_H
+
+#include <QtGlobal>
 #include <QApplication>
-#ifdef Q_OS_MAC
-#include <QFileOpenEvent>
+
+#include "Utils.h"
+
+#include <QEvent>
 #include "gui/MainWindow.h"
+
+#ifdef Q_OS_UNIX
+[[noreturn]] void handler(int sig);
 #endif
+
 class MyApplication : public QApplication
 {
-		Q_OBJECT
+        Q_OBJECT
 public:
-	 MyApplication(int &argc, char **argv)
-		  : QApplication(argc, argv)
-	 {
-	 }
-
-	 bool event(QEvent *event)
-	 {
+     MyApplication(int &argc, char **argv)
+          : QApplication(argc, argv)
+     {
+     }
 #ifdef Q_OS_MAC
-		 // macOS handles files differently.
-		  if (event->type() == QEvent::FileOpen) {
-				QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
-				if (MainWindow::getMainWindow()) {
-					MainWindow::getMainWindow()->openFile(openEvent->file());
-				}
-		  }
-#endif
-		  return QApplication::event(event);
-	 }
+
+     bool event(QEvent *event) qoverride
+     {
+         // macOS handles files differently.
+          if (event->type() == QEvent::FileOpen) {
+                QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
+                if (MainWindow::getMainWindow()) {
+                    MainWindow::getMainWindow()->openFile(openEvent->file());
+                }
+          }
+          return QApplication::event(event);
+     }
+     #endif
 };
 #endif // MAIN_H

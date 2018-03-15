@@ -27,26 +27,25 @@ class QListWidgetItem;
 class QLineEdit;
 class QCheckBox;
 class QSpinBox;
-class QSettings;
 
 class MidiSettingsWidget : public SettingsWidget {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
+    public:
 
-		MidiSettingsWidget(QWidget *parent = Q_NULLPTR);
+        MidiSettingsWidget(QWidget *parent = qnullptr);
 
-	public slots:
+    public slots:
 
-		void reloadInputPorts();
-		void reloadOutputPorts();
-		void inputChanged(QListWidgetItem *item);
-		void outputChanged(QListWidgetItem *item);
+        void reloadInputPorts();
+        void reloadOutputPorts();
+        void inputChanged(QListWidgetItem *item);
+        void outputChanged(QListWidgetItem *item);
 
-	private:
-		QStringList *_inputPorts, *_outputPorts;
-		QListWidget *_inList, *_outList;
+    private:
+        QStringList *_inputPorts, *_outputPorts;
+        QListWidget *_inList, *_outList;
 
 };
 

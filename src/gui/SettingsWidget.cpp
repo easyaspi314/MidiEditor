@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -28,29 +30,29 @@ SettingsWidget::SettingsWidget(QString title, QWidget *parent) :
 	_title = title;
 }
 
-bool SettingsWidget::accept(){
+bool SettingsWidget::accept() {
 	return true;
 }
 
-QString SettingsWidget::title(){
+QString SettingsWidget::title() {
 	return _title;
 }
 
 
-QWidget *SettingsWidget::createInfoBox(QString info){
+QWidget *SettingsWidget::createInfoBox(QString info) {
 	QLabel *label = new QLabel(info, this);
-	label->setStyleSheet("color: gray; background-color: white; padding: 5px");
+    label->setStyleSheet("color:gray;background-color:white;padding:5px");
 	label->setWordWrap(true);
 	label->setAlignment(Qt::AlignJustify);
 	return label;
 }
 
-QWidget *SettingsWidget::separator(){
+QWidget *SettingsWidget::separator() {
 	QFrame *f0 = new QFrame(this);
 	f0->setFrameStyle( QFrame::HLine | QFrame::Sunken );
 	return f0;
 }
 
-QIcon SettingsWidget::icon(){
+QIcon SettingsWidget::icon() {
 	return QIcon();
 }

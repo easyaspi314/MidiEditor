@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -39,159 +41,154 @@
 SenderThread *MidiOutput::_sender = new SenderThread();
 
 MidiOutput::MidiOutput() : QObject() {
-	_midiOut = Q_NULLPTR;
-	_outPort = "";
-	playedNotes = QMap<int, QList<int> >();
-	_alternativePlayer = false;
-	_gbaMode = false;
-
-	_stdChannel = 0;
+    _midiOut = qnullptr;
+    _outPort = QString();
+    playedNotes = QMap<ubyte, QList<ubyte> >();
+    _stdChannel = 0;
 }
 
 void MidiOutput::init() {
-	// RtMidiOut constructor
-	try {
-		_midiOut = new RtMidiOut(RtMidi::UNSPECIFIED,
-										 QString("MidiEditor output").toStdString());
-	} catch (RtMidiError &error) {
-		error.printMessage();
-	}
-	// Alert MainWindow that output is ready.
-	MainWindow::getMainWindow()->ioReady(false);
+    // RtMidiOut constructor
+    try {
+        _midiOut = new RtMidiOut(RtMidi::UNSPECIFIED,"MidiEditor output");
+    } catch (RtMidiError &error) {
+        error.printMessage();
+    }
+    // Alert MainWindow that output is ready.
+    MainWindow::getMainWindow()->ioReady(false);
 }
 
 SenderThread *MidiOutput::sender() {
-	return _sender;
+    return _sender;
 }
 
-void MidiOutput::sendCommand(QByteArray array) {
+void MidiOutput::sendCommand(const QByteArray &array) {
+    sendEnqueuedCommand(array);
+}
 
-	sendEnqueuedCommand(array);
-}
-bool MidiOutput::isAlternativePlayer() {
-	return MidiOutput::instance()->_alternativePlayer;
-}
-void MidiOutput::setAlternativePlayer(bool enable) {
-	MidiOutput::instance()->_alternativePlayer = enable;
-}
-bool MidiOutput::isGBAMode() {
-	return MidiOutput::instance()->_gbaMode;
-}
-void MidiOutput::setGBAMode(bool enable) {
-	MidiOutput::instance()->_gbaMode = enable;
-}
 void MidiOutput::sendCommand(MidiEvent *e) {
-	if (!_sender->isRunning()) {
-		_sender->start(QThread::TimeCriticalPriority);
-	}
-	if (e->channel() >= 0 && e->channel() < 16) {
-		_sender->enqueue(e);
+    if (!_sender->isRunning()) {
+        _sender->start(QThread::TimeCriticalPriority);
+    }
+    if (e->channel() < 16) {
+        _sender->enqueue(e);
 
-		if (isAlternativePlayer()) {
-			if (e->type() == MidiEvent::NoteOnEventType) {
-				NoteOnEvent *n = qobject_cast<NoteOnEvent *>(e);
-				if (n && n->velocity() > 0) {
-					playedNotes[n->channel()].append(n->note());
-				} else if (n && n->velocity() == 0) {
-					playedNotes[n->channel()].removeOne(n->note());
-				}
-			} else if (e->type() == MidiEvent::OffEventType) {
-				OffEvent *o = qobject_cast<OffEvent *>(e);
-				if (o) {
-					NoteOnEvent *n = qobject_cast<NoteOnEvent *>(o->onEvent());
-					if (n) {
-						playedNotes[n->channel()].removeOne(n->note());
-					}
-				}
-			}
-		}
-	}
+        if (_settings.alt_stop) {
+            if (e->type() == EventType::NoteOnEventType) {
+                NoteOnEvent *n = qobject_cast<NoteOnEvent *>(e);
+                if (n && n->velocity() > 0) {
+                    playedNotes[n->channel()].append(n->note());
+                } else if (n && n->velocity() == 0) {
+                    playedNotes[n->channel()].removeOne(n->note());
+                }
+            } else if (e->type() == EventType::OffEventType) {
+                OffEvent *o = qobject_cast<OffEvent *>(e);
+                if (o) {
+                    NoteOnEvent *n = qobject_cast<NoteOnEvent *>(o->onEvent());
+                    if (n) {
+                        playedNotes[n->channel()].removeOne(n->note());
+                    }
+                }
+            }
+        }
+    }
 }
 
-QStringList MidiOutput::outputPorts() {
-	QStringList ports;
+const QStringList MidiOutput::outputPorts() {
+    QStringList ports;
 
-	// Check outputs.
-	uint nPorts = _midiOut->getPortCount();
+    // Check outputs.
+    uint nPorts = _midiOut->getPortCount();
+    ports.reserve(nPorts);
+    for (uint i = 0; i < nPorts; i++) {
 
-	for (uint i = 0; i < nPorts; i++) {
-
-		try {
-			ports.append(QString::fromStdString(_midiOut->getPortName(i)));
-		} catch (RtMidiError &error) {
-			error.printMessage();
-		}
-	}
-	return ports;
+        try {
+            ports.append(QString::fromStdString(_midiOut->getPortName(i)));
+        } catch (RtMidiError &error) {
+            error.printMessage();
+        }
+    }
+    return ports;
 }
 
-bool MidiOutput::setOutputPort(QString name) {
+bool MidiOutput::setOutputPort(const QString &name) {
 
-	// try to find the port
-	uint nPorts = _midiOut->getPortCount();
+    // try to find the port
+    uint nPorts = _midiOut->getPortCount();
 
-	for (uint i = 0; i < nPorts; i++) {
+    for (uint i = 0; i < nPorts; i++) {
 
-		try {
-			// if the current port has the given name, select it and close
-			// current port
-			if (_midiOut->getPortName(i) == name.toStdString()) {
-				_midiOut->closePort();
-				_midiOut->openPort(i);
-				_outPort = name;
-				QTimer::singleShot(10, MidiPlayer::instance(), SLOT(panic()));
-				return true;
-			}
+        try {
+            // if the current port has the given name, select it and close
+            // current port
+            if (_midiOut->getPortName(i) == name.toStdString()) {
+                _midiOut->closePort();
+                _midiOut->openPort(i);
+                _outPort = name;
+                // Mainly for VirtualMIDISynth which disconnects if it is idle.
+                QTimer::singleShot(10, MidiPlayer::instance(), &MidiPlayer::panic);
+                return true;
+            }
 
-		} catch (RtMidiError &) {}
+        } catch (RtMidiError &) {}
 
-	}
+    }
 
-	// port not found
-	return false;
+    // port not found
+    return false;
+}
+
+void MidiOutput::sendEnqueuedCommand(const QByteArray &array) {
+
+    if (!_settings.out_port.isEmpty()) {
+
+        // convert data to std::vector
+
+        try {
+            const ubyte *data = reinterpret_cast<const ubyte*>(array.data());
+           // std::vector<ubyte> message(data, data + array.size());
+            _midiOut->sendMessage(data, array.size());
+        } catch (RtMidiError &error) {
+            error.printMessage();
+        } catch (std::out_of_range &e) {
+            qWarning("%s", e.what());
+        }
+    }
+}
+
+void MidiOutput::sendRawCommand(std::vector<ubyte> *message) {
+    if (!_settings.out_port.isEmpty()) {
+        try {
+            _midiOut->sendMessage(message);
+        } catch (RtMidiError &error) {
+            error.printMessage();
+        }
+    }
 }
 
 QString MidiOutput::outputPort() {
-	return _outPort;
+    return _outPort;
 }
 
-void MidiOutput::sendEnqueuedCommand(QByteArray array) {
-
-	if (_outPort != "") {
-
-		// convert data to std::vector
-		std::vector<ubyte> message;
-
-		foreach(byte data, array) {
-			message.push_back(ubyte(data));
-		}
-		try {
-			_midiOut->sendMessage(&message);
-		} catch (RtMidiError &error) {
-			error.printMessage();
-		}
-	}
+void MidiOutput::setStandardChannel(ubyte channel) {
+    _stdChannel = channel;
 }
 
-void MidiOutput::setStandardChannel(int channel) {
-	_stdChannel = channel;
+ubyte MidiOutput::standardChannel() {
+    return _stdChannel;
 }
 
-int MidiOutput::standardChannel() {
-	return _stdChannel;
-}
-
-void MidiOutput::sendProgram(int channel, int prog) {
-	QByteArray array = QByteArray();
-	array.append(byte(0xC0 | channel));
-	array.append(byte(prog));
-	sendCommand(array);
+void MidiOutput::sendProgram(ubyte channel, ubyte prog) {
+    QByteArray array = QByteArray();
+    append(array, 0xC0 | channel);
+    append(array, prog);
+    sendCommand(array);
 }
 
 MidiOutput *MidiOutput::createInstance() {
-	return new MidiOutput();
+    return new MidiOutput();
 }
 
 MidiOutput *MidiOutput::instance() {
-	return Singleton<MidiOutput>::instance(MidiOutput::createInstance);
+    return Singleton<MidiOutput>::instance(MidiOutput::createInstance);
 }

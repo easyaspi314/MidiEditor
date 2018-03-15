@@ -22,20 +22,22 @@
 #include <QAction>
 #include <QKeySequence>
 
+#include "../Utils.h"
+
 class Tool;
 
 class ToolButton  : public QAction {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		ToolButton(Tool *tool, QKeySequence sequence = QKeySequence(), QWidget *parent = Q_NULLPTR);
+    public:
+        ToolButton(Tool *tool, const QKeySequence &sequence = QKeySequence(), QWidget *parent = qnullptr);
 
-	public slots:
-		void buttonClick();
-		void releaseButton();
+    public slots:
+        void buttonClick();
+        void releaseButton();
 
-	private:
-		Tool *button_tool;
+    private:
+        Tool *button_tool;
 };
 #endif

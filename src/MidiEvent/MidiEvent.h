@@ -27,6 +27,37 @@
 
 #include "../Utils.h"
 
+enum MidiEventLine {
+    TempoChangeEventLine = 128,
+    TimeSignatureEventLine,
+    KeySignatureEventLine,
+    ProgramChangeEventLine,
+    ControlChangeEventLine,
+    KeyPressureEventLine,
+    ChannelPressureEventLine,
+    TextEventLine,
+    PitchBendEventLine,
+    SysExEventLine,
+    UnknownEventLine
+};
+
+enum EventType {
+    MidiEventType,
+    ChannelPressureEventType,
+    ControlChangeEventType,
+    KeyPressureEventType,
+    KeySignatureEventType,
+    NoteOnEventType,
+    OffEventType,
+    OnEventType,
+    PitchBendEventType,
+    ProgramChangeEventType,
+    SystemExclusiveEventType,
+    TempoChangeEventType,
+    TextEventType,
+    TimeSignatureEventType,
+    UnknownEventType
+};
 class MidiFile;
 class QSpinBox;
 class QLabel;
@@ -36,88 +67,68 @@ class MidiTrack;
 
 class MidiEvent : public ProtocolEntry, public GraphicObject {
 
-	Q_OBJECT
+        Q_OBJECT
 
-	public:
-		enum EventType {
-			MidiEventType,
-			ChannelPressureEventType,
-			ControlChangeEventType,
-			KeyPressureEventType,
-			KeySignatureEventType,
-			NoteOnEventType,
-			OffEventType,
-			OnEventType,
-			PitchBendEventType,
-			ProgramChangeEventType,
-			SystemExclusiveEventType,
-			TempoChangeEventType,
-			TextEventType,
-			TimeSignatureEventType,
-			UnknownEventType
-		};
+    public:
 
-		MidiEvent(int channel, MidiTrack *track);
-		MidiEvent(const MidiEvent &other);
-		virtual MidiEvent::EventType type() const;
 
-		static MidiEvent *loadMidiEvent(QDataStream *content,
-				bool *ok, bool *endEvent, MidiTrack *track, quint8 startByte = 0,
-				quint8 secondByte = 0);
+        MidiEvent(ubyte channel, MidiTrack *track);
+        MidiEvent(const MidiEvent &other);
+        virtual EventType type() const;
 
-		static EventWidget *eventWidget();
-		static void setEventWidget(EventWidget *widget);
+        static MidiEvent *loadMidiEvent(QDataStream *content,
+                                        bool *ok, bool *endEvent, MidiTrack *track, ubyte startByte = 0,
+                                        ubyte secondByte = 0);
 
-		enum {
-			TEMPO_CHANGE_EVENT_LINE = 128,
-			TIME_SIGNATURE_EVENT_LINE,
-			KEY_SIGNATURE_EVENT_LINE,
-			PROG_CHANGE_LINE,
-			CONTROLLER_LINE,
-			KEY_PRESSURE_LINE,
-			CHANNEL_PRESSURE_LINE,
-			TEXT_EVENT_LINE,
-			PITCH_BEND_LINE,
-			SYSEX_LINE,
-			UNKNOWN_LINE
-		};
-		void setTrack(MidiTrack *track, bool toProtocol = true);
-		MidiTrack *track();
-		void setChannel(int channel, bool toProtocol = true);
-		int channel();
-		virtual void setMidiTime(int t, bool toProtocol = true);
-		int midiTime();
-		void setFile(MidiFile *f);
-		MidiFile *file() Q_DECL_OVERRIDE;
-		bool shownInEventWidget();
+        static EventWidget *eventWidget();
+        static void setEventWidget(EventWidget *widget);
 
-		virtual int line();
-		virtual QString toMessage();
-		virtual QByteArray play();
-		virtual QByteArray save();
-		virtual void draw(QPainter *p, QColor c) Q_DECL_OVERRIDE;
 
-		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
 
-		virtual QString typeString();
+        void setTrack(MidiTrack *track, bool toProtocol = true);
+        MidiTrack *track();
+        void setChannel(ubyte ch, bool toProtocol = true);
+        ubyte channel();
+        virtual void setMidiTime(int t, bool toProtocol = true);
+        int midiTime();
+        void setFile(MidiFile *f);
+        MidiFile *file() qoverride;
+        bool shownInEventWidget();
 
-		virtual bool isOnEvent();
+        virtual ubyte line();
+        virtual const QString toMessage();
+        virtual const QByteArray play();
+        virtual const QByteArray save();
+        virtual void draw(QPainter *p, QColor c) qoverride;
 
-		static QMap<int, QString> knownMetaTypes();
+        virtual ProtocolEntry *copy() qoverride;
+        virtual void reloadState(ProtocolEntry *entry) qoverride;
 
-		void setTemporaryRecordID(int id);
-		int temporaryRecordID();
+        virtual const QString typeString();
 
-		virtual void moveToChannel(int channel);
+        virtual bool isOnEvent();
 
-	protected:
-		int numChannel, timePos;
-		MidiFile *midiFile;
-		static ubyte _startByte;
-		static EventWidget *_eventWidget;
-		MidiTrack *_track;
-		int _tempID;
+        static QMap<int, QString> knownMetaTypes();
+
+        void setTemporaryRecordID(int id);
+        int temporaryRecordID();
+
+        virtual void moveToChannel(ubyte channel);
+
+    protected:
+
+        MidiFile *midiFile;
+        static EventWidget *_eventWidget;
+        MidiTrack *_track;
+        int _tempID;
+        int timePos;
+
+        ushort numTrack;
+
+        static ubyte _startByte;
+        ubyte numChannel;
+        ubyte _line;
+
 };
 
 #endif

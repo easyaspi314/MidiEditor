@@ -22,45 +22,46 @@
 #include "MidiEvent.h"
 #include <QByteArray>
 
+enum TextType {
+    TextTextEventType = 0x01,
+    CopyrightTextEventType,
+    TrackNameTextEventType,
+    InstrumentTextEventType,
+    LyricTextEventType,
+    MarkerTextEventType,
+    CommentTextEventType
+};
 class TextEvent : public MidiEvent {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
+    public:
 
-		enum TextType {
-			TextTextEventType = 0x01,
-			CopyrightTextEventType,
-			TrackNameTextEventType,
-			InstrumentTextEventType,
-			LyricTextEventType,
-			MarkerTextEventType,
-			CommentTextEventType
-		};
 
-		TextEvent(int channel, MidiTrack *track);
-		TextEvent(const TextEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
 
-		QString text();
-		void setText(QString text);
+        TextEvent(ubyte channel, MidiTrack *track, TextType type = TextType::TextTextEventType, const QString &text = QString());
+        TextEvent(const TextEvent &other);
+        EventType type() const qoverride;
 
-		TextEvent::TextType textType();
-		void setTextType(TextEvent::TextType type);
+        const QString &text();
+        void setText(const QString &text);
 
-		int line() Q_DECL_OVERRIDE;
+        TextType textType();
+        void setTextType(TextType type);
 
-		QByteArray save() Q_DECL_OVERRIDE;
+        ubyte line() qoverride;
 
-		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
+        const QByteArray save() qoverride;
 
-		QString typeString() Q_DECL_OVERRIDE;
-		static QString textTypeString(int type);
+        virtual ProtocolEntry *copy() qoverride;
+        virtual void reloadState(ProtocolEntry *entry) qoverride;
 
-	private:
-		TextEvent::TextType _type;
-		QString _text;
+        const QString typeString() qoverride;
+        static const QString textTypeString(ubyte type);
+
+    private:
+        QString _text;
+        TextType _type;
 };
 
 #endif

@@ -27,41 +27,33 @@ class OnEvent;
 
 class OffEvent : public MidiEvent{
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		OffEvent(int ch, int line, MidiTrack *track);
-		OffEvent(const OffEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+    public:
+        OffEvent(ubyte ch, ubyte line, MidiTrack *track);
+        OffEvent(const OffEvent &other);
+        EventType type() const qoverride;
 
-		void setOnEvent(OnEvent *event);
-		OnEvent *onEvent();
+        void setOnEvent(OnEvent *event);
+        OnEvent *onEvent();
 
-		static void enterOnEvent(OnEvent *event);
-		static void clearOnEvents();
-		static void removeOnEvent(OnEvent *event);
-		static QList<OnEvent*> corruptedOnEvents();
-		void draw(QPainter *p, QColor c) Q_DECL_OVERRIDE;
-		int line() Q_DECL_OVERRIDE;
-		QByteArray save() Q_DECL_OVERRIDE;
-		QString toMessage() Q_DECL_OVERRIDE;
+        static void enterOnEvent(OnEvent *event);
+        static void clearOnEvents();
+        static void removeOnEvent(OnEvent *event);
+        static const QList<OnEvent*> corruptedOnEvents();
+        void draw(QPainter *p, QColor c) qoverride;
+        ubyte line() qoverride;
+        const QByteArray save() qoverride;
+        const QString toMessage() qoverride;
 
-		ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
 
-		void setMidiTime(int t, bool toProtocol=true) Q_DECL_OVERRIDE;
+        void setMidiTime(int t, bool toProtocol = true) qoverride;
 
-		virtual bool isOnEvent() Q_DECL_OVERRIDE;
-	protected:
-		OnEvent *_onEvent;
-
-		// Saves all openes and not closed onEvents. When an offEvent is created,
-		// it searches his onEvent in onEvents and removes it from onEvents.
-		static QMultiMap<int, OnEvent*> *onEvents;
-
-		// needs to save the line, because offEvents are bound to their onEvents.
-		// Setting the line is necessary to find the onEvent in the QMap
-		int _line;
+        virtual bool isOnEvent() qoverride;
+    protected:
+        OnEvent *_onEvent;
 };
 
 #endif

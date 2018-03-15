@@ -26,29 +26,23 @@ class QListWidgetItem;
 class QLineEdit;
 class QCheckBox;
 class QSpinBox;
-class QSettings;
 
 class AdditionalMidiSettingsWidget : public SettingsWidget {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		AdditionalMidiSettingsWidget(QSettings *settings, QWidget *parent = Q_NULLPTR);
+    public:
+        AdditionalMidiSettingsWidget(QWidget *parent = qnullptr);
 
-	public slots:
-		void manualModeToggled(bool enable);
-		void gbaModeToggled(bool enable);
-		void playbackDelayChanged(int value);
-		void setDefaultTimePerQuarter(int value);
-		bool accept() Q_DECL_OVERRIDE;
+    public slots:
+        bool accept() qoverride;
 
-	private:
-		QCheckBox *_alternativePlayerModeBox;
-		QSettings *_settings;
-		QLineEdit *startCmd;
-		QSpinBox *_tpqBox;
-		QSpinBox *_playbackDelay;
-		QCheckBox *_gbaMode;
+    private:
+        QCheckBox *_alternativePlayerModeBox;
+        QLineEdit *startCmd;
+        QSpinBox *_tpqBox;
+        QSpinBox *_playbackDelay;
+        QCheckBox *_gbaMode;
 };
 
 #endif // ADDITIONALMIDISETTINGSWIDGET_H

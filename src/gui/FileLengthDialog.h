@@ -21,6 +21,8 @@
 
 #include <QDialog>
 
+#include "../Utils.h"
+
 class MidiFile;
 class QSpinBox;
 
@@ -28,10 +30,10 @@ class FileLengthDialog : public QDialog {
 	Q_OBJECT
 
 	public:
-		FileLengthDialog(MidiFile *f, QWidget *parent = Q_NULLPTR);
+		FileLengthDialog(MidiFile *f, QWidget *parent = qnullptr);
 
 	public slots:
-		void accept() Q_DECL_OVERRIDE;
+		void accept() qoverride;
 
 	private:
 		MidiFile *_file;

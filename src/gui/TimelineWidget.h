@@ -34,17 +34,17 @@ class TimelineWidget : public PaintWidget
 	Q_OBJECT
 
 	public:
-		TimelineWidget(QWidget *parent = Q_NULLPTR);
+		TimelineWidget(QWidget *parent = qnullptr);
 		void setMatrixWidget(MatrixWidget *widget);
 
-		void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+		void paintEvent(QPaintEvent *event) qoverride;
 		void setFile(MidiFile *midiFile);
-		QSize sizeHint() const Q_DECL_OVERRIDE;
+		QSize sizeHint() const qoverride;
 		qreal mousePosition();
 	protected:
-		void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-		void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-		void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
+		void mouseMoveEvent(QMouseEvent *event) qoverride;
+		void mouseDoubleClickEvent(QMouseEvent *event) qoverride;
+		void leaveEvent(QEvent *event) qoverride;
 	private:
 		MatrixWidget *matrixWidget;
 		qreal timeHeight;

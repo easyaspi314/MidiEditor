@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -20,56 +22,56 @@
 
 #include "../midi/MidiFile.h"
 
-ProgChangeEvent::ProgChangeEvent(int channel, int prog, MidiTrack *track) : MidiEvent(channel, track){
-	_program = prog;
+ProgChangeEvent::ProgChangeEvent(ubyte channel, ubyte prog, MidiTrack *track) : MidiEvent(channel, track){
+    _program = prog;
 }
 
 ProgChangeEvent::ProgChangeEvent(const ProgChangeEvent &other) : MidiEvent(other){
-	_program = other._program;
+    _program = other._program;
 }
 
-MidiEvent::EventType ProgChangeEvent::type() const {
-	return ProgramChangeEventType;
+EventType ProgChangeEvent::type() const {
+    return ProgramChangeEventType;
 }
 
-int ProgChangeEvent::line(){
-	return PROG_CHANGE_LINE;
+ubyte ProgChangeEvent::line(){
+    return ProgramChangeEventLine;
 }
 
-QString ProgChangeEvent::toMessage(){
-	return "prog "+QString::number(channel())+" "+QString::number(_program);
+const QString ProgChangeEvent::toMessage(){
+    return _("prog %1 %2").arg(QString::number(channel()), QString::number(_program));
 }
 
-QByteArray ProgChangeEvent::save(){
-	QByteArray array = QByteArray();
-	array.append(byte(0xC0 | channel()));
-	array.append(byte(_program));
-	return array;
+const QByteArray ProgChangeEvent::save(){
+    QByteArray array = QByteArray();
+    append(array, 0xC0 | channel());
+    append(array, _program);
+    return array;
 }
 
 ProtocolEntry *ProgChangeEvent::copy(){
-	return new ProgChangeEvent(*this);
+    return new ProgChangeEvent(*this);
 }
 
 void ProgChangeEvent::reloadState(ProtocolEntry *entry){
-	ProgChangeEvent *other = qobject_cast<ProgChangeEvent*>(entry);
-	if(!other){
-		return;
-	}
-	MidiEvent::reloadState(entry);
-	_program = other->_program;
+    ProgChangeEvent *other = qobject_cast<ProgChangeEvent*>(entry);
+    if(!other){
+        return;
+    }
+    MidiEvent::reloadState(entry);
+    _program = other->_program;
 }
 
-QString ProgChangeEvent::typeString(){
-	return "Program Change Event";
+const QString ProgChangeEvent::typeString(){
+    return "Program Change Event";
 }
 
-int ProgChangeEvent::program(){
-	return _program;
+ubyte ProgChangeEvent::program(){
+    return _program;
 }
 
-void ProgChangeEvent::setProgram(int p){
-	ProtocolEntry *toCopy = copy();
-	_program = p;
-	protocol(toCopy, this);
+void ProgChangeEvent::setProgram(ubyte p){
+    ProtocolEntry *toCopy = copy();
+    _program = p;
+    protocol(toCopy, this);
 }

@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -23,51 +25,51 @@
 #include "../midi/MidiFile.h"
 #include "../midi/MidiTrack.h"
 
-OnEvent::OnEvent(int ch, MidiTrack *track) : MidiEvent(ch, track){
-	_offEvent = Q_NULLPTR;
+OnEvent::OnEvent(ubyte ch, MidiTrack *track) : MidiEvent(ch, track){
+    _offEvent = qnullptr;
 
-	return;
+    return;
 }
 
 OnEvent::OnEvent(const OnEvent &other) : MidiEvent(other){
-	_offEvent = other._offEvent;
-	return;
+    _offEvent = other._offEvent;
+    return;
 }
 
-MidiEvent::EventType OnEvent::type() const {
-	return OnEventType;
+EventType OnEvent::type() const {
+    return OnEventType;
 }
 
 void OnEvent::setOffEvent(OffEvent *event){
-	_offEvent = event;
+    _offEvent = event;
 }
 
 OffEvent *OnEvent::offEvent(){
-	return _offEvent;
+    return _offEvent;
 }
 
 ProtocolEntry *OnEvent::copy(){
-	return new OnEvent(*this);
+    return new OnEvent(*this);
 }
 
 void OnEvent::reloadState(ProtocolEntry *entry){
-	OnEvent *other = qobject_cast<OnEvent*>(entry);
-	if(!other){
-		return;
-	}
-	MidiEvent::reloadState(entry);
-	_offEvent = other->_offEvent;
+    OnEvent *other = qobject_cast<OnEvent*>(entry);
+    if(!other){
+        return;
+    }
+    MidiEvent::reloadState(entry);
+    _offEvent = other->_offEvent;
 }
 
-QByteArray OnEvent::saveOffEvent(){
-	return QByteArray();
+const QByteArray OnEvent::saveOffEvent(){
+    return QByteArray();
 }
 
-QString OnEvent::offEventMessage(){
-	return "";
+const QString OnEvent::offEventMessage(){
+    return QString();
 }
 
-void OnEvent::moveToChannel(int channel){
-	MidiEvent::moveToChannel(channel);
-	offEvent()->moveToChannel(channel);
+void OnEvent::moveToChannel(ubyte channel){
+    MidiEvent::moveToChannel(channel);
+    offEvent()->moveToChannel(channel);
 }

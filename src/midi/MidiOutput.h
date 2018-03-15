@@ -22,6 +22,7 @@
 #include <QObject>
 #include <QList>
 #include <QMap>
+#include "../Utils.h"
 
 class MidiEvent;
 class RtMidiIn;
@@ -31,39 +32,36 @@ class SenderThread;
 
 class MidiOutput : public QObject {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		static MidiOutput *instance();
+    public:
+        static MidiOutput *instance();
 
-		void sendCommand(QByteArray array);
-		void sendCommand(MidiEvent *e);
-		QStringList outputPorts();
-		bool setOutputPort(QString name);
-		QString outputPort();
-		void sendEnqueuedCommand(QByteArray array);
-		static bool isAlternativePlayer();
-		static void setAlternativePlayer(bool enable);
-		QMap<int, QList<int> > playedNotes;
-		void setStandardChannel(int channel);
-		int standardChannel();
-		void sendProgram(int channel, int prog);
-		static SenderThread *sender();
-		static bool isGBAMode();
-		static void setGBAMode(bool enable);
+        void sendCommand(const QByteArray &array);
+        void sendCommand(MidiEvent *e);
+        const QStringList outputPorts();
+        bool setOutputPort(const QString &name);
+        QString outputPort();
+        void sendEnqueuedCommand(const QByteArray &array);
+        void sendRawCommand(std::vector<ubyte> *message);
+        QMap<ubyte, QList<ubyte> > playedNotes;
+        void setStandardChannel(ubyte channel);
+        ubyte standardChannel();
+        void sendProgram(ubyte channel, ubyte prog);
+        static SenderThread *sender();
 
-	public slots:
-		void init();
+    public slots:
+        void init();
 
-	private:
-		MidiOutput();
-		static MidiOutput *createInstance();
-		bool _gbaMode;
-		QString _outPort;
-		RtMidiOut *_midiOut;
-		static SenderThread *_sender;
-		int _stdChannel;
-		bool _alternativePlayer;
+    private:
+        MidiOutput();
+        static MidiOutput *createInstance();
+        static SenderThread *_sender;
+
+        RtMidiOut *_midiOut;
+        QString _outPort;
+        ubyte _stdChannel;
+
 };
 
 #endif

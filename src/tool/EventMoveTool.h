@@ -25,32 +25,41 @@ class MidiEvent;
 
 class EventMoveTool : public EventTool {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		EventMoveTool(bool upDown, bool leftRight);
-		EventMoveTool(EventMoveTool &other);
-		Tool::ToolType type() const Q_DECL_OVERRIDE;
+    public:
+        EventMoveTool(bool upDown, bool leftRight);
+        EventMoveTool(EventMoveTool &other);
+        ToolType type() const qoverride;
 
-		ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
 
-		void setDirections(bool upDown, bool leftRight);
+        void setDirections(bool upDown, bool leftRight);
 
-		void draw(QPainter *painter) Q_DECL_OVERRIDE;
-		bool press(bool leftClick) Q_DECL_OVERRIDE;
-		bool release() Q_DECL_OVERRIDE;
-		bool move(qreal mouseX, qreal mouseY) Q_DECL_OVERRIDE;
-		bool releaseOnly() Q_DECL_OVERRIDE;
+        void draw(QPainter *painter) qoverride;
+        bool press(bool leftClick) qoverride;
+        bool release() qoverride;
+        bool move(qreal mouseX, qreal mouseY) qoverride;
+        bool releaseOnly() qoverride;
 
-		bool showsSelection() Q_DECL_OVERRIDE;
+        bool showsSelection() qoverride;
 
-	protected:
-		bool moveUpDown, moveLeftRight, inDrag;
-		qreal startX, startY;
+    protected:
+        qreal startX, startY;
+        #ifdef NO_BIT_PACK
+            bool moveUpDown;
+            bool moveLeftRight;
+            bool inDrag;
+        #else
+            bool moveUpDown : 1;
+            bool moveLeftRight : 1;
+            bool inDrag : 1;
+        #endif
 
-	private:
-		qreal computeRaster();
+
+    private:
+        qreal computeRaster();
 };
 
 #endif

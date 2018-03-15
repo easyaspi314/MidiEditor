@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -18,93 +20,57 @@
 
 #include "GraphicObject.h"
 
-#include "MatrixWidget.h"
+#include "../Utils.h"
 
 GraphicObject::GraphicObject() {
-	_x = 0;
-	_y = 0;
-	_width = 0;
-	_height = 0;
+    _x = 0;
+    _y = 0;
+    _width = 0;
+    _height = 0;
 }
 
 qreal GraphicObject::x() {
-	return _x;
+    return _x;
 }
 
 qreal GraphicObject::y() {
-	return _y;
+    return _y;
 }
 
 qreal GraphicObject::width() {
-	return _width;
+    return _width;
 }
 
 qreal GraphicObject::height() {
-	return _height;
+    return _height;
 }
 
 void GraphicObject::setX(qreal x) {
-	_x = x;
+    _x = x;
 }
 
 void GraphicObject::setY(qreal y) {
-	_y = y;
+    _y = y;
 }
 
 void GraphicObject::setWidth(qreal w) {
-	_width = w;
+    _width = w;
 }
 
 void GraphicObject::setHeight(qreal h) {
-	_height = h;
+    _height = h;
 }
 
 void GraphicObject::draw(QPainter *p, QColor c) {
-	Q_UNUSED(p) Q_UNUSED(c)
-	return;
+    Q_UNUSED(p) Q_UNUSED(c)
+    return;
 }
 
 bool GraphicObject::shown() {
-	return shownInWidget;
+    return shownInWidget;
 }
 
 void GraphicObject::setShown(bool b) {
-	shownInWidget = b;
+    shownInWidget = b;
 }
-QRectF GraphicObject::qRectF(QRectF other) {
-	if (MatrixWidget::antiAliasingEnabled) {
-		return other;
-	} else {
-		return QRectF(other.toRect());
-	}
-}
-QRectF GraphicObject::qRectF(qreal x, qreal y, qreal w, qreal h) {
-	return qRectF(QRectF(x, y, w, h));
-}
-QLineF GraphicObject::qLineF(QLineF other) {
-	if (MatrixWidget::antiAliasingEnabled) {
-		return other;
-	} else {
-		return QLineF(other.toLine());
-	}
-}
-QLineF GraphicObject::qLineF(qreal x1, qreal y1, qreal x2, qreal y2) {
-	return qLineF(QLineF(x1, y1, x2, y2));
-}
-QPolygonF GraphicObject::qPolygonF(QPolygonF other) {
-	if (MatrixWidget::antiAliasingEnabled) {
-		return other;
-	} else {
-		return QPolygonF(other.toPolygon());
-	}
-}
-QPointF GraphicObject::qPointF(QPointF  other) {
-	if (MatrixWidget::antiAliasingEnabled) {
-		return other;
-	} else {
-		return QPointF(other.toPoint());
-	}
-}
-QPointF GraphicObject::qPointF(qreal x, qreal y) {
-	return qPointF(QPointF(x, y));
-}
+

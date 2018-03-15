@@ -34,6 +34,8 @@
 #include <QApplication>
 #include <QPalette>
 #include <QPixmapCache>
+#include <QTimer>
+#include <QCache>
 
 class MidiFile;
 class TempoChangeEvent;
@@ -44,119 +46,131 @@ class NoteOnEvent;
 class TimelineWidget;
 class PianoWidget;
 
+const static ubyte NUM_LINES = 139;
+const static ubyte PIXEL_PER_S = 100;
+const static ubyte PIXEL_PER_LINE = 11;
+const static ubyte PIXEL_PER_EVENT = 15;
+const static ubyte MAX_HORIZ_ZOOM = 10;
+const static ubyte MAX_VERT_ZOOM = 3;
+
 class MatrixWidget : public PaintWidget {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		MatrixWidget(QWidget *parent = Q_NULLPTR);
-		void setFile(MidiFile *file);
-		MidiFile *midiFile();
-		QList<MidiEvent*> *activeEvents();
-		QList<MidiEvent*> *velocityEvents();
+    public:
 
-		qreal lineHeight();
-		int lineAtY(qreal y);
-		int lineNameWidth;
-		qreal startLineY;
-		qreal scaleX, scaleY, endLineY;
-		int msOfXPos(qreal x);
-		int timeMsOfWidth(int w);
-		bool eventInWidget(MidiEvent *event);
-		qreal yPosOfLine(int line);
-		void setScreenLocked(bool b);
-		bool screenLocked();
-		int minVisibleMidiTime();
-		int maxVisibleMidiTime();
+        MatrixWidget(QWidget *parent = qnullptr);
+        void setFile(MidiFile *file);
+        MidiFile *midiFile();
+        QList<MidiEvent*> *activeEvents();
+        QList<MidiEvent*> *velocityEvents();
 
-		void setColorsByChannel();
-		void setColorsByTracks();
-		bool colorsByChannel();
+        qreal lineHeight();
+        ubyte lineAtY(qreal y);
+        int msOfXPos(qreal x);
+        int timeMsOfWidth(int w);
+        bool eventInWidget(MidiEvent *event);
+        qreal yPosOfLine(ubyte line);
+        void setScreenLocked(bool b);
+        bool screenLocked();
+        int minVisibleMidiTime();
+        int maxVisibleMidiTime();
 
-		QList<QPair<qreal, int> > currentDivs;
+        void setColorsByChannel();
+        void setColorsByTracks();
+        bool colorsByChannel();
 
-		int msOfTick(int tick);
-		qreal xPosOfMs(qreal ms);
-		QList<QPair<qreal, int> > divs();
 
-		static bool antiAliasingEnabled;
-		QMap<int, QRectF> pianoKeys;
-		QSize sizeHint() const  Q_DECL_OVERRIDE;
+        int msOfTick(int tick);
+        qreal xPosOfMs(int ms);
+        const QList<QPair<qreal, int> > divs();
 
-		void setPianoWidget(PianoWidget *widget);
-		void setTimelineWidget(TimelineWidget *widget);
-	public slots:
-		void zoomHorIn();
-		void zoomHorOut();
-		void zoomVerIn();
-		void zoomVerOut();
-		void zoomStd();
-		void timeMsChanged(int ms, bool ignoreLocked=false);
-		void calcSizes();
-		void takeKeyPressEvent(QKeyEvent *event);
-		void takeKeyReleaseEvent(QKeyEvent *event);
-		void setDiv(int div);
-		int div();
-		void redraw();
-	signals:
-		void sizeChanged(int maxScrollTime, double maxScrollLine, int valueX,
-				double valueY);
-		void objectListChanged();
-		void scrollChanged(int x, int y);
+        QSize sizeHint() const  qoverride;
 
-	protected:
-		void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
-		void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-		void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
-		void enterEvent(QEvent *event) Q_DECL_OVERRIDE;
-		void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
-		void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-		void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-		void keyPressEvent(QKeyEvent* e) Q_DECL_OVERRIDE;
-		void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+        void setPianoWidget(PianoWidget *widget);
+        void setTimelineWidget(TimelineWidget *widget);
+        QList<QPair<qreal, int> > currentDivs;
+        float scaleX, scaleY;
 
-	private:
-		void paintChannel(QPainter *painter, int channel);
-		void paintPianoKey(QPainter *painter, int number, qreal x, qreal y,
-				qreal width, qreal height);
+    public slots:
+        void zoomHorIn();
+        void zoomHorOut();
+        void zoomVerIn();
+        void zoomVerOut();
+        void zoomStd();
+        void calcSizes();
+        void timeMsChanged(int ms, bool ignoreLocked = false);
+        void takeKeyPressEvent(QKeyEvent *event);
+        void takeKeyReleaseEvent(QKeyEvent *event);
+        void setDiv(ubyte div);
+        void redraw();
+    signals:
+       // void sizeChanged(int maxScrollTime, double maxScrollLine, int valueX,
+       //         double valueY);
+        void objectListChanged();
+        void scrollChanged(int x, int y);
 
-		int startTick, endTick, startTimeX, endTimeX, timeHeight,
-				msOfFirstEventInList, visibleStartTick, visibleEndTick;
+    protected:
+        void paintEvent(QPaintEvent *event) qoverride;
+        void mouseMoveEvent(QMouseEvent *event) qoverride;
+        void resizeEvent(QResizeEvent *event) qoverride;
+        void enterEvent(QEvent *event) qoverride;
+        void leaveEvent(QEvent *event) qoverride;
+        void mousePressEvent(QMouseEvent *event) qoverride;
+        void mouseReleaseEvent(QMouseEvent *event) qoverride;
+        void keyPressEvent(QKeyEvent* event) qoverride;
+        void keyReleaseEvent(QKeyEvent *event) qoverride;
 
-		enum VerticalScrollDir {NONE, UP, DOWN};
-		VerticalScrollDir scrollDir = NONE;
-		MidiFile *file;
+    private:
+        void paintChannel(QPainter *painter, ubyte channel);
 
-		QRectF ToolArea, PianoArea, TimeLineArea;
-		bool screen_locked;
 
-		// pixmap is the painted widget (without tools and cursorLines).
-		// it will be zero if it needs to be repainted
-		QPixmap *pixmap;
+        QCache<int, QByteArray /* QPicture */> pictureCache;
+        MidiFile *file;
 
-		// saves all TempoEvents from one before the first shown tick to the
-		// last in the window
-		QList<MidiEvent*> *currentTempoEvents;
-		QList<TimeSignatureEvent*> *currentTimeSignatureEvents;
+        // pixmap is the painted widget (without tools and cursorLines).
+        // it will be zero if it needs to be repainted
+        QPixmap *pixmap;
 
-		// All Events to show in the velocityWidget are saved in velocityObjects
-		QList<MidiEvent*> *objects, *velocityObjects;
+        // saves all TempoEvents from one before the first shown tick to the
+        // last in the window
+        QList<MidiEvent*> *currentTempoEvents;
+        QList<TimeSignatureEvent*> *currentTimeSignatureEvents;
 
-		// To play the pianokeys, there is one NoteOnEvent
-		NoteOnEvent *pianoEvent;
+        // All Events to show in the velocityWidget are saved in velocityObjects
+        QList<MidiEvent*> *objects, *velocityObjects;
 
-		bool _colorsByChannels;
-		int _div;
+        // To play the pianokeys, there is one NoteOnEvent
+        NoteOnEvent *pianoEvent;
 
-		TimelineWidget *timelineWidget;
-		PianoWidget *pianoWidget;
+        TimelineWidget *timelineWidget;
+        PianoWidget *pianoWidget;
 
-		const int NUM_LINES = 139;
-		const int PIXEL_PER_S = 100;
-		const int PIXEL_PER_LINE = 11;
-		const int PIXEL_PER_EVENT = 15;
-		const int MAX_HORIZ_ZOOM = 10;
-		const int MAX_VERT_ZOOM = 3;
+        int startTick, endTick, endTimeX, msOfFirstEventInList;
+
+        // This union represents the cache key for the QPicture cache.
+        // see pictureCache.
+        // Note that even with NO_BIT_PACK, we still use that here.
+        union MatrixStepKey {
+                uint rawValue;
+                struct Key { // 32 bits
+                    ushort mCurrStepId : 13;
+                    ushort mDiv : 3;
+                    ushort mScaleX : 8;
+                    ushort mScaleY : 6;
+                    bool mAntiAliased : 1;
+                } data;
+            };
+        #ifdef NO_BIT_PACK
+            bool _colorsByChannels;
+            bool totalRepaint;
+            bool screen_locked;
+        #else
+
+            bool _colorsByChannels : 1;
+            bool totalRepaint : 1;
+            bool screen_locked : 1;
+        #endif
 };
 
 #endif

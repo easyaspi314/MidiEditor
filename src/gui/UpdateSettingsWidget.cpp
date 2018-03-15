@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
  * Copyright (C) 2010  Markus Schwenk
@@ -18,29 +20,23 @@
 
 #include "UpdateSettingsWidget.h"
 
-#include <QSettings>
 #include <QGridLayout>
 #include <QCheckBox>
 #include <QPushButton>
 
 #include "../UpdateManager.h"
 
-UpdateSettingsWidget::UpdateSettingsWidget(QSettings *settings, QWidget *parent) : SettingsWidget("Updates", parent) {
+UpdateSettingsWidget::UpdateSettingsWidget(QWidget *parent) : SettingsWidget("Updates", parent) {
 
-	_settings = settings;
 
-	QGridLayout *layout = new QGridLayout(this);
-	setLayout(layout);
+    QGridLayout *layout = new QGridLayout(this);
+    setLayout(layout);
 
-	_auto = new QCheckBox("Automatically check for Updates", this);
-	_auto->setChecked(UpdateManager::autoCheckForUpdates());
+    _auto = new QCheckBox("Automatically check for Updates", this);
+    _auto->setChecked(_settings.auto_update);
 
-	connect(_auto, SIGNAL(toggled(bool)), this, SLOT(enableAutoUpdates(bool)));
-	layout->addWidget(_auto, 0, 0, 1, 6);
+    connect(_auto, &QCheckBox::toggled, this, [=] (bool enable) { _settings.auto_update = enable; });
+    layout->addWidget(_auto, 0, 0, 1, 6);
 
-	layout->setRowStretch(5, 1);
-}
-
-void UpdateSettingsWidget::enableAutoUpdates(bool enable){
-	UpdateManager::setAutoCheckUpdatesEnabled(enable);
+    layout->setRowStretch(5, 1);
 }

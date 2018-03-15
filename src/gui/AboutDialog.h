@@ -23,12 +23,14 @@
 #include <QObject>
 #include <QWidget>
 
+#include "../Utils.h"
+
 class AboutDialog : public QDialog {
 
 	Q_OBJECT
 
 	public:
-		AboutDialog(QWidget *parent = Q_NULLPTR);
+		AboutDialog(QWidget *parent = qnullptr);
 };
 
 #endif

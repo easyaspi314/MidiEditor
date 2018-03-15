@@ -2,29 +2,29 @@
 
 <img align="left" width="70px" src="run_environment/midieditor.ico">
 
-MidiEditor 
+MidiEditor
 ===========
 
 Download : Windows [last release](https://github.com/abreheret/MidiEditor/releases/)
 
 ### Building Dependencies
 * [Qt5.9](https://www.qt.io/download-open-source/)
-* [CMake](https://cmake.org/download/) >= 2.8.11 
+* [CMake](https://cmake.org/download/) >= 3.1.0
 
-* Windows: 
+* Windows:
      * Either the msvc2015 (preferred), msvc2013, msvc2017, or mingw53 Qt toolchains
      * For deployment: [nsis](http://nsis.sourceforge.net/Download)
-* Linux : 
+* Linux :
      * [sfml](http://www.sfml-dev.org/download-fr.php) `sudo apt-get install libsfml-dev`
      * asound (`sudo apt-get install libasound2-dev`)
      * (optional) Jack2 (`sudo apt-get install jack2`)
      * The gcc Qt toolchain
-* macOS: 
+* macOS:
      * Xcode 8+ (only command line utilities are required)
      * CMake (`brew install make`)
      * (optional) [JackOSX](http://www.jackosx.com)
-     
- 
+
+
 ### Introduction
 
 MidiEditor is a free software providing an interface to edit, record, and play Midi data.
@@ -57,7 +57,7 @@ Please feel free to contact the developer if you have any suggestions! Please al
 [Here](https://sourceforge.net/projects/midieditor/) you can find the original project page on sourceforge.net. You will find the code and a way to provide feedback.
 
 
-### Manual 
+### Manual
 
 [Here](http://midieditor.sourceforge.net/index.php?category=manual)
 

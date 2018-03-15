@@ -27,30 +27,30 @@
 
 class KeyPressureEvent : public MidiEvent {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		KeyPressureEvent(int channel, int value, int note, MidiTrack *track);
-		KeyPressureEvent(const KeyPressureEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+    public:
+        KeyPressureEvent(ubyte channel, ubyte value, ubyte note, MidiTrack *track);
+        KeyPressureEvent(const KeyPressureEvent &other);
+        EventType type() const qoverride;
 
-		virtual int line() Q_DECL_OVERRIDE;
+        virtual ubyte line() qoverride;
 
-		QString toMessage() Q_DECL_OVERRIDE;
-		QByteArray save() Q_DECL_OVERRIDE;
+        const QString toMessage() qoverride;
+        const QByteArray save() qoverride;
 
-		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
+        virtual ProtocolEntry *copy() qoverride;
+        virtual void reloadState(ProtocolEntry *entry) qoverride;
 
-		QString typeString() Q_DECL_OVERRIDE;
+        const QString typeString() qoverride;
 
-		int value();
-		int note();
-		void setValue(int v);
-		void setNote(int n);
+        ubyte value();
+        ubyte note();
+        void setValue(ubyte v);
+        void setNote(ubyte n);
 
-	private:
-		int _value, _note;
+    private:
+        ubyte _value, _note;
 };
 
 #endif

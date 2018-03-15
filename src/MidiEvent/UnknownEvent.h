@@ -24,26 +24,26 @@
 
 class UnknownEvent : public MidiEvent {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		UnknownEvent(int channel, int type, QByteArray data, MidiTrack *track);
-		UnknownEvent(const UnknownEvent &other);
-		MidiEvent::EventType type() const Q_DECL_OVERRIDE;
+    public:
+        UnknownEvent(ubyte channel, ubyte type, QByteArray data, MidiTrack *track);
+        UnknownEvent(const UnknownEvent &other);
+        EventType type() const qoverride;
 
-		QByteArray data();
-		int line() Q_DECL_OVERRIDE;
-		QByteArray save() Q_DECL_OVERRIDE;
-		int unknownType();
-		void setUnknownType(int type);
-		void setData(QByteArray d);
+        QByteArray data();
+        ubyte line() qoverride;
+        const QByteArray save() qoverride;
+        ubyte unknownType();
+        void setUnknownType(ubyte type);
+        void setData(const QByteArray &d);
 
-		virtual ProtocolEntry *copy() Q_DECL_OVERRIDE;
-		virtual void reloadState(ProtocolEntry *entry) Q_DECL_OVERRIDE;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
 
-	private:
-		QByteArray _data;
-		int _type;
+    private:
+        QByteArray _data;
+        ubyte _type;
 
 };
 
