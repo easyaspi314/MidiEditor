@@ -16,9 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
-project(MidiEditor)
+project(MidiEditor CXX)
 
 message(STATUS "Running CMake for project MidiEditor...")
 message(STATUS "Source directory: ${CMAKE_SOURCE_DIR}")
@@ -335,10 +335,3 @@ if(INSTALL_WITH_CPACK)
     set(CPACK_PACKAGE_VERSION_PATCH "1")
     include(CPack)
 endif()
-include(../PVS-Studio.cmake)
-pvs_studio_add_target(TARGET example3.analyze ALL
-                      OUTPUT FORMAT errorfile
-                      ANALYZE MidiEditor
-                      LOG target.err
-                      DEPENDS Qt5::Widgets Qt5::Core Qt5::Network Qt5::Xml)
-pvs_studio_
