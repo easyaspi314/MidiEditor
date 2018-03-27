@@ -37,8 +37,8 @@ NoteOnEvent::NoteOnEvent(const NoteOnEvent &other) : OnEvent(other){
     _velocity = other._velocity;
 }
 
-EventType NoteOnEvent::type() const {
-    return NoteOnEventType;
+int NoteOnEvent::type() const {
+    return Type;
 }
 
 ubyte NoteOnEvent::note(){
@@ -70,7 +70,7 @@ ProtocolEntry *NoteOnEvent::copy(){
 }
 
 void NoteOnEvent::reloadState(ProtocolEntry *entry){
-    NoteOnEvent *other = qobject_cast<NoteOnEvent*>(entry);
+    NoteOnEvent *other = protocol_cast<NoteOnEvent*>(entry);
     if(!other){
         return;
     }

@@ -165,7 +165,7 @@ void RecordDialog::enter() {
             // check whether to add event or not
             MidiEvent *toCheck = it.value();
 
-            OffEvent *off = qobject_cast<OffEvent*>(toCheck);
+            OffEvent *off = protocol_cast<OffEvent*>(toCheck);
             if (off) {
                 toCheck = off->onEvent();
             }
@@ -179,17 +179,17 @@ void RecordDialog::enter() {
             bool ignoreEvent = ignoredLines.contains(l);
 
             // set channels
-            TempoChangeEvent *tempo = qobject_cast<TempoChangeEvent*>(toCheck);
+            TempoChangeEvent *tempo = protocol_cast<TempoChangeEvent*>(toCheck);
             if (tempo) {
                 currentChannel = 17;
             }
 
-            TimeSignatureEvent *time = qobject_cast<TimeSignatureEvent*>(toCheck);
+            TimeSignatureEvent *time = protocol_cast<TimeSignatureEvent*>(toCheck);
             if (time) {
                 currentChannel = 18;
             }
 
-            TextEvent *text = qobject_cast<TextEvent*>(toCheck);
+            TextEvent *text = protocol_cast<TextEvent*>(toCheck);
             if (text) {
                 currentChannel = 16;
             }

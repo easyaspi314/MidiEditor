@@ -203,13 +203,13 @@ void PlayerThread::timeout() {
             }
             for (MidiEvent *ev : onEv) {
                 if (ev->line() == MidiEventLine::KeySignatureEventLine) {
-                    KeySignatureEvent *keySig = qobject_cast<KeySignatureEvent*>(ev);
+                    KeySignatureEvent *keySig = protocol_cast<KeySignatureEvent*>(ev);
                     if (keySig) {
                         emit tonalityChanged(keySig->tonality());
                     }
                 }
                 if (ev->line() == MidiEventLine::TimeSignatureEventLine) {
-                    TimeSignatureEvent *timeSig = qobject_cast<TimeSignatureEvent*>(ev);
+                    TimeSignatureEvent *timeSig = protocol_cast<TimeSignatureEvent*>(ev);
                     if (timeSig) {
                         emit meterChanged(timeSig->num(), timeSig->denom());
                     }

@@ -23,27 +23,26 @@
 #include "../midi/MidiFile.h"
 #include "ToolButton.h"
 #include "EditorTool.h"
-#include "../gui/GraphicObject.h"
 
 EditorTool *Tool::_currentTool = qnullptr;
 MidiFile *Tool::_currentFile = qnullptr;
 
-Tool::Tool(QObject *parent) : ProtocolEntry(parent) {
+Tool::Tool() {
 
     _button = qnullptr;
     _toolTip = QString();
     _standardTool = qnullptr;
 }
 
-Tool::Tool(Tool &other)/* : ProtocolEntry(other)*/ {
+Tool::Tool(const Tool &other) {
     _image = other._image;
     _button = other._button;
     _toolTip = other._toolTip;
     _standardTool = other._standardTool;
 }
 
-ToolType Tool::type() const {
-    return ToolType::None;
+int Tool::type() const {
+    return Type;
 }
 
 void Tool::buttonClick() {
@@ -51,11 +50,11 @@ void Tool::buttonClick() {
 }
 
 void Tool::setImage(const QString &name) {
-    _image = QImage(name);
+    _image = new QImage(name);
 }
 
 QImage *Tool::image() {
-    return &_image;
+    return _image;
 }
 
 void Tool::setToolTipText(const QString &text) {
@@ -76,7 +75,7 @@ ProtocolEntry *Tool::copy() {
 }
 
 void Tool::reloadState(ProtocolEntry *entry) {
-    Tool *other = qobject_cast<Tool*>(entry);
+    Tool *other = protocol_cast<Tool*>(entry);
     if (!other) {
         return;
     }

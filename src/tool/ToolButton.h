@@ -28,7 +28,7 @@ class Tool;
 
 class ToolButton  : public QAction {
 
-    Q_OBJECT
+    
 
     public:
         ToolButton(Tool *tool, const QKeySequence &sequence = QKeySequence(), QWidget *parent = qnullptr);

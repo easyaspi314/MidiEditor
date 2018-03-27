@@ -23,12 +23,15 @@
 
 class SizeChangeTool : public EventTool {
 
-    Q_OBJECT
+    
 
     public:
         SizeChangeTool();
         SizeChangeTool(SizeChangeTool &other);
-        ToolType type() const qoverride;
+        int type() const qoverride;
+        enum {
+            Type = SizeChangeToolType
+        };
 
         ProtocolEntry *copy() qoverride;
         void reloadState(ProtocolEntry *entry) qoverride;

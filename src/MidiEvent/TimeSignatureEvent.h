@@ -23,14 +23,16 @@
 
 class TimeSignatureEvent : public MidiEvent {
 
-    Q_OBJECT
+
 
     public:
         TimeSignatureEvent(ubyte channel, ubyte num, ubyte denom, ubyte midiClocks,
                 ubyte num32In4, MidiTrack *track);
         TimeSignatureEvent(const TimeSignatureEvent &other);
-        EventType type() const qoverride;
-
+        int type() const qoverride;
+        enum {
+            Type = TimeSignatureEventType
+        };
         ubyte num();
         ubyte denom();
         ubyte midiClocks();
@@ -38,8 +40,8 @@ class TimeSignatureEvent : public MidiEvent {
         int measures(int tick, int *ticksLeft = qnullptr);
         int ticksPerMeasure();
 
-        virtual ProtocolEntry *copy() qoverride;
-        virtual void reloadState(ProtocolEntry *entry) qoverride;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
         ubyte line() qoverride;
         const QByteArray save() qoverride;
 

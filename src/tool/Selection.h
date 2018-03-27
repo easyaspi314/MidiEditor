@@ -26,8 +26,7 @@
 class MidiEvent;
 class EventWidget;
 
-class Selection : public ProtocolEntry {
-
+class Selection : public QObject, public ProtocolEntry {
     Q_OBJECT
 
     public:
@@ -35,10 +34,15 @@ class Selection : public ProtocolEntry {
         Selection(MidiFile *file);
         Selection(Selection &other);
 
-        virtual ProtocolEntry *copy();
-        virtual void reloadState(ProtocolEntry *entry);
+        int type() const qoverride;
+        enum {
+            Type = SelectionType
+        };
 
-        virtual MidiFile *file();
+        virtual ProtocolEntry *copy() qoverride;
+        virtual void reloadState(ProtocolEntry *entry) qoverride;
+
+        virtual MidiFile *file() qoverride;
 
         static Selection *instance();
         static void setFile(MidiFile *file);

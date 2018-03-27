@@ -41,7 +41,7 @@
 #include <QtCore/qmath.h>
 
 
-MidiFile::MidiFile() {
+MidiFile::MidiFile(QObject *parent) : QObject(parent) {
     _modified = false;
     midiTicks = 0;
     _cursorTick = 0;
@@ -88,7 +88,7 @@ MidiFile::MidiFile() {
     calcMaxTime();
 }
 
-MidiFile::MidiFile(const QString &path, bool *ok, QStringList *log) {
+MidiFile::MidiFile(const QString &path, bool *ok, QStringList *log, QObject *parent) : QObject(parent) {
     if (!log) {
         log = new QStringList();
     }
@@ -130,7 +130,7 @@ MidiFile::MidiFile(const QString &path, bool *ok, QStringList *log) {
     printLog(log);
 }
 
-MidiFile::MidiFile(int maxTime, Protocol *p) {
+MidiFile::MidiFile(int maxTime, Protocol *p, QObject *parent)/* : QObject(parent) */{
     midiTicks = maxTime;
     prot = p;
     connect(prot, &Protocol::fileModified, this, &MidiFile::setModified);
@@ -255,14 +255,14 @@ bool MidiFile::readTrack(QDataStream *content, ushort num, QStringList *log) {
             return false;
         }
 
-        OffEvent *offEvent = qobject_cast<OffEvent *>(event);
+        OffEvent *offEvent = protocol_cast<OffEvent *>(event);
         if (offEvent && !offEvent->onEvent()) {
             log->append("Warning: detected offEvent without prior onEvent. Skipping!");
             continue;
         }
         // check whether its the tracks name
         if (event && event->line() == MidiEventLine::TextEventLine) {
-            TextEvent *textEvent = qobject_cast<TextEvent *>(event);
+            TextEvent *textEvent = protocol_cast<TextEvent *>(event);
             if (textEvent) {
                 if (textEvent->textType() == TextType::TrackNameTextEventType) {
                     track->setNameEvent(textEvent);
@@ -352,7 +352,7 @@ void MidiFile::calcMaxTime() {
     auto *events = channels.at(17)->eventMap();
     auto i = events->constBegin();
     for (; i != events->constEnd(); ++i) {
-        TempoChangeEvent *ev = qobject_cast<TempoChangeEvent *>(i.value());
+        TempoChangeEvent *ev = protocol_cast<TempoChangeEvent *>(i.value());
         if (!ev) {
             continue;
         }
@@ -387,7 +387,7 @@ int MidiFile::tick(int ms) {
     qreal timeMsNextEvent = 0;
 
     for (; i != events->constEnd(); ++i) {
-        TempoChangeEvent *ev = qobject_cast<TempoChangeEvent *>(i.value());
+        TempoChangeEvent *ev = protocol_cast<TempoChangeEvent *>(i.value());
         if (!ev) {
             qWarning("unknown eventtype in the List [3]");
             continue;
@@ -433,7 +433,7 @@ int MidiFile::msOfTick(int tick, QList<MidiEvent *> *events, int msOfFirstEventI
     // event is the previous TempoChangeEvent in the list, ev the current
     TempoChangeEvent *event = qnullptr;
     for (int i = 0; i < events->length(); i++) {
-        TempoChangeEvent *ev = qobject_cast<TempoChangeEvent *>(events->at(i));
+        TempoChangeEvent *ev = protocol_cast<TempoChangeEvent *>(events->at(i));
         if (!ev) {
             continue;
         }
@@ -495,7 +495,7 @@ int MidiFile::tick(int startms,
     // find the startEvent and the firstTick
     //int i = 0;
     for (; i != eventsMap->constEnd(); ++i) {
-        TempoChangeEvent *ev = qobject_cast<TempoChangeEvent *>(i.value());
+        TempoChangeEvent *ev = protocol_cast<TempoChangeEvent *>(i.value());
         if (!ev) {
             qWarning("unknown eventtype in the List [1]");
             continue;
@@ -531,7 +531,7 @@ int MidiFile::tick(int startms,
     // find the endEvent, save all events between start and end in the list and
     // get the endTick
     for (; i != eventsMap->constEnd() && timeMsNextEvent < endms; ++i) {
-        TempoChangeEvent *ev = qobject_cast<TempoChangeEvent *>(i.value());
+        TempoChangeEvent *ev = protocol_cast<TempoChangeEvent *>(i.value());
         if (!ev) {
             continue;
         }
@@ -585,7 +585,7 @@ int MidiFile::measure(int startTick,
 
     // find the startEvent and the firstTick
     for (; i < events.length(); i++) {
-        TimeSignatureEvent *ev = qobject_cast<TimeSignatureEvent *>(events.at(i));
+        TimeSignatureEvent *ev = protocol_cast<TimeSignatureEvent *>(events.at(i));
         if (!ev) {
             qWarning("unknown eventtype in the List [2]");
             continue;
@@ -614,7 +614,7 @@ int MidiFile::measure(int startTick,
     // find the endEvent, save all events between start and end in the list and
     // get the endTick
     for (; i < events.length(); i++) {
-        TimeSignatureEvent *ev = qobject_cast<TimeSignatureEvent *>(events.at(i));
+        TimeSignatureEvent *ev = protocol_cast<TimeSignatureEvent *>(events.at(i));
 
         if (!ev) {
             qWarning("unknown eventtype in the List [2]");
@@ -1336,13 +1336,13 @@ void MidiFile::preparePlayerData(int tickFrom) {
                     playerMap->insert(ms, event);
                 }
             } else {
-                ProgChangeEvent *prg = qobject_cast<ProgChangeEvent *>(event);
+                ProgChangeEvent *prg = protocol_cast<ProgChangeEvent *>(event);
                 if (prg) {
                     // save ProgramChenges in the list, the last will be added
                     // to the playerMap later
                     prgList->append(prg);
                 }
-                ControlChangeEvent *ctrl = qobject_cast<ControlChangeEvent *>(event);
+                ControlChangeEvent *ctrl = protocol_cast<ControlChangeEvent *>(event);
                 if (ctrl) {
                     // insert all ControlChanges on first position
                     // playerMap->insert(msOfTick(cursorTick())-1, ctrl);
@@ -1396,7 +1396,7 @@ bool MidiFile::save(const QString &path) {
     // saved by tracks and not by channels
     QMultiMap<int, MidiEvent *> allEvents = QMultiMap<int, MidiEvent *>();
     for (ubyte i = 0; i < 19; i++) {
-        QMultiMap<int, MidiEvent *>::iterator it = channels[i]->eventMap()->begin();
+        QMultiMap<int, MidiEvent *>::iterator it = channels.at(i)->eventMap()->begin();
         while (it != channels[i]->eventMap()->end()) {
             allEvents.insert(it.key(), it.value());
             ++it;
@@ -1555,8 +1555,12 @@ ProtocolEntry *MidiFile::copy() {
     return file;
 }
 
+int MidiFile::type() const {
+    return Type;
+}
+
 void MidiFile::reloadState(ProtocolEntry *entry) {
-    MidiFile *file = qobject_cast<MidiFile *>(entry);
+    MidiFile *file = protocol_cast<MidiFile *>(entry);
     if (file) {
         midiTicks = file->midiTicks;
         _tracks = file->_tracks;
@@ -1663,7 +1667,7 @@ ubyte MidiFile::tonalityAt(int tick) {
     QMultiMap<int, MidiEvent *>::iterator it = events->begin();
     KeySignatureEvent *event = qnullptr;
     while (it != events->end()) {
-        KeySignatureEvent *keySig = qobject_cast<KeySignatureEvent *>(it.value());
+        KeySignatureEvent *keySig = protocol_cast<KeySignatureEvent *>(it.value());
         if (keySig && keySig->midiTime() <= tick) {
             event = keySig;
         } else if (keySig) {
@@ -1686,7 +1690,7 @@ void MidiFile::meterAt(int tick, int *num, int *denum) {
     QMap<int, MidiEvent *>::iterator it = meterEvents->begin();
     TimeSignatureEvent *event = qnullptr;
     while (it != meterEvents->end()) {
-        TimeSignatureEvent *timeSig = qobject_cast<TimeSignatureEvent *>(it.value());
+        TimeSignatureEvent *timeSig = protocol_cast<TimeSignatureEvent *>(it.value());
         if (timeSig && timeSig->midiTime() <= tick) {
             event = timeSig;
         } else if (timeSig) {
@@ -1753,7 +1757,7 @@ QList<int> MidiFile::quantization(int fractionSize) {
     const QList<MidiEvent *> timeSigs = timeSignatureEvents()->values();
     TimeSignatureEvent *last = qnullptr;
     for (MidiEvent *event : timeSigs) {
-        TimeSignatureEvent *t = qobject_cast<TimeSignatureEvent *>(event);
+        TimeSignatureEvent *t = protocol_cast<TimeSignatureEvent *>(event);
 
         if (last) {
             int current = last->midiTime();

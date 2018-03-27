@@ -28,7 +28,6 @@
 #include "../midi/MidiFile.h"
 #include "StandardTool.h"
 #include "Selection.h"
-#include "../gui/GraphicObject.h"
 
 EventMoveTool::EventMoveTool(bool upDown, bool leftRight) : EventTool() {
     moveUpDown = upDown;
@@ -37,13 +36,13 @@ EventMoveTool::EventMoveTool(bool upDown, bool leftRight) : EventTool() {
     startX = 0;
     startY = 0;
     if (moveUpDown && moveLeftRight) {
-        setImage(":/run_environment/graphics/tool/move_up_down_left_right.png");
+        setImage(":/move_up_down_left_right.png");
         setToolTipText("Move Events (all directions)");
     } else if (moveUpDown) {
-        setImage(":/run_environment/graphics/tool/move_up_down.png");
+        setImage(":/move_up_down.png");
         setToolTipText("Move Events (up and down)");
     } else {
-        setImage(":/run_environment/graphics/tool/move_left_right.png");
+        setImage(":/move_left_right.png");
         setToolTipText("Move Events (left and right)");
     }
 }
@@ -56,8 +55,8 @@ EventMoveTool::EventMoveTool(EventMoveTool &other) : EventTool(other) {
     startY = 0;
 }
 
-ToolType EventMoveTool::type() const {
-    return ToolType::EventMove;
+int EventMoveTool::type() const {
+    return Type;
 }
 
 ProtocolEntry *EventMoveTool::copy() {
@@ -66,7 +65,7 @@ ProtocolEntry *EventMoveTool::copy() {
 
 void EventMoveTool::reloadState(ProtocolEntry *entry) {
     EventTool::reloadState(entry);
-    EventMoveTool *other = qobject_cast<EventMoveTool*>(entry);
+    EventMoveTool *other = protocol_cast<EventMoveTool*>(entry);
     if (!other) {
         return;
     }
@@ -169,8 +168,8 @@ bool EventMoveTool::release() {
     // backwards to hold stability
     for (int i = Selection::instance()->selectedEvents().count() - 1; i >= 0; i--) {
         MidiEvent *event = Selection::instance()->selectedEvents().at(i);
-        NoteOnEvent *ev = qobject_cast<NoteOnEvent*>(event);
-        OffEvent *off = qobject_cast<OffEvent*>(event);
+        NoteOnEvent *ev = protocol_cast<NoteOnEvent*>(event);
+        OffEvent *off = protocol_cast<OffEvent*>(event);
         if (ev) {
             ubyte note = ev->note()+numLines;
             if (note < 0) {
@@ -236,7 +235,7 @@ qreal EventMoveTool::computeRaster() {
             firstTick = event->midiTime();
         }
 
-        NoteOnEvent *onEvent = qobject_cast<NoteOnEvent*>(event);
+        NoteOnEvent *onEvent = protocol_cast<NoteOnEvent*>(event);
         if (onEvent) {
             if ((lastTick == -1) || (onEvent->offEvent()->midiTime() > lastTick)) {
                 lastTick = onEvent->offEvent()->midiTime();

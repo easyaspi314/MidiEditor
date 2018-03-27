@@ -53,7 +53,7 @@ NewNoteTool::NewNoteTool() : EventTool() {
     xPos = 0;
     _channel = 0;
     _track = 0;
-    setImage(":/run_environment/graphics/tool/newnote.png");
+    setImage(":/newnote.png");
     setToolTipText("Create new Events");
 }
 
@@ -61,8 +61,8 @@ NewNoteTool::NewNoteTool(NewNoteTool &other) : EventTool(other) {
     return;
 }
 
-ToolType NewNoteTool::type() const {
-    return ToolType::NewNote;
+int NewNoteTool::type() const {
+    return Type;
 }
 
 ProtocolEntry *NewNoteTool::copy() {
@@ -70,7 +70,7 @@ ProtocolEntry *NewNoteTool::copy() {
 }
 
 void NewNoteTool::reloadState(ProtocolEntry *entry) {
-    NewNoteTool *other = qobject_cast<NewNoteTool*>(entry);
+    NewNoteTool *other = protocol_cast<NewNoteTool*>(entry);
     if (!other) {
         return;
     }

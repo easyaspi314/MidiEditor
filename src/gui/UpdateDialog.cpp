@@ -37,21 +37,21 @@ UpdateDialog::UpdateDialog(Update *update, QWidget *parent):QDialog(parent) {
     setMinimumWidth(550);
     setMaximumHeight(450);
     setWindowTitle(tr("About"));
-    setWindowIcon(QIcon(":/run_environment/graphics/icon.png"));
+    setWindowIcon(QIcon(":/icon.png"));
     QGridLayout *layout = new QGridLayout(this);
 
     QLabel *icon = new QLabel();
-    icon->setPixmap(QPixmap(":/run_environment/graphics/midieditor.png").scaledToWidth(80, Qt::SmoothTransformation));
+    icon->setPixmap(QPixmap(":/midieditor.png").scaledToWidth(80, Qt::SmoothTransformation));
     icon->setFixedSize(80, 80);
     layout->addWidget(icon, 0, 0, 3, 1);
 
     QLabel *title = new QLabel("<h1>Update Available</h1>", this);
     layout->addWidget(title, 0, 1, 1, 2);
-    title->setStyleSheet("color: black");
+    title->setStyleSheet("color:black");
 
     QLabel *version = new QLabel("New Version: " % update->versionString(), this);
     layout->addWidget(version, 1, 1, 1, 2);
-    version->setStyleSheet("color: black");
+    version->setStyleSheet("color:black");
 
     QScrollArea *a = new QScrollArea(this);
     QLabel *content = new QLabel(_("<html>"
@@ -79,7 +79,7 @@ UpdateDialog::UpdateDialog(Update *update, QWidget *parent):QDialog(parent) {
     a->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     a->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     layout->addWidget(a, 2, 1, 2, 2);
-    content->setStyleSheet("color: black; background-color: white; padding: 5px");
+    content->setStyleSheet("color:black;background-color:white;padding:5px");
 
     content->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
     content->setOpenExternalLinks(true);

@@ -155,16 +155,16 @@ void EventWidgetDelegate::setEditorData(QWidget *editor, const QModelIndex &inde
             spin->setMaximum(0);
             spin->setMaximum(127);
             if (index.data().canConvert(QVariant::UInt)) {
-                spin->setValue(index.data().toUInt());
+                spin->setValue(index.data().toInt());
             }
             break;
         }
         case EventWidget::NoteEventDuration: {
             QSpinBox *spin = qobject_cast<QSpinBox*>(editor);
             spin->setMaximum(0);
-            spin->setMaximum(UINT_MAX);
-            if (index.data().canConvert(QVariant::UInt)) {
-                spin->setValue(index.data().toUInt());
+            spin->setMaximum(INT_MAX);
+            if (index.data().canConvert(QVariant::Int)) {
+                spin->setValue(index.data().toInt());
             }
             break;
         }
@@ -172,21 +172,21 @@ void EventWidgetDelegate::setEditorData(QWidget *editor, const QModelIndex &inde
             QSpinBox *spin = qobject_cast<QSpinBox*>(editor);
             spin->setMaximum(0);
             spin->setMaximum(15);
-            if (index.data().canConvert(QVariant::UInt)) {
-                spin->setValue(index.data().toUInt());
+            if (index.data().canConvert(QVariant::Int)) {
+                spin->setValue(index.data().toInt());
             }
             break;
         }
         case EventWidget::MidiEventValue: {
             QSpinBox *spin = qobject_cast<QSpinBox*>(editor);
             spin->setMinimum(0);
-            EventType type = eventWidget->type();
+            int type = eventWidget->type();
             switch(type) {
-                case EventType::PitchBendEventType: {
+                case MidiEvent::PitchBendEventType: {
                     spin->setMaximum(16383);
                     break;
                 }
-                case EventType::TempoChangeEventType: {
+                case MidiEvent::TempoChangeEventType: {
                     spin->setMaximum(1000);
                     break;
                 }
@@ -196,8 +196,8 @@ void EventWidgetDelegate::setEditorData(QWidget *editor, const QModelIndex &inde
                 }
             }
 
-            if (index.data().canConvert(QVariant::UInt)) {
-                spin->setValue(index.data().toUInt());
+            if (index.data().canConvert(QVariant::Int)) {
+                spin->setValue(index.data().toInt());
             }
             break;
         }
@@ -302,7 +302,7 @@ void EventWidgetDelegate::setEditorData(QWidget *editor, const QModelIndex &inde
 
 void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const{
 
-    EventWidget::EditorField field = EventWidget::EditorField(index.data(Qt::UserRole).toInt());
+    auto field = EventWidget::EditorField(index.data(Qt::UserRole).toInt());
 
     const QList<MidiEvent*> events = eventWidget->events();
     // set values
@@ -312,8 +312,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
             QSpinBox *spin = qobject_cast<QSpinBox*>(editor);
 
             for (MidiEvent *event : events) {
-                NoteOnEvent *noteOn = qobject_cast<NoteOnEvent*>(event);
-                if (noteOn) {
+                if (NoteOnEvent *noteOn = protocol_cast<NoteOnEvent*>(event)) {
                     if (spin->value() >= noteOn->offEvent()->midiTime()) {
                         noteOn->offEvent()->setMidiTime(spin->value() + 10);
                     }
@@ -328,14 +327,12 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
             MidiTrack *track = eventWidget->file()->track(box->currentIndex());
             for (MidiEvent *event : events) {
                 MidiTrack *oldTrack = event->track();
-                NoteOnEvent *noteOn = qobject_cast<NoteOnEvent*>(event);
-                if (noteOn) {
+                if (NoteOnEvent *noteOn = protocol_cast<NoteOnEvent*>(event)) {
                     noteOn->offEvent()->setTrack(track);
                 }
                 event->setTrack(track);
 
-                TextEvent *text = qobject_cast<TextEvent*>(event);
-                if (text) {
+                if (TextEvent *text = protocol_cast<TextEvent*>(event)) {
                     if (text->textType() == TextType::TrackNameTextEventType) {
                         oldTrack->setNameEvent(qnullptr);
                         text->track()->setNameEvent(text);
@@ -349,12 +346,9 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
             ubyte value = ubyte(spin->value());
 
             for (MidiEvent *event : events) {
-                NoteOnEvent *noteOn = qobject_cast<NoteOnEvent*>(event);
-                if (noteOn) {
+                if (NoteOnEvent *noteOn = protocol_cast<NoteOnEvent*>(event)) {
                     noteOn->setNote(value);
-                }
-                KeyPressureEvent *key = qobject_cast<KeyPressureEvent*>(event);
-                if (key) {
+                } else if (KeyPressureEvent *key = protocol_cast<KeyPressureEvent*>(event)) {
                     key->setNote(value);
                 }
             }
@@ -364,8 +358,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
             QSpinBox *spin = qobject_cast<QSpinBox*>(editor);
             int value = spin->value();
             for (MidiEvent *event : events) {
-                NoteOnEvent *noteOn = qobject_cast<NoteOnEvent*>(event);
-                if (noteOn) {
+                if (NoteOnEvent *noteOn = protocol_cast<NoteOnEvent*>(event)) {
                     noteOn->offEvent()->setMidiTime(value);
                 }
             }
@@ -375,8 +368,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
             QSpinBox *spin = qobject_cast<QSpinBox*>(editor);
             ubyte value = ubyte(spin->value());
             for (MidiEvent *event : events) {
-                NoteOnEvent *noteOn = qobject_cast<NoteOnEvent*>(event);
-                if (noteOn) {
+                if (NoteOnEvent *noteOn = protocol_cast<NoteOnEvent*>(event)) {
                     noteOn->setVelocity(value);
                 }
             }
@@ -386,8 +378,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
             QSpinBox *spin = qobject_cast<QSpinBox*>(editor);
             int value = spin->value();
             for (MidiEvent *event : events) {
-                NoteOnEvent *noteOn = qobject_cast<NoteOnEvent*>(event);
-                if (noteOn) {
+                if (NoteOnEvent *noteOn = protocol_cast<NoteOnEvent*>(event)) {
                     noteOn->offEvent()->setMidiTime(noteOn->midiTime() + value);
                 }
             }
@@ -405,24 +396,15 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
             QSpinBox *spin = qobject_cast<QSpinBox*>(editor);
             int value = spin->value();
             for (MidiEvent *event : events) {
-                ChannelPressureEvent *ch = qobject_cast<ChannelPressureEvent*>(event);
-                if (ch) {
+                if (ChannelPressureEvent *ch = protocol_cast<ChannelPressureEvent*>(event)) {
                     ch->setValue(ubyte(value));
-                }
-                ControlChangeEvent *ctrl = qobject_cast<ControlChangeEvent*>(event);
-                if (ctrl) {
+                } else if (ControlChangeEvent *ctrl = protocol_cast<ControlChangeEvent*>(event)) {
                     ctrl->setValue(ubyte(value));
-                }
-                KeyPressureEvent *key = qobject_cast<KeyPressureEvent*>(event);
-                if (key) {
+                } else if (KeyPressureEvent *key = protocol_cast<KeyPressureEvent*>(event)) {
                     key->setValue(ubyte(value));
-                }
-                PitchBendEvent *pitch = qobject_cast<PitchBendEvent*>(event);
-                if (pitch) {
+                } else if (PitchBendEvent *pitch = protocol_cast<PitchBendEvent*>(event)) {
                     pitch->setValue(ushort(value));
-                }
-                TempoChangeEvent *tempo = qobject_cast<TempoChangeEvent*>(event);
-                if (tempo) {
+                } else if (TempoChangeEvent *tempo = protocol_cast<TempoChangeEvent*>(event)) {
                     tempo->setBeats(spin->value());
                 }
             }
@@ -432,8 +414,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
             QComboBox *box = qobject_cast<QComboBox*>(editor);
             ubyte value = ubyte(box->currentIndex());
             for (MidiEvent *event : events) {
-                ControlChangeEvent *c = qobject_cast<ControlChangeEvent*>(event);
-                if (c) {
+                if (ControlChangeEvent *c = protocol_cast<ControlChangeEvent*>(event)) {
                     c->setControl(value);
                 }
             }
@@ -443,8 +424,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
             QComboBox *box = qobject_cast<QComboBox*>(editor);
             ubyte value = ubyte(box->currentIndex());
             for (MidiEvent *event : events) {
-                ProgChangeEvent *c = qobject_cast<ProgChangeEvent*>(event);
-                if (c) {
+                if (ProgChangeEvent *c = protocol_cast<ProgChangeEvent*>(event)) {
                     c->setProgram(value);
                 }
             }
@@ -457,8 +437,8 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
             eventWidget->getKey(ubyte(box->currentIndex()), &tonality, &minor);
 
             for (MidiEvent *event : events) {
-                KeySignatureEvent *c = qobject_cast<KeySignatureEvent*>(event);
-                if (c) {
+
+                if (KeySignatureEvent *c = protocol_cast<KeySignatureEvent*>(event)) {
                     c->setTonality(tonality);
                     c->setMinor(minor);
                 }
@@ -469,8 +449,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
             QSpinBox *spin = qobject_cast<QSpinBox*>(editor);
             ubyte value = ubyte(spin->value());
             for (MidiEvent *event : events) {
-                TimeSignatureEvent *ev = qobject_cast<TimeSignatureEvent*>(event);
-                if (ev) {
+                if (TimeSignatureEvent *ev = protocol_cast<TimeSignatureEvent*>(event)) {
                     ev->setNumerator(value);
                 }
             }
@@ -480,8 +459,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
             QComboBox *box = qobject_cast<QComboBox*>(editor);
             ubyte value = ubyte(box->currentIndex());
             for (MidiEvent *event : events) {
-                TimeSignatureEvent *c = qobject_cast<TimeSignatureEvent*>(event);
-                if (c) {
+                if (TimeSignatureEvent *c = protocol_cast<TimeSignatureEvent*>(event)) {
                     c->setDenominator(value);
                 }
             }
@@ -490,8 +468,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
         case EventWidget::TextType: {
             QComboBox *box = qobject_cast<QComboBox*>(editor);
             for (MidiEvent *event : events) {
-                TextEvent *c = qobject_cast<TextEvent*>(event);
-                if (c) {
+                if (TextEvent *c = protocol_cast<TextEvent*>(event)) {
                     TextType oldType = c->textType();
                     TextType newType = TextType(box->currentIndex()+1);
                     c->setTextType(newType);
@@ -508,8 +485,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
         case EventWidget::TextText: {
             QTextEdit *ed = qobject_cast<QTextEdit*>(editor);
             for (MidiEvent *event : events) {
-                TextEvent *c = qobject_cast<TextEvent*>(event);
-                if (c) {
+                if (TextEvent *c = protocol_cast<TextEvent*>(event)) {
                     c->setText(ed->toPlainText());
                 }
             }
@@ -528,8 +504,7 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
             }
 
             for (MidiEvent *event : events) {
-                UnknownEvent *c = qobject_cast<UnknownEvent*>(event);
-                if (c) {
+                if (UnknownEvent *c = protocol_cast<UnknownEvent*>(event)) {
                     c->setUnknownType(type);
                 }
             }
@@ -538,19 +513,16 @@ void EventWidgetDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
         case EventWidget::MidiEventData: {
             DataEditor *edit = qobject_cast<DataEditor*>(editor);
             QByteArray data = edit->data();
-            if (eventWidget->type() == EventType::SystemExclusiveEventType) {
+            if (eventWidget->type() == MidiEvent::SystemExclusiveEventType) {
                 if (data.contains(byte(0xF7))) {
                     QMessageBox::warning(eventWidget, "Error", "The data must not contain byte 0xF7 (End of SysEx)");
                     return;
                 }
             }
             for (MidiEvent *event : events) {
-                UnknownEvent *c = qobject_cast<UnknownEvent*>(event);
-                if (c) {
+                if (UnknownEvent *c = protocol_cast<UnknownEvent*>(event)) {
                     c->setData(data);
-                }
-                SysExEvent *s = qobject_cast<SysExEvent*>(event);
-                if (s) {
+                } else if (SysExEvent *s = protocol_cast<SysExEvent*>(event)) {
                     s->setData(data);
                 }
             }
@@ -668,16 +640,16 @@ void EventWidget::reload() {
     resizeRowsToContents();
 }
 
-EventType EventWidget::computeType() {
-    EventType type = EventType::MidiEventType;
+int EventWidget::computeType() {
+    int type = MidiEvent::MidiEventType;
     bool inited = false;
     for (MidiEvent *event : qAsConst(_events)) {
-        if (!inited && event->type() != EventType::OnEventType
-                && event->type() != EventType::OffEventType) {
+        if (!inited && event->type() != MidiEvent::OnEventType
+                && event->type() != MidiEvent::OffEventType) {
             type = event->type();
         } else {
             if (type != event->type())
-                type = EventType::MidiEventType;
+                type = MidiEvent::MidiEventType;
         }
         inited = true;
     }
@@ -686,43 +658,43 @@ EventType EventWidget::computeType() {
 
 const QString EventWidget::eventType() {
     switch(_currentType) {
-        case EventType::MidiEventType: {
+        case MidiEvent::MidiEventType: {
             return "Midi Event";
         }
-        case EventType::ChannelPressureEventType: {
+        case MidiEvent::ChannelPressureEventType: {
             return "Channel Pressure Event";
         }
-        case EventType::ControlChangeEventType: {
+        case MidiEvent::ControlChangeEventType: {
             return "Control Change Event";
         }
-        case EventType::KeyPressureEventType: {
+        case MidiEvent::KeyPressureEventType: {
             return "Key Pressure Event";
         }
-        case EventType::KeySignatureEventType: {
+        case MidiEvent::KeySignatureEventType: {
             return "Key Signature Event";
         }
-        case EventType::NoteOnEventType: {
+        case MidiEvent::NoteOnEventType: {
             return "Note On/Off Event";
         }
-        case EventType::PitchBendEventType: {
+        case MidiEvent::PitchBendEventType: {
             return "Pitch Bend Event";
         }
-        case EventType::ProgramChangeEventType: {
+        case MidiEvent::ProgramChangeEventType: {
             return "Program Change Event";
         }
-        case EventType::SystemExclusiveEventType: {
+        case MidiEvent::SystemExclusiveEventType: {
             return "Sysex Event";
         }
-        case EventType::TempoChangeEventType: {
+        case MidiEvent::TempoChangeEventType: {
             return "Temo Change Event";
         }
-        case EventType::TextEventType: {
+        case MidiEvent::TextEventType: {
             return "Text Event";
         }
-        case EventType::TimeSignatureEventType: {
+        case MidiEvent::TimeSignatureEventType: {
             return "Time Signature Event";
         }
-        case EventType::UnknownEventType: {
+        case MidiEvent::UnknownEventType: {
             return "Unknown Event";
         }
         default: {
@@ -738,28 +710,28 @@ QList<QPair<QString, EventWidget::EditorField> > EventWidget::getFields() {
     fields.append(QPair<QString, EditorField>("On Tick", MidiEventTick));
 
     switch(_currentType) {
-        case EventType::ChannelPressureEventType: {
+        case MidiEvent::ChannelPressureEventType: {
             fields.append(QPair<QString, EditorField>("Value", MidiEventValue));
             fields.append(QPair<QString, EditorField>("Channel", MidiEventChannel));
             break;
         }
-        case EventType::ControlChangeEventType: {
+        case MidiEvent::ControlChangeEventType: {
             fields.append(QPair<QString, EditorField>("Control", ControlChangeControl));
             fields.append(QPair<QString, EditorField>("Value", MidiEventValue));
             fields.append(QPair<QString, EditorField>("Channel", MidiEventChannel));
             break;
         }
-        case EventType::KeyPressureEventType: {
+        case MidiEvent::KeyPressureEventType: {
             fields.append(QPair<QString, EditorField>("Note", MidiEventNote));
             fields.append(QPair<QString, EditorField>("Value", MidiEventValue));
             fields.append(QPair<QString, EditorField>("Channel", MidiEventChannel));
             break;
         }
-        case EventType::KeySignatureEventType: {
+        case MidiEvent::KeySignatureEventType: {
             fields.append(QPair<QString, EditorField>("Key", KeySignatureKey));
             break;
         }
-        case EventType::NoteOnEventType: {
+        case MidiEvent::NoteOnEventType: {
             fields.append(QPair<QString, EditorField>("Off Tick", NoteEventOffTick));
             fields.append(QPair<QString, EditorField>("Duration", NoteEventDuration));
             fields.append(QPair<QString, EditorField>("Note", MidiEventNote));
@@ -768,41 +740,41 @@ QList<QPair<QString, EventWidget::EditorField> > EventWidget::getFields() {
             break;
         }
 
-        case EventType::PitchBendEventType: {
+        case MidiEvent::PitchBendEventType: {
             fields.append(QPair<QString, EditorField>("Value", MidiEventValue));
             fields.append(QPair<QString, EditorField>("Channel", MidiEventChannel));
             break;
         }
-        case EventType::ProgramChangeEventType: {
+        case MidiEvent::ProgramChangeEventType: {
             fields.append(QPair<QString, EditorField>("Program", ProgramChangeProgram));
             fields.append(QPair<QString, EditorField>("Channel", MidiEventChannel));
             break;
         }
-        case EventType::SystemExclusiveEventType: {
+        case MidiEvent::SystemExclusiveEventType: {
             fields.append(QPair<QString, EditorField>("Data", MidiEventData));
             break;
         }
-        case EventType::TempoChangeEventType: {
+        case MidiEvent::TempoChangeEventType: {
             fields.append(QPair<QString, EditorField>("Tempo", MidiEventValue));
             break;
         }
-        case EventType::TextEventType: {
+        case MidiEvent::TextEventType: {
             fields.append(QPair<QString, EditorField>("Type", TextType));
             fields.append(QPair<QString, EditorField>("Text", TextText));
             break;
         }
-        case EventType::TimeSignatureEventType: {
+        case MidiEvent::TimeSignatureEventType: {
             fields.append(QPair<QString, EditorField>("Numerator", TimeSignatureNum));
             fields.append(QPair<QString, EditorField>("Denominator", TimeSignatureDenom));
             break;
         }
-        case EventType::UnknownEventType: {
+        case MidiEvent::UnknownEventType: {
             fields.append(QPair<QString, EditorField>("Type", UnknownType));
             fields.append(QPair<QString, EditorField>("Data", MidiEventData));
             break;
         }
         default: {
-            // Shut up, clang.
+            Q_UNREACHABLE();
             break;
         }
     }
@@ -840,16 +812,15 @@ QVariant EventWidget::fieldContent(EditorField field) {
         case MidiEventNote: {
             int note = -1;
             for (MidiEvent *event : qAsConst(_events)) {
-                NoteOnEvent *onEvent = qobject_cast<NoteOnEvent*>(event);
-                if (onEvent) {
+                if (NoteOnEvent *onEvent = protocol_cast<NoteOnEvent*>(event)) {
                     if (note == -1) {
                         note = onEvent->note();
                     } else if (note != onEvent->note()) {
                         return QVariant();
                     }
                 }
-                KeyPressureEvent *key = qobject_cast<KeyPressureEvent*>(event);
-                if (key) {
+
+                if (KeyPressureEvent *key = protocol_cast<KeyPressureEvent*>(event)) {
                     if (note == -1) {
                         note = key->note();
                     } else if (note != key->note()) {
@@ -865,12 +836,12 @@ QVariant EventWidget::fieldContent(EditorField field) {
         case NoteEventOffTick: {
             int off = -1;
             for (MidiEvent *event : qAsConst(_events)) {
-                NoteOnEvent *onEvent = qobject_cast<NoteOnEvent*>(event);
-                if (!onEvent) { continue; }
-                if (off == -1) {
-                    off = onEvent->offEvent()->midiTime();
-                } else if (off != onEvent->offEvent()->midiTime()) {
-                    return QVariant();
+                if (NoteOnEvent *onEvent = protocol_cast<NoteOnEvent*>(event)) {
+                    if (off == -1) {
+                        off = onEvent->offEvent()->midiTime();
+                    } else if (off != onEvent->offEvent()->midiTime()) {
+                        return QVariant();
+                    }
                 }
             }
             if (off < 0) {
@@ -881,14 +852,12 @@ QVariant EventWidget::fieldContent(EditorField field) {
         case NoteEventVelocity: {
             int velocity = -1;
             for (MidiEvent *event : qAsConst(_events)) {
-                NoteOnEvent *onEvent = qobject_cast<NoteOnEvent*>(event);
-                if (!onEvent) {
-                    continue;
-                }
-                if (velocity == -1) {
-                    velocity = onEvent->velocity();
-                } else if (velocity != onEvent->velocity()) {
-                    return QVariant();
+                if (NoteOnEvent *onEvent = protocol_cast<NoteOnEvent*>(event)) {
+                    if (velocity == -1) {
+                        velocity = onEvent->velocity();
+                    } else if (velocity != onEvent->velocity()) {
+                        return QVariant();
+                    }
                 }
             }
             if (velocity < 0) {
@@ -899,12 +868,12 @@ QVariant EventWidget::fieldContent(EditorField field) {
         case NoteEventDuration: {
             int duration = -1;
             for (MidiEvent *event : qAsConst(_events)) {
-                NoteOnEvent *onEvent = qobject_cast<NoteOnEvent*>(event);
-                if (!onEvent) { continue; }
-                if (duration == -1) {
-                    duration = onEvent->offEvent()->midiTime()-onEvent->midiTime();
-                } else if (duration != onEvent->offEvent()->midiTime()-onEvent->midiTime()) {
-                    return QVariant();
+                if (NoteOnEvent *onEvent = protocol_cast<NoteOnEvent*>(event)) {
+                    if (duration == -1) {
+                        duration = onEvent->offEvent()->midiTime()-onEvent->midiTime();
+                    } else if (duration != onEvent->offEvent()->midiTime()-onEvent->midiTime()) {
+                        return QVariant();
+                    }
                 }
             }
             if (duration < 0) {
@@ -921,7 +890,7 @@ QVariant EventWidget::fieldContent(EditorField field) {
                     return QVariant();
                 }
             }
-            if (channel < 0) {
+            if (Q_UNLIKELY(channel < 0)) {
                 return QVariant();
             }
             return QVariant(channel);
@@ -930,58 +899,40 @@ QVariant EventWidget::fieldContent(EditorField field) {
         case MidiEventValue: {
             int value = -1;
             for (MidiEvent *event : qAsConst(_events)) {
-                {
-                    ChannelPressureEvent *ev = qobject_cast<ChannelPressureEvent*>(event);
-                    if (ev) {
-                        if (value == -1) {
-                            value = ev->value();
-                        } else if (value != ev->value()) {
-                            return QVariant();
-                        }
+                if (ChannelPressureEvent *ev = protocol_cast<ChannelPressureEvent*>(event)) {
+                    if (value == -1) {
+                        value = ev->value();
+                    } else if (value != ev->value()) {
+                        return QVariant();
+                    }
+                } else if (ControlChangeEvent *ev = protocol_cast<ControlChangeEvent*>(event)) {
+                    if (value == -1) {
+                        value = ev->value();
+                    } else if (value != ev->value()) {
+                        return QVariant();
+                    }
+                } else if (KeyPressureEvent *ev = protocol_cast<KeyPressureEvent*>(event)) {
+                    if (value == -1) {
+                        value = ev->value();
+                    } else if (value != ev->value()) {
+                        return QVariant();
+                    }
+                } else if (PitchBendEvent *ev = protocol_cast<PitchBendEvent*>(event)) {
+                    if (value == -1) {
+                        value = ev->value();
+                    } else if (value != ev->value()) {
+                        return QVariant();
+                    }
+                } else if (TempoChangeEvent *ev = protocol_cast<TempoChangeEvent*>(event)) {
+                    if (value == -1) {
+                        value = ev->beatsPerQuarter();
+                    } else if (value != ev->beatsPerQuarter()) {
+                        return QVariant();
                     }
                 }
-                {
-                    ControlChangeEvent *ev = qobject_cast<ControlChangeEvent*>(event);
-                    if (ev) {
-                        if (value == -1) {
-                            value = ev->value();
-                        } else if (value != ev->value()) {
-                            return QVariant();
-                        }
-                    }
-                }
-                {
-                    KeyPressureEvent *ev = qobject_cast<KeyPressureEvent*>(event);
-                    if (ev) {
-                        if (value == -1) {
-                            value = ev->value();
-                        } else if (value != ev->value()) {
-                            return QVariant();
-                        }
-                    }
-                }
-                {
-                    PitchBendEvent *ev = qobject_cast<PitchBendEvent*>(event);
-                    if (ev) {
-                        if (value == -1) {
-                            value = ev->value();
-                        } else if (value != ev->value()) {
-                            return QVariant();
-                        }
-                    }
-                }
-                {
-                    TempoChangeEvent *ev = qobject_cast<TempoChangeEvent*>(event);
-                    if (ev) {
-                        if (value == -1) {
-                            value = ev->beatsPerQuarter();
-                        } else if (value != ev->beatsPerQuarter()) {
-                            return QVariant();
-                        }
-                    }
-                }
+
             }
-            if (value<0) {
+            if (Q_UNLIKELY(value < 0)) {
                 return QVariant();
             }
             return QVariant(value);
@@ -989,8 +940,7 @@ QVariant EventWidget::fieldContent(EditorField field) {
         case ControlChangeControl: {
             int control = -1;
             for (MidiEvent *event : qAsConst(_events)) {
-                ControlChangeEvent *ev = qobject_cast<ControlChangeEvent*>(event);
-                if (ev) {
+                if (ControlChangeEvent *ev = protocol_cast<ControlChangeEvent*>(event)) {
                     if (control == -1) {
                         control = ev->control();
                     } else if (control != ev->control()) {
@@ -1006,8 +956,7 @@ QVariant EventWidget::fieldContent(EditorField field) {
         case ProgramChangeProgram: {
             int program = -1;
             for (MidiEvent *event : qAsConst(_events)) {
-                ProgChangeEvent *ev = qobject_cast<ProgChangeEvent*>(event);
-                if (ev) {
+                if (ProgChangeEvent *ev = protocol_cast<ProgChangeEvent*>(event)) {
                     if (program == -1) {
                         program = ev->program();
                     } else if (program != ev->program()) {
@@ -1023,8 +972,7 @@ QVariant EventWidget::fieldContent(EditorField field) {
         case KeySignatureKey: {
             int key = -1;
             for (MidiEvent *event : qAsConst(_events)) {
-                KeySignatureEvent *ev = qobject_cast<KeySignatureEvent*>(event);
-                if (ev) {
+                if (KeySignatureEvent *ev = protocol_cast<KeySignatureEvent*>(event)) {
                     if (key == -1) {
                         key = keyIndex(ev->tonality(), ev->minor());
                     } else if (key != keyIndex(ev->tonality(), ev->minor())) {
@@ -1040,8 +988,7 @@ QVariant EventWidget::fieldContent(EditorField field) {
         case TimeSignatureNum: {
             int n = -1;
             for (MidiEvent *event : qAsConst(_events)) {
-                TimeSignatureEvent *ev = qobject_cast<TimeSignatureEvent*>(event);
-                if (ev) {
+                if (TimeSignatureEvent *ev = protocol_cast<TimeSignatureEvent*>(event)) {
                     if (n == -1) {
                         n = ev->num();
                     } else if (n != ev->num()) {
@@ -1049,7 +996,7 @@ QVariant EventWidget::fieldContent(EditorField field) {
                     }
                 }
             }
-            if (n < 0) {
+            if (Q_UNLIKELY(n < 0)) {
                 return QVariant();
             }
             return QVariant(n);
@@ -1057,8 +1004,7 @@ QVariant EventWidget::fieldContent(EditorField field) {
         case TimeSignatureDenom: {
             int n = -1;
             for (MidiEvent *event : qAsConst(_events)) {
-                TimeSignatureEvent *ev = qobject_cast<TimeSignatureEvent*>(event);
-                if (ev) {
+                if (TimeSignatureEvent *ev = protocol_cast<TimeSignatureEvent*>(event)) {
                     if (n == -1) {
                         n = ev->denom();
                     } else if (n != ev->denom()) {
@@ -1066,7 +1012,7 @@ QVariant EventWidget::fieldContent(EditorField field) {
                     }
                 }
             }
-            if (n<0) {
+            if (Q_UNLIKELY(n < 0)) {
                 return QVariant();
             }
             return QVariant(int(qPow(2, n)));
@@ -1074,8 +1020,7 @@ QVariant EventWidget::fieldContent(EditorField field) {
         case TextType: {
             int n = -1;
             for (MidiEvent *event : qAsConst(_events)) {
-                TextEvent *ev = qobject_cast<TextEvent*>(event);
-                if (ev) {
+                if (TextEvent *ev = protocol_cast<TextEvent*>(event)) {
                     if (n == -1) {
                         n = ev->textType();
                     } else if (n != ev->textType()) {
@@ -1092,8 +1037,7 @@ QVariant EventWidget::fieldContent(EditorField field) {
             bool inited = false;
             QString n;
             for (MidiEvent *event : qAsConst(_events)) {
-                TextEvent *ev = qobject_cast<TextEvent*>(event);
-                if (ev) {
+                if (TextEvent *ev = protocol_cast<TextEvent*>(event)) {
                     if (!inited) {
                         n = ev->text();
                     } else if (n.compare(ev->text())) {
@@ -1110,8 +1054,7 @@ QVariant EventWidget::fieldContent(EditorField field) {
         case UnknownType: {
             int n = -1;
             for (MidiEvent *event : qAsConst(_events)) {
-                UnknownEvent *ev = qobject_cast<UnknownEvent*>(event);
-                if (ev) {
+                if (UnknownEvent *ev = protocol_cast<UnknownEvent*>(event)) {
                     if (n == -1) {
                         n = ev->unknownType();
                     } else if (n!=ev->unknownType()) {
@@ -1130,16 +1073,13 @@ QVariant EventWidget::fieldContent(EditorField field) {
             QByteArray data;
             bool inited = false;
             for (MidiEvent *event : qAsConst(_events)) {
-                UnknownEvent *ev = qobject_cast<UnknownEvent*>(event);
-                if (ev) {
+                if (UnknownEvent *ev = protocol_cast<UnknownEvent*>(event)) {
                     if (!inited) {
                         data = ev->data();
                     } else if (data!=ev->data()) {
                         return QVariant();
                     }
-                }
-                SysExEvent *sys = qobject_cast<SysExEvent*>(event);
-                if (sys) {
+                } else if (SysExEvent *sys = protocol_cast<SysExEvent*>(event)) {
                     if (!inited) {
                         data = sys->data();
                     } else if (data!=sys->data()) {

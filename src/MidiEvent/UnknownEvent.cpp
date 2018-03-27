@@ -32,8 +32,8 @@ UnknownEvent::UnknownEvent(const UnknownEvent &other) : MidiEvent(other) {
     _type = other._type;
 }
 
-EventType UnknownEvent::type() const {
-    return UnknownEventType;
+int UnknownEvent::type() const {
+    return Type;
 }
 
 QByteArray UnknownEvent::data(){
@@ -54,7 +54,7 @@ const QByteArray UnknownEvent::save(){
 }
 
 void UnknownEvent::reloadState(ProtocolEntry *entry){
-    UnknownEvent *other = qobject_cast<UnknownEvent*>(entry);
+    UnknownEvent *other = protocol_cast<UnknownEvent*>(entry);
     if(!other){
         return;
     }

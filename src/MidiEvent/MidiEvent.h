@@ -21,7 +21,6 @@
 
 #include <QDataStream>
 #include <QColor>
-#include "../gui/GraphicObject.h"
 #include "../protocol/ProtocolEntry.h"
 #include <QWidget>
 
@@ -41,23 +40,7 @@ enum MidiEventLine {
     UnknownEventLine
 };
 
-enum EventType {
-    MidiEventType,
-    ChannelPressureEventType,
-    ControlChangeEventType,
-    KeyPressureEventType,
-    KeySignatureEventType,
-    NoteOnEventType,
-    OffEventType,
-    OnEventType,
-    PitchBendEventType,
-    ProgramChangeEventType,
-    SystemExclusiveEventType,
-    TempoChangeEventType,
-    TextEventType,
-    TimeSignatureEventType,
-    UnknownEventType
-};
+
 class MidiFile;
 class QSpinBox;
 class QLabel;
@@ -65,16 +48,17 @@ class QWidget;
 class EventWidget;
 class MidiTrack;
 
-class MidiEvent : public ProtocolEntry, public GraphicObject {
+class MidiEvent : public ProtocolEntry {
 
-        Q_OBJECT
 
     public:
-
-
         MidiEvent(ubyte channel, MidiTrack *track);
         MidiEvent(const MidiEvent &other);
-        virtual EventType type() const;
+
+        virtual int type() const qoverride;
+        enum {
+            Type = MidiEventType
+        };
 
         static MidiEvent *loadMidiEvent(QDataStream *content,
                                         bool *ok, bool *endEvent, MidiTrack *track, ubyte startByte = 0,
@@ -99,7 +83,7 @@ class MidiEvent : public ProtocolEntry, public GraphicObject {
         virtual const QString toMessage();
         virtual const QByteArray play();
         virtual const QByteArray save();
-        virtual void draw(QPainter *p, QColor c) qoverride;
+        virtual void draw(QPainter *p, QColor c);
 
         virtual ProtocolEntry *copy() qoverride;
         virtual void reloadState(ProtocolEntry *entry) qoverride;
@@ -115,20 +99,37 @@ class MidiEvent : public ProtocolEntry, public GraphicObject {
 
         virtual void moveToChannel(ubyte channel);
 
+        inline int x() { return _x; }
+        inline short y() { return _y; }
+        inline int width() { return _width; }
+        inline short height() { return _height; }
+
+        inline void setX(int x) { _x = x; }
+        inline void setY(short y) { _y = y; }
+        inline void setWidth(int w) { _width = w; }
+        inline void setHeight(short h) { _height = h; }
+
+        inline bool shown() { return shownInWidget; }
+        inline void setShown(bool b) { shownInWidget = b; }
+
     protected:
+        static ubyte _startByte;
+        static EventWidget *_eventWidget;
 
         MidiFile *midiFile;
-        static EventWidget *_eventWidget;
         MidiTrack *_track;
+
         int _tempID;
         int timePos;
 
+        int _x, _width;
+        short _y;
+        short _height;
+
         ushort numTrack;
-
-        static ubyte _startByte;
-        ubyte numChannel;
         ubyte _line;
-
+        ubyte numChannel : 5;
+        bool shownInWidget : 1;
 };
 
 #endif

@@ -21,11 +21,12 @@
 #include "Selection.h"
 
 #include "../gui/EventWidget.h"
+#include "../midi/MidiFile.h"
 
 Selection *Selection::_selectionInstance = new Selection(qnullptr);
 EventWidget *Selection::_eventWidget = qnullptr;
 
-Selection::Selection(MidiFile *file) {
+Selection::Selection(MidiFile *file) : QObject(file) {
     _file = file;
     if (_eventWidget) {
         _eventWidget->setEvents(_selectedEvents);
@@ -38,19 +39,21 @@ Selection::Selection(Selection &other) {
     _selectedEvents = other._selectedEvents;
 }
 
+int Selection::type() const {
+    return Type;
+}
+
 ProtocolEntry *Selection::copy() {
     return new Selection(*this);
 }
 
 void Selection::reloadState(ProtocolEntry *entry) {
-    Selection *other = qobject_cast<Selection*>(entry);
-    if (!other) {
-        return;
-    }
-    _selectedEvents = other->_selectedEvents;
-    if (_eventWidget) {
-        _eventWidget->setEvents(_selectedEvents);
-        //_eventWidget->reload();
+    if (Selection *other = protocol_cast<Selection*>(entry)) {
+        _selectedEvents = other->_selectedEvents;
+        if (_eventWidget) {
+            _eventWidget->setEvents(_selectedEvents);
+            //_eventWidget->reload();
+        }
     }
 }
 
@@ -73,6 +76,10 @@ const QList<MidiEvent*> &Selection::selectedEvents() {
 }
 
 void Selection::setSelection(const QList<MidiEvent*> &selections) {
+    if (selections.isEmpty() && _selectedEvents.isEmpty()) {
+        // No point in making empty protocol steps
+        return;
+    }
     ProtocolEntry *toCopy = copy();
     _selectedEvents = selections;
     protocol(toCopy, this);
@@ -84,9 +91,16 @@ void Selection::setSelection(const QList<MidiEvent*> &selections) {
 }
 
 void Selection::clearSelection() {
-    setSelection(QList<MidiEvent*>());
+    if (_selectedEvents.isEmpty()) {
+        // No point in making empty protocol steps
+        return;
+    }
+    ProtocolEntry *toCopy = copy();
+    _selectedEvents.clear();
+    protocol(toCopy, this);
     if (_eventWidget) {
         _eventWidget->setEvents(_selectedEvents);
         //_eventWidget->reload();
     }
+    emit selectionChanged();
 }

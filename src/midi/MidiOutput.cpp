@@ -74,20 +74,15 @@ void MidiOutput::sendCommand(MidiEvent *e) {
         _sender->enqueue(e);
 
         if (_settings.alt_stop) {
-            if (e->type() == EventType::NoteOnEventType) {
-                NoteOnEvent *n = qobject_cast<NoteOnEvent *>(e);
-                if (n && n->velocity() > 0) {
+            if (NoteOnEvent *n = protocol_cast<NoteOnEvent *>(e)) {
+                if (n->velocity() > 0) {
                     playedNotes[n->channel()].append(n->note());
-                } else if (n && n->velocity() == 0) {
+                } else {
                     playedNotes[n->channel()].removeOne(n->note());
                 }
-            } else if (e->type() == EventType::OffEventType) {
-                OffEvent *o = qobject_cast<OffEvent *>(e);
-                if (o) {
-                    NoteOnEvent *n = qobject_cast<NoteOnEvent *>(o->onEvent());
-                    if (n) {
-                        playedNotes[n->channel()].removeOne(n->note());
-                    }
+            } else if (OffEvent *o = protocol_cast<OffEvent *>(e)) {
+                if (NoteOnEvent *n = protocol_cast<NoteOnEvent *>(o->onEvent())) {
+                    playedNotes[n->channel()].removeOne(n->note());
                 }
             }
         }

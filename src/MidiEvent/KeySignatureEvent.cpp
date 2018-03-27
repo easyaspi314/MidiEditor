@@ -30,8 +30,8 @@ KeySignatureEvent::KeySignatureEvent(const KeySignatureEvent &other) : MidiEvent
     _minor = other._minor;
 }
 
-EventType KeySignatureEvent::type() const {
-    return KeySignatureEventType;
+int KeySignatureEvent::type() const {
+    return Type;
 }
 
 ubyte KeySignatureEvent::line(){
@@ -61,7 +61,7 @@ ProtocolEntry *KeySignatureEvent::copy(){
 }
 
 void KeySignatureEvent::reloadState(ProtocolEntry *entry){
-    KeySignatureEvent *other = qobject_cast<KeySignatureEvent*>(entry);
+    KeySignatureEvent *other = protocol_cast<KeySignatureEvent*>(entry);
     if(!other){
         return;
     }

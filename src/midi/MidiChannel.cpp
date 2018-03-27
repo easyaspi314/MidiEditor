@@ -61,7 +61,7 @@ QColor MidiChannel::colorByChannelNumber(ubyte number) {
     }
 }
 
-MidiChannel::MidiChannel(MidiFile *f, ubyte num){
+MidiChannel::MidiChannel(MidiFile *f, ubyte num) {
 
     _midiFile = f;
     _num = num;
@@ -91,8 +91,12 @@ ProtocolEntry *MidiChannel::copy(){
     return new MidiChannel(*this);
 }
 
+int MidiChannel::type() const {
+    return Type;
+}
+
 void MidiChannel::reloadState(ProtocolEntry *entry){
-    MidiChannel *other = qobject_cast<MidiChannel*>(entry);
+    MidiChannel *other = protocol_cast<MidiChannel*>(entry);
     if(!other){
         return;
     }
@@ -187,7 +191,7 @@ bool MidiChannel::removeEvent(MidiEvent *event){
 
     ProtocolEntry *toCopy = copy();
     _events->remove(event->midiTime(), event);
-    OnEvent *on = qobject_cast<OnEvent*>(event);
+    OnEvent *on = protocol_cast<OnEvent*>(event);
     if(on && on->offEvent()){
         _events->remove(on->offEvent()->midiTime(), on->offEvent());
     }
@@ -222,7 +226,7 @@ ubyte MidiChannel::progAtTick(int tick){
     }
     if (_events->size() ) {
         while(it != _events->begin()){
-            ProgChangeEvent *ev = qobject_cast<ProgChangeEvent*>(it.value());
+            ProgChangeEvent *ev = protocol_cast<ProgChangeEvent*>(it.value());
             if(ev && it.key()<=tick){
                 return ev->program();
             }
@@ -232,7 +236,7 @@ ubyte MidiChannel::progAtTick(int tick){
 
     // default: first
     for (MidiEvent *event : qAsConst(*_events)){
-        ProgChangeEvent *ev = qobject_cast<ProgChangeEvent*>(event);
+        ProgChangeEvent *ev = protocol_cast<ProgChangeEvent*>(event);
         if(ev){
             return ev->program();
         }

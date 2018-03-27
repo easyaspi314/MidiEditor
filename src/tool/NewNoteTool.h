@@ -23,12 +23,16 @@
 
 class NewNoteTool : public EventTool {
 
-    Q_OBJECT
+    
 
     public:
         NewNoteTool();
         NewNoteTool(NewNoteTool &other);
-        ToolType type() const qoverride;
+
+        int type() const qoverride;
+        enum {
+            Type = NewNoteToolType
+        };
 
         ProtocolEntry *copy() qoverride;
         void reloadState(ProtocolEntry *entry) qoverride;

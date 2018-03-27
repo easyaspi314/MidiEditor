@@ -35,15 +35,21 @@ class Protocol;
 class MidiChannel;
 class MidiTrack;
 
-class MidiFile : public ProtocolEntry {
+class MidiFile : public QObject, public ProtocolEntry {
 
     Q_OBJECT
 
     public:
-        MidiFile(const QString &path, bool *ok, QStringList *log = qnullptr);
-        MidiFile();
+        MidiFile(const QString &path, bool *ok, QStringList *log = qnullptr, QObject *parent = qnullptr);
+        MidiFile(QObject *parent = qnullptr);
         // needed to protocol fileLength
-        MidiFile(int maxTime, Protocol *p);
+        MidiFile(int maxTime, Protocol *, QObject *parent = qnullptr);
+
+        int type() const qoverride;
+        enum {
+            Type = MidiFileType
+        };
+
         bool save(const QString &path);
         QByteArray writeDeltaTime(int time);
         int maxTime();

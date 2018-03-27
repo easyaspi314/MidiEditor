@@ -25,13 +25,15 @@ class OffEvent;
 
 class OnEvent : public MidiEvent{
 
-    Q_OBJECT
+    
 
     public:
         OnEvent(ubyte ch, MidiTrack *track);
         OnEvent(const OnEvent &other);
-        EventType type() const qoverride;
-
+        int type() const qoverride;
+        enum {
+            Type = OnEventType
+        };
         void setOffEvent(OffEvent *event);
         OffEvent *offEvent();
         virtual const QByteArray saveOffEvent();

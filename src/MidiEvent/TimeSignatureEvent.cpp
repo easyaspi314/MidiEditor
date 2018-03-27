@@ -40,8 +40,8 @@ TimeSignatureEvent::TimeSignatureEvent(const TimeSignatureEvent &other):
     num32In4th = other.num32In4th;
 }
 
-EventType TimeSignatureEvent::type() const {
-    return TimeSignatureEventType;
+int TimeSignatureEvent::type() const {
+    return Type;
 }
 ubyte TimeSignatureEvent::num(){
     return numerator;
@@ -82,7 +82,7 @@ ProtocolEntry *TimeSignatureEvent::copy(){
 }
 
 void TimeSignatureEvent::reloadState(ProtocolEntry *entry){
-    TimeSignatureEvent *other = qobject_cast<TimeSignatureEvent*>(entry);
+    TimeSignatureEvent *other = protocol_cast<TimeSignatureEvent*>(entry);
     if(!other){
         return;
     }

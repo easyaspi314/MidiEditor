@@ -24,35 +24,35 @@
 #include <QLabel>
 #include <QFrame>
 
-SettingsWidget::SettingsWidget(QString title, QWidget *parent) :
-		QWidget(parent)
+SettingsWidget::SettingsWidget(const QString &title, QWidget *parent) :
+        QWidget(parent)
 {
-	_title = title;
+    _title = title;
 }
 
 bool SettingsWidget::accept() {
-	return true;
+    return true;
 }
 
 QString SettingsWidget::title() {
-	return _title;
+    return _title;
 }
 
 
-QWidget *SettingsWidget::createInfoBox(QString info) {
-	QLabel *label = new QLabel(info, this);
+QWidget *SettingsWidget::createInfoBox(const QString &info) {
+    QLabel *label = new QLabel(info, this);
     label->setStyleSheet("color:gray;background-color:white;padding:5px");
-	label->setWordWrap(true);
-	label->setAlignment(Qt::AlignJustify);
-	return label;
+    label->setWordWrap(true);
+    label->setAlignment(Qt::AlignJustify);
+    return label;
 }
 
 QWidget *SettingsWidget::separator() {
-	QFrame *f0 = new QFrame(this);
-	f0->setFrameStyle( QFrame::HLine | QFrame::Sunken );
-	return f0;
+    QFrame *f0 = new QFrame(this);
+    f0->setFrameStyle( QFrame::HLine | QFrame::Sunken );
+    return f0;
 }
 
 QIcon SettingsWidget::icon() {
-	return QIcon();
+    return QIcon();
 }

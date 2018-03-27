@@ -133,7 +133,7 @@ void PaintWidget::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 bool PaintWidget::mouseInRect(qreal x, qreal y, qreal width, qreal height) {
-    return mouseBetween(x, y, x+width, y+height);
+    return mouseBetween(x, y, x + width, y + height);
 }
 
 bool PaintWidget::mouseInRect(const QRectF &rect) {
@@ -142,33 +142,38 @@ bool PaintWidget::mouseInRect(const QRectF &rect) {
 
 bool PaintWidget::mouseInWidget(PaintWidget *widget) {
     if (qobject_cast<QScrollArea*>(widget->parentWidget()->parentWidget())) {
-        QRect rect = widget->parentWidget()->rect();
-        return widget->mouseInRect(QRect(widget->mapFromParent(rect.topLeft()),widget->mapFromParent(rect.bottomRight())));
+        const QRect rect = widget->parentWidget()->rect();
+        return widget->mouseInRect(QRectF(widget->mapFromParent(rect.topLeft()),
+                                          widget->mapFromParent(rect.bottomRight())));
     }
     return false;
 }
+
 QRect PaintWidget::relativeRect() {
-    QScrollArea *scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parentWidget());
-    if (scrollArea) {
-        return QRect(mapFrom(parentWidget(), parentWidget()->frameGeometry().topLeft()),
-                mapFrom(parentWidget(), parentWidget()->frameGeometry().bottomRight()));
+    QWidget *parent = parentWidget();
+    // See if the parent's parent is a QScrollArea.
+    // Note: We take the parent's parent.
+    if (qobject_cast<QScrollArea*>(parent->parentWidget())) {
+        const QRect rect = parent->frameGeometry();
+        return QRect(mapFrom(parent, rect.topLeft()),
+                     mapFrom(parent, rect.bottomRight()));
     }
     return rect();
 }
 
 bool PaintWidget::mouseBetween(qreal x1, qreal y1, qreal x2, qreal y2) {
     qreal temp;
-    if (x1>x2) {
+    if (x1 > x2) {
         temp = x1;
         x1 = x2;
         x2 = temp;
     }
-    if (y1>y2) {
+    if (y1 > y2) {
         temp = y1;
         y1 = y2;
         y2 = temp;
     }
-    return mouseOver && mouseX>=x1 && mouseX<=x2 && mouseY>=y1 && mouseY<=y2;
+    return mouseOver && mouseX >= x1 && mouseX <= x2 && mouseY >= y1 && mouseY <= y2;
 }
 
 

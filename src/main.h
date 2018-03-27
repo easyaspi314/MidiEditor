@@ -9,9 +9,7 @@
 #include <QEvent>
 #include "gui/MainWindow.h"
 
-#ifdef Q_OS_UNIX
-[[noreturn]] void handler(int sig);
-#endif
+
 
 class MyApplication : public QApplication
 {

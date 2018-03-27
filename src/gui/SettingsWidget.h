@@ -32,10 +32,10 @@ class SettingsWidget : public QWidget {
 
     public:
 
-        SettingsWidget(QString title, QWidget *parent = qnullptr);
+        SettingsWidget(const QString &title, QWidget *parent = qnullptr);
         QString title();
         virtual bool accept();
-        QWidget *createInfoBox(QString info);
+        QWidget *createInfoBox(const QString &info);
         QWidget *separator();
         virtual QIcon icon();
 

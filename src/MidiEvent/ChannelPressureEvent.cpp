@@ -32,8 +32,8 @@ ChannelPressureEvent::ChannelPressureEvent(const ChannelPressureEvent &other) :
     _value = other._value;
 }
 
-EventType ChannelPressureEvent::type() const {
-    return ChannelPressureEventType;
+int ChannelPressureEvent::type() const {
+    return Type;
 }
 
 ubyte ChannelPressureEvent::line(){
@@ -56,7 +56,7 @@ ProtocolEntry *ChannelPressureEvent::copy(){
 }
 
 void ChannelPressureEvent::reloadState(ProtocolEntry *entry){
-    ChannelPressureEvent *other = qobject_cast<ChannelPressureEvent*>(entry);
+    ChannelPressureEvent *other = protocol_cast<ChannelPressureEvent*>(entry);
     if(!other){
         return;
     }

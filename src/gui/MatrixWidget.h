@@ -41,7 +41,6 @@ class MidiFile;
 class TempoChangeEvent;
 class TimeSignatureEvent;
 class MidiEvent;
-class GraphicObject;
 class NoteOnEvent;
 class TimelineWidget;
 class PianoWidget;

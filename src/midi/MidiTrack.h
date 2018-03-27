@@ -29,7 +29,7 @@ class TextEvent;
 class MidiFile;
 class QColor;
 
-class MidiTrack : public ProtocolEntry {
+class MidiTrack : public QObject, public ProtocolEntry {
 
     Q_OBJECT
 
@@ -37,7 +37,12 @@ class MidiTrack : public ProtocolEntry {
 
         MidiTrack(MidiFile *file);
         MidiTrack(const MidiTrack &other);
-        virtual ~MidiTrack() qoverride;
+        ~MidiTrack() qoverride;
+
+        int type() const qoverride;
+        enum {
+            Type = MidiTrackType
+        };
 
         QString name();
         void setName(const QString &name);
@@ -59,8 +64,8 @@ class MidiTrack : public ProtocolEntry {
         void setMuted(bool muted);
         bool muted();
 
-        virtual ProtocolEntry *copy() qoverride;
-        virtual void reloadState(ProtocolEntry *entry) qoverride;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
 
         QColor *color();
 

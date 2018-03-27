@@ -54,7 +54,7 @@ class NoteOnEvent;
  */
 class MidiChannel : public ProtocolEntry {
 
-    Q_OBJECT
+
 
     public:
 
@@ -64,6 +64,11 @@ class MidiChannel : public ProtocolEntry {
          * Sets the channels file to f.
          */
         MidiChannel(MidiFile *f, ubyte num);
+
+        int type() const qoverride;
+        enum {
+            Type = MidiChannelType
+        };
 
         /**
          * \brief creates a copy of other.

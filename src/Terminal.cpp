@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 /*
  * MidiEditor
- * Copyright (C) 2010 Markus Schwenk
+ * Copyright (C) 2010  Markus Schwenk
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

@@ -32,13 +32,13 @@
 
 StandardTool::StandardTool() : EventTool() {
 
-    setImage(":/run_environment/graphics/tool/select.png");
+    setImage(":/select.png");
 
     moveTool = new EventMoveTool(true, true);
     moveTool->setStandardTool(this);
     sizeChangeTool = new SizeChangeTool();
     sizeChangeTool->setStandardTool(this);
-    selectTool = new SelectTool(SelectionType::Box);
+    selectTool = new SelectTool(SelectType::Box);
     selectTool->setStandardTool(this);
     newNoteTool = new NewNoteTool();
     newNoteTool->setStandardTool(this);
@@ -53,8 +53,8 @@ StandardTool::StandardTool(StandardTool &other) : EventTool(other) {
     newNoteTool = other.newNoteTool;
 }
 
-ToolType StandardTool::type() const {
-    return ToolType::Standard;
+int StandardTool::type() const {
+    return Type;
 }
 
 void StandardTool::draw(QPainter *painter) {
@@ -213,7 +213,7 @@ ProtocolEntry *StandardTool::copy() {
 }
 
 void StandardTool::reloadState(ProtocolEntry *entry) {
-    StandardTool *other = qobject_cast<StandardTool *>(entry);
+    StandardTool *other = protocol_cast<StandardTool *>(entry);
     if (!other) {
         return;
     }

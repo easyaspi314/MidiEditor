@@ -23,7 +23,7 @@
 #include "../MidiEvent/TextEvent.h"
 #include "MidiFile.h"
 
-MidiTrack::MidiTrack(MidiFile *file) : ProtocolEntry() {
+MidiTrack::MidiTrack(MidiFile *file) : QObject(file) {
 
     _number = 0;
     _nameEvent = qnullptr;
@@ -34,7 +34,7 @@ MidiTrack::MidiTrack(MidiFile *file) : ProtocolEntry() {
     _assignedChannel = 31;
 }
 
-MidiTrack::MidiTrack(const MidiTrack &other)/*: ProtocolEntry(other)*/ {
+MidiTrack::MidiTrack(const MidiTrack &other) {
     _number = other._number;
     _assignedChannel = other._assignedChannel;
     _nameEvent = other._nameEvent;
@@ -48,6 +48,9 @@ MidiTrack::~MidiTrack(){
 
 }
 
+int MidiTrack::type() const {
+    return Type;
+}
 MidiFile *MidiTrack::file(){
     return _file;
 }
@@ -123,7 +126,7 @@ ProtocolEntry *MidiTrack::copy(){
 }
 
 void MidiTrack::reloadState(ProtocolEntry *entry){
-    MidiTrack *other = qobject_cast<MidiTrack*>(entry);
+    MidiTrack *other = protocol_cast<MidiTrack*>(entry);
     if(!other){
         return;
     }

@@ -374,6 +374,9 @@ inline QLineF qLineF(const QLineF &other) {
 inline QLineF qLineF(qreal x1, qreal y1, qreal x2, qreal y2) {
     return qLineF(QLineF(x1, y1, x2, y2));
 }
+inline QLineF qLineF(const QPointF &pt1, const QPointF &pt2) {
+    return qLineF(QLineF(pt1, pt2));
+}
 inline QPolygonF qPolygonF(const QPolygonF &other) {
     if (_settings.antialiasing) {
         return other;
@@ -381,7 +384,7 @@ inline QPolygonF qPolygonF(const QPolygonF &other) {
         return QPolygonF(other.toPolygon());
     }
 }
-inline QPointF qPointF(QPointF  other) {
+inline QPointF qPointF(const QPointF &other) {
     if (_settings.antialiasing) {
         return other;
     } else {

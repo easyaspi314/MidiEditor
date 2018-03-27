@@ -1,5 +1,22 @@
 ﻿// This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+/*
+ * MidiEditor
+ * Copyright (C) 2010  Markus Schwenk
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.+
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "MainWindow.h"
 
 #include <QAction>
@@ -81,7 +98,8 @@ void MainWindow::ioReady(bool isInput) {
 
 void MainWindow::dropEvent(QDropEvent *ev)
 {
-    for (const QUrl &url : ev->mimeData()->urls()) {
+    const QList<QUrl> urls = ev->mimeData()->urls();
+    for (const QUrl &url : urls) {
         QString newFile = url.toLocalFile();
         if (!newFile.isEmpty()) {
             loadFile(newFile);
@@ -117,7 +135,7 @@ void MainWindow::setFile(MidiFile *file) {
     eventWidget()->setFile(file);
 
     Tool::setFile(file);
-    this->file = file;
+    this->_file = file;
     connect(file, &MidiFile::trackChanged, this, &MainWindow::updateTrackMenu);
     //setWindowTitle(QApplication::applicationName());
     setWindowFilePath(file->path());
@@ -204,8 +222,8 @@ void MainWindow::play() {
                 break;
         }
     }
-    if (file && !MidiInput::instance()->recording() && !MidiPlayer::instance()->isPlaying()) {
-        mw_matrixWidget->timeMsChanged(file->msOfTick(file->cursorTick()), true);
+    if (_file && !MidiInput::instance()->recording() && !MidiPlayer::instance()->isPlaying()) {
+        mw_matrixWidget->timeMsChanged(_file->msOfTick(_file->cursorTick()), true);
 
         _miscWidget->setEnabled(false);
         channelWidget->setEnabled(false);
@@ -214,7 +232,7 @@ void MainWindow::play() {
         _trackWidget->setEnabled(false);
         eventWidget()->setEnabled(false);
 
-        MidiPlayer::instance()->play(file);
+        MidiPlayer::instance()->play(_file);
 
         connect(MidiPlayer::player(), &PlayerThread::playerStopped, this, SIGNAL_OL(MainWindow, stop));
 
@@ -256,20 +274,20 @@ void MainWindow::record() {
                 break;
         }
     }
-    if (!file) {
+    if (!_file) {
         newFile();
     }
 
     if (!MidiInput::instance()->recording() && !MidiPlayer::instance()->isPlaying()) {
         // play current file
-        if (file) {
+        if (_file) {
 
-            if (file->pauseTick() > 0) {
-                file->setCursorTick(file->pauseTick());
-                file->setPauseTick(0);
+            if (_file->pauseTick() > 0) {
+                _file->setCursorTick(_file->pauseTick());
+                _file->setPauseTick(0);
             }
 
-            mw_matrixWidget->timeMsChanged(file->msOfTick(file->cursorTick()), true);
+            mw_matrixWidget->timeMsChanged(_file->msOfTick(_file->cursorTick()), true);
 
             _miscWidget->setEnabled(false);
             channelWidget->setEnabled(false);
@@ -280,7 +298,7 @@ void MainWindow::record() {
 #ifdef ENABLE_REMOTE
             _remoteServer->record();
 #endif
-            MidiPlayer::instance()->play(file);
+            MidiPlayer::instance()->play(_file);
             MidiInput::instance()->startInput();
             connect(MidiPlayer::player(), &PlayerThread::playerStopped, this, SIGNAL_OL(MainWindow, stop));
             #ifdef Q_OS_WIN32
@@ -293,9 +311,9 @@ void MainWindow::record() {
 
 
 void MainWindow::pause() {
-    if (file) {
+    if (_file) {
         if (MidiPlayer::instance()->isPlaying()) {
-            file->setPauseTick(file->tick(MidiPlayer::instance()->timeMs()));
+            _file->setPauseTick(_file->tick(MidiPlayer::instance()->timeMs()));
             stop(false, false, false);
         }
     }
@@ -305,7 +323,7 @@ void MainWindow::stop() {
 }
 void MainWindow::stop(bool autoConfirmRecord, bool addEvents, bool resetPause) {
 
-    if (!file) {
+    if (!_file) {
         return;
     }
 
@@ -313,7 +331,7 @@ void MainWindow::stop(bool autoConfirmRecord, bool addEvents, bool resetPause) {
 
 
     if (resetPause) {
-        file->setPauseTick(-1);
+        _file->setPauseTick(-1);
         mw_matrixWidget->update();
     }
     if (!MidiInput::instance()->recording() && MidiPlayer::instance()->isPlaying()) {
@@ -332,7 +350,7 @@ void MainWindow::stop(bool autoConfirmRecord, bool addEvents, bool resetPause) {
         panic();
     }
 
-    MidiTrack *track = file->track(NewNoteTool::editTrack());
+    MidiTrack *track = _file->track(NewNoteTool::editTrack());
     if (!track) {
         return;
     }
@@ -354,7 +372,7 @@ void MainWindow::stop(bool autoConfirmRecord, bool addEvents, bool resetPause) {
         if (events.isEmpty() && !autoConfirmRecord) {
             QMessageBox::information(this, "Information", "No events recorded.");
         } else {
-            RecordDialog *dialog = new RecordDialog(file, events, this);
+            RecordDialog *dialog = new RecordDialog(_file, events, this);
             dialog->setModal(true);
             if (!autoConfirmRecord) {
                 dialog->show();
@@ -368,68 +386,68 @@ void MainWindow::stop(bool autoConfirmRecord, bool addEvents, bool resetPause) {
 }
 
 void MainWindow::forward() {
-    if (!file) return;
+    if (!_file) return;
 
     QList<TimeSignatureEvent*> *eventlist = new QList<TimeSignatureEvent*>;
     int ticksleft;
-    int oldTick = file->cursorTick();
-    if (file->pauseTick() > 0) {
-        oldTick = file->pauseTick();
+    int oldTick = _file->cursorTick();
+    if (_file->pauseTick() > 0) {
+        oldTick = _file->pauseTick();
     }
     if (MidiPlayer::instance()->isPlaying() && !MidiInput::instance()->recording()) {
-        oldTick = file->tick(MidiPlayer::instance()->timeMs());
+        oldTick = _file->tick(MidiPlayer::instance()->timeMs());
         stop(true);
     }
-    file->measure(oldTick, oldTick, &eventlist, &ticksleft);
+    _file->measure(oldTick, oldTick, &eventlist, &ticksleft);
 
     int newTick = oldTick - ticksleft + eventlist->last()->ticksPerMeasure();
-    file->setPauseTick(0);
-    if (newTick <= file->endTick()) {
-        file->setCursorTick(newTick);
-        mw_matrixWidget->timeMsChanged(file->msOfTick(newTick), true);
+    _file->setPauseTick(0);
+    if (newTick <= _file->endTick()) {
+        _file->setCursorTick(newTick);
+        mw_matrixWidget->timeMsChanged(_file->msOfTick(newTick), true);
     }
     mw_matrixWidget->update();
     mw_timelineWidget->update();
 }
 
 void MainWindow::back() {
-    if (!file) return;
+    if (!_file) return;
 
     QList<TimeSignatureEvent*> *eventlist = new QList<TimeSignatureEvent*>;
     int ticksleft;
-    int oldTick = file->cursorTick();
-    if (file->pauseTick() > 0) {
-        oldTick = file->pauseTick();
+    int oldTick = _file->cursorTick();
+    if (_file->pauseTick() > 0) {
+        oldTick = _file->pauseTick();
     }
     if (MidiPlayer::instance()->isPlaying() && !MidiInput::instance()->recording()) {
-        oldTick = file->tick(MidiPlayer::instance()->timeMs());
+        oldTick = _file->tick(MidiPlayer::instance()->timeMs());
         stop(true);
     }
-    file->measure(oldTick, oldTick, &eventlist, &ticksleft);
+    _file->measure(oldTick, oldTick, &eventlist, &ticksleft);
     int newTick = oldTick;
     if (ticksleft > 0) {
         newTick -= ticksleft;
     } else {
         newTick -= eventlist->last()->ticksPerMeasure();
     }
-    file->measure(newTick, newTick, &eventlist, &ticksleft);
+    _file->measure(newTick, newTick, &eventlist, &ticksleft);
     if (ticksleft > 0) {
         newTick -= ticksleft;
     }
-    file->setPauseTick(0);
+    _file->setPauseTick(0);
     if (newTick > 0) {
-        file->setCursorTick(newTick);
-        mw_matrixWidget->timeMsChanged(file->msOfTick(newTick), true);
+        _file->setCursorTick(newTick);
+        mw_matrixWidget->timeMsChanged(_file->msOfTick(newTick), true);
     }
     mw_matrixWidget->update();
     mw_timelineWidget->update();
 }
 
 void MainWindow::backToBegin() {
-    if (!file) return;
+    if (!_file) return;
 
-    file->setPauseTick(0);
-    file->setCursorTick(0);
+    _file->setPauseTick(0);
+    _file->setCursorTick(0);
 
     mw_matrixWidget->update();
     mw_timelineWidget->update();
@@ -437,19 +455,19 @@ void MainWindow::backToBegin() {
 
 void MainWindow::save() {
 
-    if (!file) return;
+    if (!_file) return;
 
-    if (QFile(file->path()).exists()) {
+    if (QFile(_file->path()).exists()) {
 
         bool printMuteWarning = false;
 
         for (ubyte i = 0; i < 16; i++) {
-            MidiChannel *ch = file->channel(i);
+            MidiChannel *ch = _file->channel(i);
             if (ch->mute()) {
                 printMuteWarning = true;
             }
         }
-        const QList<MidiTrack *> *tracks = file->tracks();
+        const QList<MidiTrack *> *tracks = _file->tracks();
         for (MidiTrack *track : *tracks) {
             if (track->muted()) {
                 printMuteWarning = true;
@@ -462,7 +480,7 @@ void MainWindow::save() {
                     "Save file");
         }
 
-        if (!file->save(file->path())) {
+        if (!_file->save(_file->path())) {
             QMessageBox::warning(this,
                     "Error",
                     "The file could not be saved. Please make sure that the destination directory exists and that you have the correct access rights to write into this directory.");
@@ -476,9 +494,9 @@ void MainWindow::save() {
 
 void MainWindow::saveas() {
 
-    if (!file) return;
+    if (!_file) return;
 
-    QString oldPath = file->path();
+    QString oldPath = _file->path();
     QFile *f = new QFile(oldPath);
     QString dir = startDirectory;
     if (f->exists()) {
@@ -497,17 +515,17 @@ void MainWindow::saveas() {
         newPath.append(".mid");
     }
 
-    if (file->save(newPath)) {
+    if (_file->save(newPath)) {
 
         bool printMuteWarning = false;
 
         for (ubyte i = 0; i < 16; i++) {
-            MidiChannel *ch = file->channel(i);
+            MidiChannel *ch = _file->channel(i);
             if (ch->mute() || !ch->visible()) {
                 printMuteWarning = true;
             }
         }
-        for (MidiTrack *track : *(file->tracks())) {
+        for (MidiTrack *track : *(_file->tracks())) {
             if (track->muted() || track->hidden()) {
                 printMuteWarning = true;
             }
@@ -519,9 +537,9 @@ void MainWindow::saveas() {
                     "Save file");
         }
 
-        file->setPath(newPath);
+        _file->setPath(newPath);
         //setWindowTitle(QApplication::applicationName()+" - " +file->path()+"[*]");
-        setWindowFilePath(file->path());
+        setWindowFilePath(_file->path());
         updateRecentPathsList();
         setWindowModified(false);
     } else {
@@ -533,7 +551,7 @@ void MainWindow::saveas() {
 bool MainWindow::saveDialog() {
     QMessageBox box(QMessageBox::Question,
                          "Save file?",
-                         "Save changes to " + (file->path().isEmpty() ? "Untitled Document" : file->path()) + " before closing?",
+                         "Save changes to " + (_file->path().isEmpty() ? "Untitled Document" : _file->path()) + " before closing?",
                          (QMessageBox::Save | QMessageBox::Cancel | QMessageBox::Discard),
                          this);
     // fancy slide-down dialogs on macOS
@@ -543,8 +561,8 @@ bool MainWindow::saveDialog() {
     {
         case QMessageBox::Save: {
             // save
-            if (QFile(file->path()).exists()) {
-                file->save(file->path());
+            if (QFile(_file->path()).exists()) {
+                _file->save(_file->path());
             } else {
                 saveas();
             }
@@ -563,9 +581,9 @@ bool MainWindow::saveDialog() {
 }
 void MainWindow::load() {
     QString oldPath = startDirectory;
-    if (file) {
-        oldPath = file->path();
-        if (file->modified()) {
+    if (_file) {
+        oldPath = _file->path();
+        if (_file->modified()) {
             if (!saveDialog()) {
                 return;
             }
@@ -587,17 +605,17 @@ void MainWindow::load() {
 
 void MainWindow::loadFile(const QString &nfile) {
     QString oldPath = startDirectory;
-    if (file) {
-        oldPath = file->path();
-        if (file->modified()) {
+    if (_file) {
+        oldPath = _file->path();
+        if (_file->modified()) {
             switch (QMessageBox::question(this, "Save file?", "Save file " %
-                file->path() %
+                _file->path() %
                 " before closing?", "Save", "Close without saving", "Cancel", 0, 2))
             {
             case 0: {
                 // save
-                if (QFile(file->path()).exists()) {
-                    file->save(file->path());
+                if (QFile(_file->path()).exists()) {
+                    _file->save(_file->path());
                 }
                 else {
                     saveas();
@@ -633,26 +651,26 @@ void MainWindow::openFile(const QString &filePath) {
     }
 
     startDirectory = QFileInfo(nf).absoluteDir().path();
-
-    MidiFile *mf = new MidiFile(filePath, &ok);
+    QStringList list;
+    MidiFile *mf = new MidiFile(filePath, &ok, &list, this);
 
     if (ok) {
         stop();
         setFile(mf);
         updateRecentPathsList();
     } else {
-        QMessageBox::warning(this, "Error", "The file is damaged and cannot be opened.");
+        QMessageBox::warning(this, "Error", _("The file is damaged and cannot be opened.").arg(list.join('\n')));
         delete mf;
     }
 }
 
 void MainWindow::redo() {
-    if (file) file->protocol()->redo(true);
+    if (_file) _file->protocol()->redo(true);
     updateTrackMenu();
 }
 
 void MainWindow::undo() {
-    if (file) file->protocol()->undo(true);
+    if (_file) _file->protocol()->undo(true);
     updateTrackMenu();
 }
 
@@ -675,22 +693,22 @@ void MainWindow::renameTrackMenuClicked(QAction *action) {
 
 void MainWindow::renameTrack(ushort tracknumber) {
 
-    if (!file) {
+    if (!_file) {
         return;
     }
 
-    file->protocol()->startNewAction("Edit Track Name");
+    _file->protocol()->startNewAction("Edit Track Name");
 
     bool ok;
     QString text = QInputDialog::getText(this, "Set Track Name",
          _("Track name (Track %1)").arg(tracknumber),
          QLineEdit::Normal,
-         file->tracks()->at(tracknumber)->name(), &ok);
+         _file->tracks()->at(tracknumber)->name(), &ok);
     if (ok && !text.isEmpty()) {
-        file->tracks()->at(tracknumber)->setName(text);
+        _file->tracks()->at(tracknumber)->setName(text);
     }
 
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
     updateTrackMenu();
 }
 
@@ -701,36 +719,36 @@ void MainWindow::removeTrackMenuClicked(QAction *action) {
 
 void MainWindow::removeTrack(ushort tracknumber) {
 
-    if (!file) {
+    if (!_file) {
         return;
     }
-    MidiTrack *track = file->track(tracknumber);
-    file->protocol()->startNewAction("Remove track");
+    MidiTrack *track = _file->track(tracknumber);
+    _file->protocol()->startNewAction("Remove track");
     for (MidiEvent *event : Selection::instance()->selectedEvents()) {
         if (event->track() == track) {
             EventTool::deselectEvent(event);
         }
     }
-    if (!file->removeTrack(track)) {
+    if (!_file->removeTrack(track)) {
         QMessageBox::warning(this, "Error", "The selected track can\'t be removed!\n It\'s the last track of the file.");
     }
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
     updateTrackMenu();
 }
 
 void MainWindow::addTrack() {
 
-    if (file) {
+    if (_file) {
 
         bool ok;
         QString text = QInputDialog::getText(this, "Set Track Name",
              "Track name (New Track)", QLineEdit::Normal,
              "New Track", &ok);
         if (ok && !text.isEmpty()) {
-            file->protocol()->startNewAction("Add track");
-            file->addTrack();
-            file->tracks()->at(file->numTracks()-1)->setName(text);
-            file->protocol()->endAction();
+            _file->protocol()->startNewAction("Add track");
+            _file->addTrack();
+            _file->tracks()->at(_file->numTracks()-1)->setName(text);
+            _file->protocol()->endAction();
 
             updateTrackMenu();
         }
@@ -738,135 +756,134 @@ void MainWindow::addTrack() {
 }
 
 void MainWindow::muteAllTracks() {
-    if (!file) return;
-    file->protocol()->startNewAction("Mute all tracks", qnullptr, false);
-    for (MidiTrack *track : *(file->tracks())) {
+    if (!_file) return;
+    _file->protocol()->startNewAction("Mute all tracks", qnullptr, false);
+    for (MidiTrack *track : *(_file->tracks())) {
         track->setMuted(true);
     }
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
     _trackWidget->update();
 }
 
 void MainWindow::unmuteAllTracks() {
-    if (!file) return;
-    file->protocol()->startNewAction("All tracks audible", qnullptr, false);
-    for (MidiTrack *track : *(file->tracks())) {
+    if (!_file) return;
+    _file->protocol()->startNewAction("All tracks audible", qnullptr, false);
+    for (MidiTrack *track : *(_file->tracks())) {
         track->setMuted(false);
     }
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
     _trackWidget->update();
 }
 
 void MainWindow::allTracksVisible() {
-    if (!file) return;
-    file->protocol()->startNewAction("Show all tracks", qnullptr, false);
-    for (MidiTrack *track : *(file->tracks())) {
+    if (!_file) return;
+    _file->protocol()->startNewAction("Show all tracks", qnullptr, false);
+    for (MidiTrack *track : *(_file->tracks())) {
         track->setHidden(false);
     }
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
     _trackWidget->update();
 }
 
 void MainWindow::allTracksInvisible() {
-    if (!file) return;
-    file->protocol()->startNewAction("Hide all tracks", qnullptr, false);
-    for (MidiTrack *track : *(file->tracks())) {
+    if (!_file) return;
+    _file->protocol()->startNewAction("Hide all tracks", qnullptr, false);
+    for (MidiTrack *track : *(_file->tracks())) {
         track->setHidden(true);
     }
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
     _trackWidget->update();
 }
 
 void MainWindow::showTrackMenuClicked(QAction *action) {
     ushort track = ushort(action->data().toUInt());
-    if (file) {
-        file->protocol()->startNewAction("Show track", qnullptr, false);
-        file->track(track)->setHidden(!(action->isChecked()));
+    if (_file) {
+        _file->protocol()->startNewAction("Show track", qnullptr, false);
+        _file->track(track)->setHidden(!(action->isChecked()));
         updateTrackMenu();
         _trackWidget->update();
-        file->protocol()->endAction();
+        _file->protocol()->endAction();
     }
 }
 
 void MainWindow::muteTrackMenuClicked(QAction *action) {
     ushort track = ushort(action->data().toUInt());
-    if (file) {
-        file->protocol()->startNewAction("Mute track", qnullptr, false);
-        file->track(track)->setMuted(action->isChecked());
+    if (_file) {
+        _file->protocol()->startNewAction("Mute track", qnullptr, false);
+        _file->track(track)->setMuted(action->isChecked());
         updateTrackMenu();
         _trackWidget->update();
-        file->protocol()->endAction();
+        _file->protocol()->endAction();
     }
 }
 
 
 void MainWindow::selectAllFromChannel(QAction *action) {
 
-    if (!file) {
+    if (!_file) {
         return;
     }
     ubyte channel = ubyte(action->data().toInt());
-    file->protocol()->startNewAction(_("Select all events from channel %1").arg(channel), qnullptr, false);
+    _file->protocol()->startNewAction(_("Select all events from channel %1").arg(channel), qnullptr, false);
     EventTool::clearSelection();
-    file->channel(channel)->setVisible(true);
-    for (MidiEvent *e : file->channel(channel)->eventMap()->values()) {
+    _file->channel(channel)->setVisible(true);
+    for (MidiEvent *e : _file->channel(channel)->eventMap()->values()) {
         if (e->track()->hidden()) {
             e->track()->setHidden(false);
         }
         EventTool::selectEvent(e, false);
     }
 
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
 }
 
 void MainWindow::selectAllFromTrack(QAction *action) {
 
-    if (!file) {
+    if (!_file) {
         return;
     }
 
     ushort track = ushort(action->data().toUInt());
-    file->protocol()->startNewAction("Select all events from track "+QString::number(track), qnullptr, false);
+    _file->protocol()->startNewAction("Select all events from track "+QString::number(track), qnullptr, false);
     EventTool::clearSelection();
-    file->track(track)->setHidden(false);
+    _file->track(track)->setHidden(false);
     for (ubyte channel = 0; channel < 16; channel++) {
-        for (MidiEvent *e : file->channel(channel)->eventMap()->values()) {
+        for (MidiEvent *e : _file->channel(channel)->eventMap()->values()) {
             if (e->track()->number() == track) {
-                file->channel(e->channel())->setVisible(true);
+                _file->channel(e->channel())->setVisible(true);
                 EventTool::selectEvent(e, false);
             }
         }
     }
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
 }
 
 void MainWindow::selectAll() {
 
-    if (!file) {
+    if (!_file) {
         return;
     }
 
-    file->protocol()->startNewAction("Select all", qnullptr, false);
+    _file->protocol()->startNewAction("Select all", qnullptr, false);
 
     for (ubyte i = 0; i < 16; i++) {
-        for (MidiEvent *event : file->channel(i)->eventMap()->values()) {
+        for (MidiEvent *event : _file->channel(i)->eventMap()->values()) {
             EventTool::selectEvent(event, false, true);
         }
     }
 
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
 }
 
 void MainWindow::transposeNSemitones() {
 
-    if (!file) {
+    if (!_file) {
         return;
     }
 
     QList<NoteOnEvent*> events;
     for (MidiEvent *event : Selection::instance()->selectedEvents()) {
-        NoteOnEvent *on = qobject_cast<NoteOnEvent*>(event);
-        if (on) {
+        if (NoteOnEvent *on = protocol_cast<NoteOnEvent*>(event)) {
             events.append(on);
         }
     }
@@ -875,7 +892,7 @@ void MainWindow::transposeNSemitones() {
         return;
     }
 
-    TransposeDialog *d = new TransposeDialog(events, file, this);
+    TransposeDialog *d = new TransposeDialog(events, _file, this);
     d->setModal(true);
     d->show();
 }
@@ -912,19 +929,19 @@ void MainWindow::editChannel(int i) {
 }
 
 void MainWindow::editChannel(ubyte i, bool assign) {
-    if (!file) {
+    if (!_file) {
         return;
     }
     NewNoteTool::setEditChannel(i);
 
     // assign channel to track
-    if (assign && file && file->track(NewNoteTool::editTrack())) {
-        file->track(NewNoteTool::editTrack())->assignChannel(i);
+    if (assign && _file && _file->track(NewNoteTool::editTrack())) {
+        _file->track(NewNoteTool::editTrack())->assignChannel(i);
     }
 
     MidiOutput::instance()->setStandardChannel(i);
 
-    ubyte prog = file->channel(i)->progAtTick(file->cursorTick());
+    ubyte prog = _file->channel(i)->progAtTick(_file->cursorTick());
     MidiOutput::instance()->sendProgram(i, prog);
 
     updateChannelMenu();
@@ -938,8 +955,8 @@ void MainWindow::editTrack(ushort i, bool assign) {
     NewNoteTool::setEditTrack(i);
 
     // assign channel to track
-    if (assign && file && file->track(i)) {
-        file->track(i)->assignChannel(NewNoteTool::editChannel());
+    if (assign && _file && _file->track(i)) {
+        _file->track(i)->assignChannel(NewNoteTool::editChannel());
     }
     updateTrackMenu();
 }
@@ -955,7 +972,7 @@ void MainWindow::setInstrumentForChannel(ubyte i) {
     if (i > 16) {
         return;
     }
-    InstrumentChooser *d = new InstrumentChooser(file, i, this);
+    InstrumentChooser *d = new InstrumentChooser(_file, i, this);
     d->setModal(true);
     d->exec();
 
@@ -966,7 +983,7 @@ void MainWindow::setInstrumentForChannel(ubyte i) {
 }
 
 void MainWindow::instrumentChannel(QAction *action) {
-    if (file) {
+    if (_file) {
         setInstrumentForChannel(ubyte(action->data().toUInt()));
     }
 }
@@ -1002,42 +1019,42 @@ void MainWindow::changeMiscMode(int mode) {
 
 
 void MainWindow::muteAllChannels() {
-    if (!file) return;
-    file->protocol()->startNewAction("Mute all channels", qnullptr, false);
+    if (!_file) return;
+    _file->protocol()->startNewAction("Mute all channels", qnullptr, false);
     for (ubyte i = 0; i < 19; i++) {
-        file->channel(i)->setMute(true);
+        _file->channel(i)->setMute(true);
     }
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
     channelWidget->update();
 }
 
 void MainWindow::unmuteAllChannels() {
-    if (!file) return;
-    file->protocol()->startNewAction("All channels audible", qnullptr, false);
+    if (!_file) return;
+    _file->protocol()->startNewAction("All channels audible", qnullptr, false);
     for (ubyte i = 0; i < 19; i++) {
-        file->channel(i)->setMute(false);
+        _file->channel(i)->setMute(false);
     }
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
     channelWidget->update();
 }
 
 void MainWindow::allChannelsVisible() {
-    if (!file) return;
-    file->protocol()->startNewAction("All channels visible", qnullptr, false);
+    if (!_file) return;
+    _file->protocol()->startNewAction("All channels visible", qnullptr, false);
     for (ubyte i = 0; i < 19; i++) {
-        file->channel(i)->setVisible(true);
+        _file->channel(i)->setVisible(true);
     }
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
     channelWidget->update();
 }
 
 void MainWindow::allChannelsInvisible() {
-    if (!file) return;
-    file->protocol()->startNewAction("Hide all channels", qnullptr, false);
+    if (!_file) return;
+    _file->protocol()->startNewAction("Hide all channels", qnullptr, false);
     for (ubyte i = 0; i < 19; i++) {
-        file->channel(i)->setVisible(false);
+        _file->channel(i)->setVisible(false);
     }
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
     channelWidget->update();
 }
 
@@ -1054,9 +1071,9 @@ void MainWindow::about() {
 }
 
 void MainWindow::setFileLengthMs() {
-    if (!file) return;
+    if (!_file) return;
 
-    FileLengthDialog *d = new FileLengthDialog(file, this);
+    FileLengthDialog *d = new FileLengthDialog(_file, this);
     d->setModal(true);
     d->show();
 }
@@ -1066,14 +1083,14 @@ void MainWindow::setStartDir(const QString &dir) {
 }
 
 void MainWindow::newFile() {
-    if (file && file->modified()) {
+    if (_file && _file->modified()) {
         if (!saveDialog()) {
             return;
         }
     }
 
     // create new File
-    MidiFile *f = new MidiFile();
+    MidiFile *f = new MidiFile(this);
 
     setFile(f);
 
@@ -1097,7 +1114,7 @@ void MainWindow::scaleSelection() {
     bool ok;
     double scale = QInputDialog::getDouble(this, "Scale factor",
             "Scale factor:", 1.0, 0, INT_MAX, 17, &ok);
-    if (ok && scale > 0 && !Selection::instance()->selectedEvents().isEmpty() && file) {
+    if (ok && scale > 0 && !Selection::instance()->selectedEvents().isEmpty() && _file) {
         // find minimum
         int minTime = INT_MAX;
         for (MidiEvent *e : Selection::instance()->selectedEvents()) {
@@ -1106,21 +1123,21 @@ void MainWindow::scaleSelection() {
             }
         }
 
-        file->protocol()->startNewAction("Scale events", qnullptr);
+        _file->protocol()->startNewAction("Scale events", qnullptr);
         for (MidiEvent *e : Selection::instance()->selectedEvents()) {
-            e->setMidiTime((e->midiTime() - minTime) * scale + minTime);
-            OnEvent *on = qobject_cast<OnEvent*>(e);
-            if (on) {
+            // Use qFloor because we don't want to have rounding issues.
+            e->setMidiTime(qFloor((e->midiTime() - minTime) * scale + minTime));
+            if (OnEvent *on = protocol_cast<OnEvent*>(e)) {
                 MidiEvent *off = on->offEvent();
-                off->setMidiTime((off->midiTime() - minTime) * scale + minTime);
+                off->setMidiTime(qFloor((off->midiTime() - minTime) * scale + minTime));
             }
         }
-        file->protocol()->endAction();
+        _file->protocol()->endAction();
     }
 }
 
 void MainWindow::alignLeft() {
-    if (Selection::instance()->selectedEvents().size() > 1 && file) {
+    if (Selection::instance()->selectedEvents().size() > 1 && _file) {
         // find minimum
         int minTime = INT_MAX;
         for (MidiEvent *e : Selection::instance()->selectedEvents()) {
@@ -1129,26 +1146,26 @@ void MainWindow::alignLeft() {
             }
         }
 
-        file->protocol()->startNewAction("Align left", new QImage(":/run_environment/graphics/tool/align_left.png"));
+        _file->protocol()->startNewAction("Align left", new QImage(":/align_left.png"));
         for (MidiEvent *e : Selection::instance()->selectedEvents()) {
             int onTime = e->midiTime();
             e->setMidiTime(minTime);
-            OnEvent *on = qobject_cast<OnEvent*>(e);
+            OnEvent *on = protocol_cast<OnEvent*>(e);
             if (on) {
                 MidiEvent *off = on->offEvent();
                 off->setMidiTime(minTime + (off->midiTime()-onTime));
             }
         }
-        file->protocol()->endAction();
+        _file->protocol()->endAction();
     }
 }
 
 void MainWindow::alignRight() {
-    if (Selection::instance()->selectedEvents().size() > 1 && file) {
+    if (Selection::instance()->selectedEvents().size() > 1 && _file) {
         // find maximum
         int maxTime = 0;
         for (MidiEvent *e : Selection::instance()->selectedEvents()) {
-            OnEvent *on = qobject_cast<OnEvent*>(e);
+            OnEvent *on = protocol_cast<OnEvent*>(e);
             if (on) {
                 MidiEvent *off = on->offEvent();
                 if (off->midiTime() > maxTime) {
@@ -1157,29 +1174,29 @@ void MainWindow::alignRight() {
             }
         }
 
-        file->protocol()->startNewAction("Align right", new QImage(":/run_environment/graphics/tool/align_right.png"));
+        _file->protocol()->startNewAction("Align right", new QImage(":/align_right.png"));
         for (MidiEvent *e : Selection::instance()->selectedEvents()) {
                 int onTime = e->midiTime();
-                OnEvent *on = qobject_cast<OnEvent*>(e);
+                OnEvent *on = protocol_cast<OnEvent*>(e);
                 if (on) {
                         MidiEvent *off = on->offEvent();
                         e->setMidiTime(maxTime - (off->midiTime()-onTime));
                         off->setMidiTime(maxTime);
                 }
         }
-        file->protocol()->endAction();
+        _file->protocol()->endAction();
     }
 }
 
 void MainWindow::equalize()
 {
-    if (Selection::instance()->selectedEvents().size() > 1 && file) {
+    if (Selection::instance()->selectedEvents().size() > 1 && _file) {
         // find average
         int avgStart = 0;
         int avgTime = 0;
         int count = 0;
         for (MidiEvent *e : Selection::instance()->selectedEvents()) {
-            OnEvent *on = qobject_cast<OnEvent*>(e);
+            OnEvent *on = protocol_cast<OnEvent*>(e);
             if (on) {
                 MidiEvent *off = on->offEvent();
                 avgStart += e->midiTime();
@@ -1191,9 +1208,9 @@ void MainWindow::equalize()
             avgStart /= count;
             avgTime /= count;
 
-            file->protocol()->startNewAction("Equalize", new QImage(":/run_environment/graphics/tool/equalize.png"));
+            _file->protocol()->startNewAction("Equalize", new QImage(":/equalize.png"));
             for (MidiEvent *e : Selection::instance()->selectedEvents()) {
-                OnEvent *on = qobject_cast<OnEvent*>(e);
+                OnEvent *on = protocol_cast<OnEvent*>(e);
                 if (on) {
                     MidiEvent *off = on->offEvent();
                     e->setMidiTime(avgStart);
@@ -1201,64 +1218,64 @@ void MainWindow::equalize()
                 }
             }
         }
-        file->protocol()->endAction();
+        _file->protocol()->endAction();
     }
 }
 
 void MainWindow::deleteSelectedEvents() {
     bool showsSelected = false;
     if (Tool::currentTool()) {
-        EventTool *eventTool = qobject_cast<EventTool*>(Tool::currentTool());
+        EventTool *eventTool = protocol_cast<EventTool*>(Tool::currentTool());
         if (eventTool) {
             showsSelected = eventTool->showsSelection();
         }
     }
-    if (showsSelected && Selection::instance()->selectedEvents().size()>0 && file) {
+    if (showsSelected && Selection::instance()->selectedEvents().size()>0 && _file) {
 
-        file->protocol()->startNewAction("Remove event(s)");
+        _file->protocol()->startNewAction("Remove event(s)");
         for (MidiEvent *ev : Selection::instance()->selectedEvents()) {
-            file->channel(ev->channel())->removeEvent(ev);
+            _file->channel(ev->channel())->removeEvent(ev);
         }
         Selection::instance()->clearSelection();
         eventWidget()->reportSelectionChangedByTool();
-        file->protocol()->endAction();
+        _file->protocol()->endAction();
     }
 }
 
 void MainWindow::deleteChannel(QAction *action) {
 
-    if (!file) {
+    if (!_file) {
         return;
     }
 
     ubyte num = ubyte(action->data().toUInt());
-    file->protocol()->startNewAction("Remove all events from channel "+QString::number(num));
-    for (MidiEvent *event : file->channel(num)->eventMap()->values()) {
+    _file->protocol()->startNewAction("Remove all events from channel "+QString::number(num));
+    for (MidiEvent *event : _file->channel(num)->eventMap()->values()) {
         if (Selection::instance()->selectedEvents().contains(event)) {
             EventTool::deselectEvent(event);
         }
     }
 
-    file->channel(num)->deleteAllEvents();
-    file->protocol()->endAction();
+    _file->channel(num)->deleteAllEvents();
+    _file->protocol()->endAction();
 }
 
 
 void MainWindow::moveSelectedEventsToChannel(QAction *action) {
 
-    if (!file) {
+    if (!_file) {
         return;
     }
 
     ubyte num = ubyte(action->data().toUInt());
-    MidiChannel *channel = file->channel(num);
+    MidiChannel *channel = _file->channel(num);
 
     if (Selection::instance()->selectedEvents().size() > 0) {
-        file->protocol()->startNewAction("Move selected events to channel " + QString::number(num));
+        _file->protocol()->startNewAction("Move selected events to channel " + QString::number(num));
         for (MidiEvent *ev : Selection::instance()->selectedEvents()) {
-            file->channel(ev->channel())->removeEvent(ev);
+            _file->channel(ev->channel())->removeEvent(ev);
             ev->setChannel(num, true);
-            OnEvent *onevent = qobject_cast<OnEvent*>(ev);
+            OnEvent *onevent = protocol_cast<OnEvent*>(ev);
             if (onevent) {
                 channel->insertEvent(onevent->offEvent(), onevent->offEvent()->midiTime());
                 onevent->offEvent()->setChannel(num);
@@ -1266,43 +1283,43 @@ void MainWindow::moveSelectedEventsToChannel(QAction *action) {
             channel->insertEvent(ev, ev->midiTime());
         }
 
-        file->protocol()->endAction();
+        _file->protocol()->endAction();
     }
 }
 
 void MainWindow::moveSelectedEventsToTrack(QAction *action) {
 
-    if (!file) {
+    if (!_file) {
         return;
     }
 
     ubyte num = ubyte(action->data().toUInt());
-    MidiTrack *track = file->track(num);
+    MidiTrack *track = _file->track(num);
 
     if (Selection::instance()->selectedEvents().size()>0) {
-        file->protocol()->startNewAction("Move selected events to track "+QString::number(num));
+        _file->protocol()->startNewAction("Move selected events to track "+QString::number(num));
         for (MidiEvent *ev : Selection::instance()->selectedEvents()) {
             ev->setTrack(track, true);
-            OnEvent *onevent = qobject_cast<OnEvent*>(ev);
+            OnEvent *onevent = protocol_cast<OnEvent*>(ev);
             if (onevent) {
                 onevent->offEvent()->setTrack(track);
             }
         }
 
-        file->protocol()->endAction();
+        _file->protocol()->endAction();
     }
 }
 
 void MainWindow::updateRecentPathsList() {
 
     // if file opened put it at the top of the list
-    if (file) {
+    if (_file) {
 
-        QString currentPath = file->path();
+        QString currentPath = _file->path();
         QStringList newList;
         newList.append(currentPath);
 
-        for (const QString &str : _recentFilePaths) {
+        for (const QString &str : qAsConst(_recentFilePaths)) {
             if (str != currentPath && newList.size() < 10) {
                 newList.append(str);
             }
@@ -1312,7 +1329,7 @@ void MainWindow::updateRecentPathsList() {
     }
     // update menu
     _recentPathsMenu->clear();
-    for (const QString &path : _recentFilePaths) {
+    for (const QString &path : qAsConst(_recentFilePaths)) {
         QFile f(path);
         QString name = QFileInfo(f).fileName();
 
@@ -1328,10 +1345,8 @@ void MainWindow::openRecent(QAction *action) {
 
     QString path = action->data().toString();
 
-    if (file) {
-        QString oldPath = file->path();
-
-        if (file->modified()) {
+    if (_file) {
+        if (_file->modified()) {
             if (!saveDialog()) {
                 return;
             }
@@ -1347,32 +1362,32 @@ void MainWindow::updateChannelMenu() {
     // delete channel events menu
     for (QAction *action : _deleteChannelMenu->actions()) {
         ubyte channel = ubyte(action->data().toUInt());
-        if (file && channel <= 0xF) {
-            action->setText(QString::number(channel) % " " % MidiFile::instrumentName(file->channel(channel)->progAtTick(0)));
+        if (_file && channel <= 0xF) {
+            action->setText(QString::number(channel) % " " % MidiFile::instrumentName(_file->channel(channel)->progAtTick(0)));
         }
     }
 
     // move events to channel...
     for (QAction *action : _moveSelectedEventsToChannelMenu->actions()) {
         ubyte channel = ubyte(action->data().toUInt());
-        if (file && channel <= 0xF) {
-            action->setText(QString::number(channel) % " " % MidiFile::instrumentName(file->channel(channel)->progAtTick(0)));
+        if (_file && channel <= 0xF) {
+            action->setText(QString::number(channel) % " " % MidiFile::instrumentName(_file->channel(channel)->progAtTick(0)));
         }
     }
 
     // paste events to channel...
     for (QAction *action : _pasteToChannelMenu->actions()) {
         ubyte channel = ubyte(action->data().toUInt());
-        if (file && channel <= 0xF) {
-            action->setText(QString::number(channel) % " " % MidiFile::instrumentName(file->channel(channel)->progAtTick(0)));
+        if (_file && channel <= 0xF) {
+            action->setText(QString::number(channel) % " " % MidiFile::instrumentName(_file->channel(channel)->progAtTick(0)));
         }
     }
 
     // select all events from channel...
     for (QAction *action : _selectAllFromChannelMenu->actions()) {
         ubyte channel = ubyte(action->data().toUInt());
-        if (file && channel < 0xFF) {
-            action->setText(QString::number(channel) % " " % MidiFile::instrumentName(file->channel(channel)->progAtTick(0)));
+        if (_file && channel < 0xFF) {
+            action->setText(QString::number(channel) % " " % MidiFile::instrumentName(_file->channel(channel)->progAtTick(0)));
         }
     }
 
@@ -1385,22 +1400,22 @@ void MainWindow::updateTrackMenu() {
     _chooseEditTrack->clear();
     _selectAllFromTrackMenu->clear();
 
-    if (!file) {
+    if (!_file) {
         return;
     }
 
-    for (ushort i = 0; i < file->numTracks(); i++) {
+    for (ushort i = 0; i < _file->numTracks(); i++) {
         QVariant variant(i);
-        QAction *moveToTrackAction = new QAction(QString::number(i) % " " % file->tracks()->at(i)->name(), this);
+        QAction *moveToTrackAction = new QAction(QString::number(i) % " " % _file->tracks()->at(i)->name(), this);
         moveToTrackAction->setData(variant);
         moveToTrackAction->setShortcut(QKeySequence(Qt::Key_0 + ushort(i) + Qt::ALT));
         _moveSelectedEventsToTrackMenu->addAction(moveToTrackAction);
-        QAction *select = new QAction(QString::number(i)+" "+file->tracks()->at(i)->name(), this);
+        QAction *select = new QAction(QString::number(i) % " " % _file->tracks()->at(i)->name(), this);
         select->setData(variant);
         _selectAllFromTrackMenu->addAction(select);
-        _chooseEditTrack->addItem("Track "+QString::number(i)+": "+file->tracks()->at(i)->name());
+        _chooseEditTrack->addItem("Track " % QString::number(i) % ": " % _file->tracks()->at(i)->name());
     }
-    if (NewNoteTool::editTrack() >= file->numTracks()) {
+    if (NewNoteTool::editTrack() >= _file->numTracks()) {
         NewNoteTool::setEditTrack(0);
     }
     _chooseEditTrack->setCurrentIndex(NewNoteTool::editTrack());
@@ -1410,7 +1425,7 @@ void MainWindow::updateTrackMenu() {
     pasteTrackGroup->setExclusive(true);
 
     bool checked = false;
-    for (int i = -2; i < file->numTracks(); i++) {
+    for (int i = -2; i < _file->numTracks(); i++) {
         QVariant variant(i);
         QString text = QString::number(i);
         if (i == -2) {
@@ -1418,7 +1433,7 @@ void MainWindow::updateTrackMenu() {
         } else if (i == -1) {
             text = "Keep track";
         } else {
-            text = _("Track %1: %2").arg(QString::number(i), file->tracks()->at(i)->name());
+            text = _("Track %1: %2").arg(QString::number(i), _file->tracks()->at(i)->name());
         }
         QAction *pasteToTrackAction = new QAction(text, this);
         pasteToTrackAction->setData(variant);
@@ -1437,36 +1452,36 @@ void MainWindow::updateTrackMenu() {
 }
 
 void MainWindow::muteChannel(QAction *action) {
-    int channel = action->data().toInt();
-    if (file) {
-        file->protocol()->startNewAction("Mute channel", qnullptr, false);
-        file->channel(channel)->setMute(action->isChecked());
+    ubyte channel = ubyte(action->data().toUInt());
+    if (_file) {
+        _file->protocol()->startNewAction("Mute channel", qnullptr, false);
+        _file->channel(channel)->setMute(action->isChecked());
         updateChannelMenu();
         channelWidget->update();
-        file->protocol()->endAction();
+        _file->protocol()->endAction();
     }
 }
 void MainWindow::soloChannel(QAction *action) {
-    int channel = action->data().toInt();
-    if (file) {
-        file->protocol()->startNewAction("Select solo channel", qnullptr, false);
+    ubyte channel = ubyte(action->data().toUInt());
+    if (_file) {
+        _file->protocol()->startNewAction("Select solo channel", qnullptr, false);
         for (ubyte i = 0; i < 16; i++) {
-            file->channel(i)->setSolo(i == channel && action->isChecked());
+            _file->channel(i)->setSolo(i == channel && action->isChecked());
         }
-        file->protocol()->endAction();
+        _file->protocol()->endAction();
     }
     channelWidget->update();
     updateChannelMenu();
 }
 
 void MainWindow::viewChannel(QAction *action) {
-    ubyte channel = action->data().toUInt();
-    if (file) {
-        file->protocol()->startNewAction("Channel visibility changed", qnullptr, false);
-        file->channel(channel)->setVisible(action->isChecked());
+    ubyte channel = action->data().toUInt() & 0xF;
+    if (_file) {
+        _file->protocol()->startNewAction("Channel visibility changed", qnullptr, false);
+        _file->channel(channel)->setVisible(action->isChecked());
         updateChannelMenu();
         channelWidget->update();
-        file->protocol()->endAction();
+        _file->protocol()->endAction();
     }
 }
 
@@ -1524,18 +1539,18 @@ void MainWindow::quantizationChanged(QAction *action) {
 
 void MainWindow::quantizeSelection() {
 
-    if (!file) {
+    if (!_file) {
         return;
     }
 
     // get list with all quantization ticks
-    QList<int> ticks = file->quantization(_settings.quantization);
+    QList<int> ticks = _file->quantization(_settings.quantization);
 
-    file->protocol()->startNewAction("Quantify events", new QImage(":/run_environment/graphics/tool/quantize.png"));
+    _file->protocol()->startNewAction("Quantify events", new QImage(":/quantize.png"));
     for (MidiEvent *e : Selection::instance()->selectedEvents()) {
         int onTime = e->midiTime();
         e->setMidiTime(quantize(onTime, ticks));
-        OnEvent *on = qobject_cast<OnEvent*>(e);
+        OnEvent *on = protocol_cast<OnEvent*>(e);
         if (on) {
             MidiEvent *off = on->offEvent();
             off->setMidiTime(quantize(off->midiTime(), ticks));
@@ -1547,7 +1562,7 @@ void MainWindow::quantizeSelection() {
             }
         }
     }
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
 }
 
 int MainWindow::quantize(int t, QList<int> ticks) {
@@ -1587,7 +1602,7 @@ int MainWindow::quantize(int t, QList<int> ticks) {
 
 void MainWindow::quantizeNtoleDialog() {
 
-    if (!file || Selection::instance()->selectedEvents().isEmpty()) {
+    if (!_file || Selection::instance()->selectedEvents().isEmpty()) {
         return;
     }
 
@@ -1601,14 +1616,14 @@ void MainWindow::quantizeNtoleDialog() {
 
 void MainWindow::quantizeNtole() {
 
-    if (!file || Selection::instance()->selectedEvents().isEmpty()) {
+    if (!_file || Selection::instance()->selectedEvents().isEmpty()) {
         return;
     }
 
     // get list with all quantization ticks
-    QList<int> ticks = file->quantization(_settings.quantization);
+    QList<int> ticks = _file->quantization(_settings.quantization);
 
-    file->protocol()->startNewAction("Quantify tuplet", new QImage(":/run_environment/graphics/tool/quantize.png"));
+    _file->protocol()->startNewAction("Quantify tuplet", new QImage(":/quantize.png"));
 
     // find minimum starting time
     bool startTickFound = false;
@@ -1626,7 +1641,7 @@ void MainWindow::quantizeNtole() {
 
     // compute new quantization grid
     QList<int> ntoleTicks;
-    int ticksDuration = (NToleQuantizationDialog::replaceNumNum*file->ticksPerQuarter()*4)/(qPow(2, NToleQuantizationDialog::replaceDenomNum));
+    int ticksDuration = (NToleQuantizationDialog::replaceNumNum * _file->ticksPerQuarter() * 4)/(qPow(2, NToleQuantizationDialog::replaceDenomNum));
     int fractionSize = ticksDuration/NToleQuantizationDialog::ntoleNNum;
 
     for (ubyte i = 0; i <= NToleQuantizationDialog::ntoleNNum; i++) {
@@ -1637,7 +1652,7 @@ void MainWindow::quantizeNtole() {
     for (MidiEvent *e : Selection::instance()->selectedEvents()) {
         int onTime = e->midiTime();
         e->setMidiTime(quantize(onTime, ntoleTicks));
-        OnEvent *on = qobject_cast<OnEvent*>(e);
+        OnEvent *on = protocol_cast<OnEvent*>(e);
         if (on) {
             MidiEvent *off = on->offEvent();
             off->setMidiTime(quantize(off->midiTime(), ntoleTicks));
@@ -1651,7 +1666,7 @@ void MainWindow::quantizeNtole() {
             }
         }
     }
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
 }
 
 void MainWindow::setSpeed(QAction *action) {
@@ -1680,14 +1695,13 @@ void MainWindow::manual() {
 
 void MainWindow::spreadSelection() {
 
-    if (!file) {
+    if (!_file) {
         return;
     }
 
     bool ok;
     qreal numMs = QInputDialog::getDouble(this, "Set spread-time",
-        "Spread time [ms]", 10,
-        5,500, 2, &ok);
+        "Spread time [ms]", 10, 5,500, 2, &ok);
 
     if (!ok) {
         numMs = 1;
@@ -1702,14 +1716,14 @@ void MainWindow::spreadSelection() {
         }
     }
 
-    file->protocol()->startNewAction("Spread events");
+    _file->protocol()->startNewAction("Spread events");
     int numSpreads = 0;
     QList<int> seenBefore;
     QList<MidiEvent*> events;
 
     for (ubyte i = 0; i < 19; i++) {
 
-        MidiChannel *channel = file->channel(i);
+        MidiChannel *channel = _file->channel(i);
         seenBefore.clear();
         auto *eventsWithAllLines = channel->eventMap();
 
@@ -1738,14 +1752,14 @@ void MainWindow::spreadSelection() {
                 int num = events.count();
                 if (num > 1) {
 
-                    qreal timeToInsert = file->msOfTick(it.value())+numMs*num/2;
+                    qreal timeToInsert = _file->msOfTick(it.value()) + numMs * num / 2.0;
 
 
                     for (int y = 0; y < num; y++) {
 
                         MidiEvent *toMove = events.at(y);
 
-                        toMove->setMidiTime(file->tick(timeToInsert), true);
+                        toMove->setMidiTime(_file->tick(qFloor(timeToInsert)), true);
                         numSpreads++;
 
                         timeToInsert -= numMs;
@@ -1754,7 +1768,7 @@ void MainWindow::spreadSelection() {
             //}
         }
     }
-    file->protocol()->endAction();
+    _file->protocol()->endAction();
 
     QMessageBox::information(this, "Spreading done", _("Spreaded %1 events").arg(numSpreads));
 }

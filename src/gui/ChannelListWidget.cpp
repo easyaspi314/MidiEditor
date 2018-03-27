@@ -67,7 +67,7 @@ ChannelListItem::ChannelListItem(ubyte ch, ChannelListWidget *parent) : QWidget(
     toolBar->setPalette(palette);
 
     // visibility
-    visibleAction = new QAction(QIcon(":/run_environment/graphics/channelwidget/visible.png"), "Channel visible", toolBar);
+    visibleAction = new QAction(QIcon(":/channelwidget/visible.png"), "Channel visible", toolBar);
     visibleAction->setCheckable(true);
     visibleAction->setChecked(true);
     toolBar->addAction(visibleAction);
@@ -76,7 +76,7 @@ ChannelListItem::ChannelListItem(ubyte ch, ChannelListWidget *parent) : QWidget(
 
     // audibility
     if (channel < 16) {
-        loudAction = new QAction(QIcon(":/run_environment/graphics/channelwidget/loud.png"), "Channel audible", toolBar);
+        loudAction = new QAction(QIcon(":/channelwidget/loud.png"), "Channel audible", toolBar);
         loudAction->setCheckable(true);
         loudAction->setChecked(true);
         toolBar->addAction(loudAction);
@@ -85,7 +85,7 @@ ChannelListItem::ChannelListItem(ubyte ch, ChannelListWidget *parent) : QWidget(
         connect(loudAction, &QAction::toggled, this, &ChannelListItem::toggleAudibility);
 
         // solo
-        soloAction = new QAction(QIcon(":/run_environment/graphics/channelwidget/solo.png"), "Solo mode", toolBar);
+        soloAction = new QAction(QIcon(":/channelwidget/solo.png"), "Solo mode", toolBar);
         soloAction->setCheckable(true);
         soloAction->setChecked(false);
         toolBar->addAction(soloAction);
@@ -96,7 +96,7 @@ ChannelListItem::ChannelListItem(ubyte ch, ChannelListWidget *parent) : QWidget(
         toolBar->addSeparator();
 
         // instrument
-        QAction *instrumentAction = new QAction(QIcon(":/run_environment/graphics/channelwidget/instrument.png"),
+        QAction *instrumentAction = new QAction(QIcon(":/channelwidget/instrument.png"),
                                                 "Select instrument", toolBar);
         toolBar->addAction(instrumentAction);
         connect(instrumentAction, &QAction::triggered, this, &ChannelListItem::instrument);

@@ -19,9 +19,9 @@
 #ifndef UPDATEMANAGER_H
 #define UPDATEMANAGER_H
 
-#include <QNetworkAccessManager>
-#include <QObject>
-#include <QStringList>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtCore/QObject>
+#include <QtCore/QStringList>
 #include "Utils.h"
 
 class QNetworkReply;

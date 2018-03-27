@@ -19,6 +19,9 @@
 #ifndef MISCWIDGET_H
 #define MISCWIDGET_H
 
+#include <QPair>
+#include <QList>
+
 #include "PaintWidget.h"
 #include "../Utils.h"
 
@@ -28,11 +31,8 @@ class MidiFile;
 class SelectTool;
 class NoteOnEvent;
 
-#include <QPair>
-#include <QList>
 
 enum struct MiscWidgetMode : ubyte {
-
     VelocityEditor = 0,
     ControlEditor,
     PitchBendEditor,
@@ -78,21 +78,21 @@ class MiscWidget : public PaintWidget {
         void mouseMoveEvent(QMouseEvent *event) qoverride;
 
     private:
-
-
         void resetState();
         QList<QPair<qreal, ushort> > getTrack(QList<MidiEvent*> *accordingEvents = qnullptr);
         void computeMinMax();
         QPair<qreal, ushort> processEvent(MidiEvent *e, bool *ok);
-        qreal interpolate(const QList<QPair<qreal, qreal> > &track, qreal x);
+        qreal interpolate(const QList<QPointF> &track, qreal x);
         qreal value(qreal y);
         bool filter(MidiEvent *e);
+        void insertEvent(int tick, ushort v);
+        void editEvent(MidiEvent *event, ushort v);
 
         // line
         qreal lineX, lineY;
 
         // free hand
-        QList<QPair<qreal, qreal> > freeHandCurve;
+        QList<QPointF> freeHandCurve;
 
         MatrixWidget *matrixWidget;
         NoteOnEvent *aboveEvent;

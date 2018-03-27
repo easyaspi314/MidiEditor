@@ -55,15 +55,30 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
     public:
+
         MainWindow(const QString &initFile = QString(), QWidget *parent = qnullptr,
                    Qt::WindowFlags flags = Qt::WindowFlags());
         void setFile(MidiFile *f);
         EventWidget *eventWidget();
         void setStartDir(const QString &dir);
-        void setInitFile(const char * file);
+        void setInitFile(const char * _file);
         static MainWindow *_mainWindow;
         static MainWindow *getMainWindow();
+        MidiFile *file();
 
+        /**
+         * Make setupActions a little less scary by reducing code duplication.
+         *
+         * Usage:
+         * QAction *action = createAction("Name" &MainWindow::someSlot, ":/icon.png", QKeySequence::Something);
+         *
+         * would equal:
+         *
+         * QAction *action = new QAction("Name", this);
+         * action->setIcon(QIcon(":/icon.png"));
+         * action->setKeySequence(QKeySequence::Something);
+         * connect(action, &QAction::triggered, this, &MainWindow::someSlot);
+         */
         template<typename FuncPointer>
         QAction *createAction(const QString &name, FuncPointer func, const QString &iconPath = "",
                              const QKeySequence &shortcut = QKeySequence());
@@ -88,7 +103,7 @@ class MainWindow : public QMainWindow {
         void ioReady(bool isInput);
         void backToBegin();
         void load();
-        void loadFile(const QString &file);
+        void loadFile(const QString &_file);
         void openFile(const QString &filePath);
         void save();
         void saveas();
@@ -193,6 +208,7 @@ class MainWindow : public QMainWindow {
 #ifdef ENABLE_GBA
         void showMidFixDialog();
 #endif
+        void crash();
     protected:
         void closeEvent(QCloseEvent *event) qoverride;
         void keyPressEvent(QKeyEvent* e) qoverride;
@@ -213,7 +229,7 @@ class MainWindow : public QMainWindow {
         ChannelListWidget *channelWidget;
         ProtocolWidget *protocolWidget;
         TrackListWidget *_trackWidget;
-        MidiFile *file;
+        MidiFile *_file;
         QString startDirectory, _initFile;
         EventWidget *_eventWidget;
         QStringList _recentFilePaths;

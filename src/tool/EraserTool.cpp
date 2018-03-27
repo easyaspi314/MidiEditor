@@ -28,7 +28,7 @@
 #include "Selection.h"
 
 EraserTool::EraserTool() : EventTool() {
-    setImage(":/run_environment/graphics/tool/eraser.png");
+    setImage(":/eraser.png");
     setToolTipText("Eraser (remove Events)");
 }
 
@@ -36,8 +36,8 @@ EraserTool::EraserTool(EraserTool &other) : EventTool(other) {
     return;
 }
 
-ToolType EraserTool::type() const {
-    return ToolType::Eraser;
+int EraserTool::type() const {
+    return Type;
 }
 
 ProtocolEntry *EraserTool::copy() {
@@ -45,7 +45,7 @@ ProtocolEntry *EraserTool::copy() {
 }
 
 void EraserTool::reloadState(ProtocolEntry *entry) {
-    EraserTool *other = qobject_cast<EraserTool*>(entry);
+    EraserTool *other = protocol_cast<EraserTool*>(entry);
     if (!other) {
         return;
     }

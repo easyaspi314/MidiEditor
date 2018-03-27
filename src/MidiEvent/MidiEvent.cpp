@@ -37,31 +37,39 @@
 #include "../midi/MidiTrack.h"
 
 #include <QByteArray>
+#include <QPainter>
 
 #include "../midi/MidiChannel.h"
 
 ubyte MidiEvent::_startByte = 0;
 EventWidget *MidiEvent::_eventWidget = qnullptr;
 
-MidiEvent::MidiEvent(ubyte channel, MidiTrack *track) :/* ProtocolEntry(),*/
-    GraphicObject() {
+MidiEvent::MidiEvent(ubyte channel, MidiTrack *track) {
     _track = track;
     numChannel = channel;
     timePos = 0;
     midiFile = qnullptr;
     _tempID = 0;
+    _x = 0;
+    _y = 0;
+    _width = 0;
+    _height = 0;
 }
 
-MidiEvent::MidiEvent(const MidiEvent &other) : /*ProtocolEntry(other), */GraphicObject() {
+MidiEvent::MidiEvent(const MidiEvent &other) {
     _track = other._track;
     numChannel = other.numChannel;
     timePos = other.timePos;
     midiFile = other.midiFile;
     _tempID = other._tempID;
+    _x = other._x;
+    _y = other._y;
+    _width = other._width;
+    _height = other._height;
 }
 
-EventType MidiEvent::type() const {
-    return MidiEventType;
+int MidiEvent::type() const {
+    return Type;
 }
 
 MidiEvent *MidiEvent::loadMidiEvent(QDataStream *content, bool *ok,
@@ -439,7 +447,7 @@ ProtocolEntry *MidiEvent::copy() {
 
 void MidiEvent::reloadState(ProtocolEntry *entry) {
 
-    MidiEvent *other = qobject_cast<MidiEvent *>(entry);
+    MidiEvent *other = protocol_cast<MidiEvent *>(entry);
     if (!other) {
         return;
     }

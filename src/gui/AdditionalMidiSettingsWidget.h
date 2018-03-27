@@ -42,7 +42,9 @@ class AdditionalMidiSettingsWidget : public SettingsWidget {
         QLineEdit *startCmd;
         QSpinBox *_tpqBox;
         QSpinBox *_playbackDelay;
+#ifdef ENABLE_GBA
         QCheckBox *_gbaMode;
+#endif
 };
 
 #endif // ADDITIONALMIDISETTINGSWIDGET_H

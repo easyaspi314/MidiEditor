@@ -77,7 +77,7 @@ class EventWidget : public QTableWidget {
         };
         QVariant fieldContent(EditorField field);
 
-        inline EventType type() {
+        inline int type() {
             return _currentType;
         }
 
@@ -97,14 +97,14 @@ class EventWidget : public QTableWidget {
         void selectionChangedByTool(bool);
 
     private:
-        EventType computeType();
+        int computeType();
         const QString eventType();
         QList<QPair<QString, EditorField> > getFields();
 
         QList<MidiEvent*> _events;
         MidiFile *_file;
 
-        EventType _currentType;
+        int _currentType;
 
 };
 

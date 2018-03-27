@@ -40,6 +40,8 @@
 #include "../MidiEvent/KeyPressureEvent.h"
 #include "../MidiEvent/ChannelPressureEvent.h"
 
+using TrackPair = QPair<qreal, ushort>;
+using PointPair = QPair<qreal, qreal>;
 /*
  * FIXME:
  * - Kill all the repaint hacks
@@ -76,7 +78,7 @@ MiscWidget::MiscWidget(MatrixWidget *mw, QWidget *parent) : PaintWidget(parent) 
     resetState();
     computeMinMax();
     setFixedWidth(matrixWidget->width());
-    _dummyTool = new SelectTool(SelectionType::Single);
+    _dummyTool = new SelectTool(SelectType::Single);
     setFocusPolicy(Qt::ClickFocus);
 }
 
@@ -140,6 +142,11 @@ void MiscWidget::startProtocol() {
         }
         case MiscWidgetMode::ChannelPressureEditor: {
             text = "Edited Channel Pressure Events";
+            break;
+        }
+        default: {
+            Q_UNREACHABLE();
+            text = "";
             break;
         }
     }
@@ -238,7 +245,7 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
         pixpainter.setBrush(QColor(234, 246, 255));
         pixpainter.setPen(QColor(194, 230, 255));
 
-        for (const QPair<qreal, int> &p : matrixWidget->divs()) {
+        for (const auto &p : matrixWidget->divs()) {
             pixpainter.drawLine(qLineF(p.first , 0, p.first, height()));
         }
 
@@ -261,28 +268,26 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
                 }
 
                 ubyte velocity = 0;
-                NoteOnEvent *noteOn = qobject_cast<NoteOnEvent *>(event);
+                NoteOnEvent *noteOn = protocol_cast<NoteOnEvent *>(event);
                 if (noteOn) {
                     velocity = noteOn->velocity();
-                    int h;
-                    if (velocity > 0) {
+                    qreal h;
 
-                        if (_settings.gba_mode) {
-                            h = (height() * sqrt(velocity * 127))/128;
-                        } else {
-                            h = (height()*velocity)/128;
-                        }
-
-                        pixpainter.setBrush(c);
-                        pixpainter.setPen(Qt::lightGray);
-                        pixpainter.drawRoundedRect(qRectF(event->x(),
-                                                          height() - h, WIDTH, h), 1, 1);
+                    if (_settings.gba_mode) {
+                        h = (height() * sqrt(velocity * 127.0)) / 128.0;
+                    } else {
+                        h = (qreal(height()) * velocity) / 128.0;
                     }
+
+                    pixpainter.setBrush(c);
+                    pixpainter.setPen(Qt::lightGray);
+                    pixpainter.drawRoundedRect(qRectF(event->x(), height() - h, WIDTH, h), 1, 1);
                 }
+
             }
 
             // paint selected events above all others
-            EventTool *t = qobject_cast<EventTool *>(Tool::currentTool());
+            EventTool *t = protocol_cast<EventTool *>(Tool::currentTool());
             if (t && t->showsSelection()) {
                 for (MidiEvent *event : Selection::instance()->selectedEvents()) {
 
@@ -296,7 +301,7 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
 
                     ubyte velocity = 0;
                     qreal velocityMultiplier = 1.0;
-                    NoteOnEvent *noteOn = qobject_cast<NoteOnEvent *>(event);
+                    NoteOnEvent *noteOn = protocol_cast<NoteOnEvent *>(event);
 
                     if (noteOn && noteOn->midiTime() >= matrixWidget->minVisibleMidiTime()
                             && noteOn->midiTime() <= matrixWidget->maxVisibleMidiTime()) {
@@ -305,23 +310,21 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
                             velocityMultiplier = velocity / aboveEvent->velocity();
                         }
 
-                        int h;
-                        if (velocity > 0) {
+                        qreal h;
 
-                            if (_settings.gba_mode) {
-                                h = (height() * sqrt(velocity * 127))/128;
-                            } else {
-                                h = (height()*velocity)/128;
-                            }
-
-                            if (edit_mode == MiscWidgetEditMode::SingleMode && dragging) {
-                                h = velocityMultiplier * (h + (dragY - mouseY));
-                            }
-                            pixpainter.setBrush(Qt::darkBlue);
-                            pixpainter.setPen(Qt::lightGray);
-                            pixpainter.drawRoundedRect(qRectF(event->x(),
-                                                              height() - h, WIDTH, h), 1, 1);
+                        if (_settings.gba_mode) {
+                            h = (height() * sqrt(velocity * 127.0))/127.0;
+                        } else {
+                            h = (qreal(height()) * velocity)/128.0;
                         }
+
+                        if (edit_mode == MiscWidgetEditMode::SingleMode && dragging) {
+                            h = velocityMultiplier * (h + (dragY - mouseY));
+                        }
+                        pixpainter.setBrush(Qt::darkBlue);
+                        pixpainter.setPen(Qt::lightGray);
+                        pixpainter.drawRoundedRect(qRectF(event->x(),
+                                                          height() - h, WIDTH, h), 1, 1);
                     }
                 }
             }
@@ -340,27 +343,25 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
             circlePen.setWidth(1);
 
             QList<MidiEvent *> accordingEvents;
-            QList<QPair<qreal, ushort> > track = getTrack(&accordingEvents);
+            QList<TrackPair> track = getTrack(&accordingEvents);
 
-            qreal xOld;
-            qreal yOld;
+            qreal xOld = 0.0;
+            qreal yOld = 0.0;
 
             for (int i = 0; i < track.size(); i++) {
-
-                qreal xPix = track.at(i).first;
-                qreal yPix;
+                const TrackPair &pair = track.at(i);
+                qreal xPix = pair.first;
+                qreal yPix = 0.0;
 
                 if (_settings.gba_mode && mode == MiscWidgetMode::ControlEditor && controller == 7 /* Channel Volume */) {
-                    yPix = height()-(sqrt(_max * track.at(i).second)/_max)*height();
+                    yPix = height()-(sqrt(_max * pair.second)/_max)*height();
                 } else {
-                    yPix = height()-(track.at(i).second/_max)*height();
+                    yPix = height()-(pair.second/_max)*height();
                 }
 
                 if (edit_mode == MiscWidgetEditMode::SingleMode) {
-                    if (i == trackIndex) {
-                        if (dragging) {
-                            yPix = yPix + mouseY - dragY;
-                        }
+                    if (i == trackIndex && dragging) {
+                        yPix = yPix + mouseY - dragY;
                     }
                 }
                 if (i > 0) {
@@ -383,29 +384,29 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
                     pixpainter.setPen(pen);
                     pixpainter.setBrush(Qt::NoBrush);
                 }
-}
+            }
             pixpainter.drawLine(qLineF(xOld, yOld, width(), yOld));
 
         }
 
         // draw freehand track
         if (edit_mode == MiscWidgetEditMode::FreehandMode && isDrawingFreehand && freeHandCurve.size() > 0) {
-
-            qreal xOld;
-            qreal yOld;
+            // Clang incorrectly complains that this "may be uninitialized"
+            QPointF oldPoint;
 
             QPen pen(Qt::darkBlue);
             pen.setWidth(3);
             pixpainter.setPen(pen);
-
-            for (int i = 0; i < freeHandCurve.size(); i++) {
-                qreal xPix = freeHandCurve.at(i).first;
-                qreal yPix = freeHandCurve.at(i).second;
-                if (i > 0) {
-                    pixpainter.drawLine(qLineF(xOld, yOld, xPix, yPix));
+            bool loop_inited = false;
+            for (const QPointF &point : freeHandCurve) {
+                // Clang should pick this up that this will not occur if this is the first time
+                // running the loop...
+                if (loop_inited) {
+                    pixpainter.drawLine(qLineF(oldPoint, point));
+                } else {
+                    loop_inited = true;
                 }
-                xOld = xPix;
-                yOld = yPix;
+                oldPoint = point;
             }
         }
 
@@ -437,7 +438,7 @@ void MiscWidget::paintEvent(QPaintEvent *event) {
         }
         case 2: {
             QPainter::PixmapFragment frag = QPainter::PixmapFragment::create(
-                                                            event->rect().center(), event->rect());
+                                                event->rect().center(), event->rect());
             painter.drawPixmapFragments(&frag, 1, *pixmap);
             break;
         }
@@ -465,22 +466,19 @@ void MiscWidget::mouseMoveEvent(QMouseEvent *event) {
                         continue;
                     }
 
-                    int velocity = 0;
-                    NoteOnEvent *noteOn = qobject_cast<NoteOnEvent *>(event);
-                    if (noteOn) {
+                    ubyte velocity = 0;
+                    if (NoteOnEvent *noteOn = protocol_cast<NoteOnEvent *>(event)) {
                         velocity = noteOn->velocity();
 
-                        if (velocity > 0) {
-                            int h;
-                            if (_settings.gba_mode)
-                                h = (height() * sqrt(velocity * 127))/127;
-                            else
-                                h = (height()*velocity)/128;
-                            if (!dragging && mouseInRect(qRectF(event->x(), height() - h - 5, WIDTH, 10))) {
-                                above = true;
-                                aboveEvent = noteOn;
-                                break;
-                            }
+                        qreal h;
+                        if (_settings.gba_mode)
+                            h = (height() * sqrt(velocity * 127.0)) / 127.0;
+                        else
+                            h = (qreal(height()) * velocity) / 128.0;
+                        if (!dragging && mouseInRect(qRectF(event->x(), height() - h - 5, WIDTH, 10))) {
+                            above = true;
+                            aboveEvent = noteOn;
+                            break;
                         }
                     }
                 }
@@ -496,7 +494,7 @@ void MiscWidget::mouseMoveEvent(QMouseEvent *event) {
             //other modes
             if (!dragging) {
                 trackIndex = -1;
-                QList<QPair<qreal, ushort> > track = getTrack();
+                const QList<TrackPair> &track = getTrack();
                 for (int i = 0; i < track.size(); i++) {
 
                     qreal xPix = track.at(i).first;
@@ -525,14 +523,16 @@ void MiscWidget::mouseMoveEvent(QMouseEvent *event) {
     if (edit_mode == MiscWidgetEditMode::FreehandMode) {
         if (isDrawingFreehand) {
             bool ok = true;
-            for (int i = 0; i < freeHandCurve.size(); i++) {
-                if (freeHandCurve.at(i).first >= qPointF(event->localPos()).x()) {
+            const QPointF eventPos = qPointF(event->localPos());
+            const qreal eventX = eventPos.x();
+            for (const QPointF &point : qAsConst(freeHandCurve)) {
+                if (point.x() >= eventX) {
                     ok = false;
                     break;
                 }
             }
             if (ok) {
-                freeHandCurve.append(QPair<qreal, qreal>(qPointF(event->localPos()).x(), qPointF(event->localPos()).y()));
+                freeHandCurve.append(eventPos);
             }
         }
     }
@@ -549,22 +549,20 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
             bool clickHandlesSelected = false;
             for (MidiEvent *event : Selection::instance()->selectedEvents()) {
 
-                byte velocity = 0;
-                NoteOnEvent *noteOn = qobject_cast<NoteOnEvent *>(event);
+                ubyte velocity = 0;
+                NoteOnEvent *noteOn = protocol_cast<NoteOnEvent *>(event);
 
                 if (noteOn && noteOn->midiTime() >= matrixWidget->minVisibleMidiTime()
                         && noteOn->midiTime() <= matrixWidget->maxVisibleMidiTime()) {
                     velocity = noteOn->velocity();
                 }
-                int h;
+                qreal h;
                 if (velocity > 0) {
                     if (_settings.gba_mode)
-                        h = (height() * sqrt(velocity*127))/128;
+                        h = (height() * sqrt(velocity * 127.0))/128.0;
                     else
-                        h = (height()*velocity)/128;
-                    if (!dragging
-                            && mouseInRect(qRectF(event->x(), height() - h - 5, WIDTH,
-                                            10))) {
+                        h = (qreal(height()) * velocity)/128.0;
+                    if (!dragging && mouseInRect(qRectF(event->x(), height() - h - 5, WIDTH, 10))) {
                         clickHandlesSelected = true;
                         break;
                     }
@@ -585,30 +583,29 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
                         continue;
                     }
 
-                    byte velocity = 0;
-                    NoteOnEvent *noteOn = qobject_cast<NoteOnEvent *>(event);
-                    if (noteOn) {
+                    ubyte velocity = 0;
+                    if (NoteOnEvent *noteOn = protocol_cast<NoteOnEvent *>(event)) {
                         velocity = noteOn->velocity();
                     }
-                    if (velocity > 0) {
-                        qreal h;
-                        if (_settings.gba_mode)
-                            h = (height()*sqrt(velocity*127))/128;
-                        else
-                            h = (height()*velocity)/128;
-                        if (!dragging
-                                && mouseInRect(qRectF(event->x(), height() - h - 5, WIDTH,
-                                                10))) {
-                            file->protocol()->
-                            startNewAction("Selection changed",
-                                            new QImage(":/run_environment/graphics/tool/select_single.png"), false);
-                            ProtocolEntry *toCopy = _dummyTool->copy();
-                            EventTool::selectEvent(event, true);
-                            selectedNew = true;
-                            _dummyTool->protocol(toCopy, _dummyTool);
-                            file->protocol()->endAction();
-                            break;
-                        }
+                    qreal h;
+                    if (_settings.gba_mode) {
+                        h = (height()*sqrt(velocity*127.0))/128.0;
+                    } else {
+                        h = (height()*velocity)/128.0;
+                    }
+                    if (!dragging
+                            && mouseInRect(qRectF(event->x(), height() - h - 5, WIDTH,
+                                                  10))) {
+                        file->protocol()->
+                                startNewAction("Selection changed",
+                                               new QImage(":/select_single.png"), false);
+                        ProtocolEntry *toCopy = _dummyTool->copy();
+                        EventTool::selectEvent(event, true);
+                        selectedNew = true;
+                        _dummyTool->protocol(toCopy, _dummyTool);
+                        file->protocol()->endAction();
+                        break;
+
                     }
                 }
             }
@@ -617,7 +614,7 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
             if (Selection::instance()->selectedEvents().size() > 0 && !clickHandlesSelected
                     && !selectedNew) {
                 file->protocol()->
-                startNewAction("Cleared selection", qnullptr, false);
+                        startNewAction("Cleared selection", qnullptr, false);
                 ProtocolEntry *toCopy = _dummyTool->copy();
                 EventTool::clearSelection();
                 _dummyTool->protocol(toCopy, _dummyTool);
@@ -635,23 +632,23 @@ void MiscWidget::mousePressEvent(QMouseEvent *event) {
             //other modes
             trackIndex = -1;
             QList<MidiEvent *> accordingEvents;
-            QList<QPair<qreal, ushort> > track = getTrack(&accordingEvents);
+            QList<TrackPair> track = getTrack(&accordingEvents);
             for (int i = 0; i < track.size(); i++) {
 
                 qreal xPix = track.at(i).first;
                 qreal yPix;
                 if (_settings.gba_mode && mode == MiscWidgetMode::ControlEditor && controller == 7)
-                    yPix = height()-((qreal)sqrt((qreal)_max * (qreal)track.at(i).second)/(qreal)_max)*height();
+                    yPix = height() - (sqrt(qreal(_max) * track.at(i).second) / qreal(_max)) * height();
                 else
-                    yPix = height()-((qreal)track.at(i).second/(qreal)_max)*height();
+                    yPix = height() - (qreal(track.at(i).second) / qreal(_max)) * height();
 
                 if (!dragging && mouseInRect(qRectF(xPix - 4, yPix - 4, 8, 8))) {
                     trackIndex = i;
 
                     if (accordingEvents.at(i)) {
                         file->protocol()->
-                        startNewAction("Selection changed",
-                                        new QImage(":/run_environment/graphics/tool/select_single.png"), false);
+                                startNewAction("Selection changed",
+                                               new QImage(":/select_single.png"), false);
                         ProtocolEntry *toCopy = _dummyTool->copy();
                         EventTool::clearSelection();
                         EventTool::selectEvent(accordingEvents.at(i), true, true);
@@ -699,8 +696,7 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
                 qreal dX = dragY - mouseY;
 
                 if (dX < -3 || dX > 3) {
-                    file->protocol()->
-                    startNewAction("Edited velocity");
+                    file->protocol()->startNewAction("Edited velocity");
 
                     qreal aboveEventVelocity = -1;
                     if (aboveEvent) {
@@ -709,8 +705,8 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 
                     qreal dV = 127 * dX / height();
                     for (MidiEvent *event : Selection::instance()->selectedEvents()) {
-                        NoteOnEvent *noteOn = qobject_cast<NoteOnEvent *>(event);
-                        if (noteOn) {
+
+                        if (NoteOnEvent *noteOn = protocol_cast<NoteOnEvent *>(event)) {
 
                             qreal v;
                             if (_settings.gba_mode)
@@ -753,111 +749,15 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
                 qreal dX = dragY - mouseY;
                 if (dX < -3 || dX > 3) {
 
-                    int v = qRound(value(mouseY));
+                    ushort v = ushort(value(mouseY));
 
                     startProtocol();
                     if (ev) {
-                        if (v < 0) {
-                            v = 0;
-                        }
-                        switch (mode) {
-                            case MiscWidgetMode::ControlEditor: {
-                                ControlChangeEvent *ctrl = qobject_cast<ControlChangeEvent *>(ev);
-                                if (ctrl) {
-                                    if (_settings.gba_mode && ctrl->control() == 7) {
-                                        v = toExpVal(v);
-                                    }
-                                    if (v > 127) {
-                                        v = 127;
-                                    }
-
-                                    ctrl->setValue(ubyte(v));
-                                }
-                                break;
-                            }
-                            case MiscWidgetMode::PitchBendEditor: {
-                                PitchBendEvent *event = qobject_cast<PitchBendEvent *>(ev);
-                                if (event) {
-                                    if (v > 16383) {
-                                        v = 16383;
-                                    }
-                                    event->setValue(ushort(v));
-                                }
-                                break;
-                            }
-                            case MiscWidgetMode::KeyPressureEditor: {
-                                KeyPressureEvent *event = qobject_cast<KeyPressureEvent *>(ev);
-                                if (event) {
-                                    if (v > 127) {
-                                        v = 127;
-                                    }
-                                    event->setValue(ubyte(v));
-                                }
-                                break;
-                            }
-                            case MiscWidgetMode::ChannelPressureEditor: {
-                                ChannelPressureEvent *event = qobject_cast<ChannelPressureEvent *>(ev);
-                                if (event) {
-                                    if (v > 127) {
-                                        v = 127;
-                                    }
-                                    event->setValue(ubyte(v));
-                                }
-                                break;
-                            }
-                        }
-
+                        editEvent(ev, v);
                     } else {
-
-                        MidiTrack *track = file->track(NewNoteTool::editTrack());
-                        if (!track) {
-                            return;
-                        }
-
                         int tick = matrixWidget->minVisibleMidiTime();
 
-                        if (v < 0) {
-                            v = 0;
-                        }
-
-                        switch (mode) {
-                            case MiscWidgetMode::ControlEditor: {
-                                if (controller == 7)
-                                    v = toExpVal(v);
-                                if (v > 127) {
-                                    v = 127;
-                                }
-
-                                ControlChangeEvent *ctrl = new ControlChangeEvent(channel, controller, ubyte(v),
-                                        track);
-                                file->insertEventInChannel(channel, ctrl, tick);
-                                break;
-                            }
-                            case MiscWidgetMode::PitchBendEditor: {
-                                if (v > 16383) {
-                                    v = 16383;
-                                }
-                                PitchBendEvent *event = new PitchBendEvent(channel, ushort(v), track);
-                                file->insertEventInChannel(channel, event, tick);
-                                break;
-                            }
-                            case MiscWidgetMode::KeyPressureEditor: {
-                                if (v > 127) {
-                                    v = 127;
-                                }
-                                KeyPressureEvent *event = new KeyPressureEvent(channel, ubyte(v), controller, track);
-                                file->insertEventInChannel(channel, event, tick);
-                                break;
-                            }
-                            case MiscWidgetMode::ChannelPressureEditor: {
-                                if (v > 127) {
-                                    v = 127;
-                                }
-                                ChannelPressureEvent *event = new ChannelPressureEvent(channel, v, track);
-                                file->insertEventInChannel(channel, event, tick);
-                                break;
-                            }
-                        }
+                        insertEvent(tick, v);
                     }
 
                     file->protocol()->endAction();
@@ -869,7 +769,7 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 
                 // insert new event
                 int tick = file->tick(matrixWidget->msOfXPos(mouseX));
-                int v = qRound(value(mouseY));
+                ushort v = ushort(value(mouseY));
 
                 QString text;
                 switch (mode) {
@@ -889,64 +789,21 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
                         text = "Inserted Channel Pressure Event";
                         break;
                     }
+                    default:
+                        break;
                 }
 
                 file->protocol()->startNewAction(text);
 
-                MidiTrack *track = file->track(NewNoteTool::editTrack());
-                if (!track) {
-                    return;
-                }
-                if (v < 0) {
-                    v = 0;
-                }
                 if (tick < 0) {
                     tick = 0;
                 }
-                switch (mode) {
-                    case MiscWidgetMode::ControlEditor: {
-                        if (_settings.gba_mode && controller == 7)
-                            v = qRound(pow(v, 2) / 127);
-                        if (v > 127) {
-                            v = 127;
-                        }
-                        ControlChangeEvent *ctrl = new ControlChangeEvent(channel, controller, v,
-                                track);
-                        file->insertEventInChannel(channel, ctrl, tick);
-                        break;
-                    }
-                    case MiscWidgetMode::PitchBendEditor: {
-                        if (v > 16383) {
-                            v = 16383;
-                        }
-                        PitchBendEvent *event = new PitchBendEvent(channel, v, track);
-                        file->insertEventInChannel(channel, event, tick);
-                        break;
-                    }
-                    case MiscWidgetMode::KeyPressureEditor: {
-                        if (v > 127) {
-                            v = 127;
-                        }
-                        KeyPressureEvent *event = new KeyPressureEvent(channel, v, controller, track);
-                        file->insertEventInChannel(channel, event, tick);
-                        break;
-                    }
-                    case MiscWidgetMode::ChannelPressureEditor: {
-                        if (v > 127) {
-                            v = 127;
-                        }
-                        ChannelPressureEvent *event = new ChannelPressureEvent(channel, v, track);
-                        file->insertEventInChannel(channel, event, tick);
-                        break;
-                    }
-                }
-
+                insertEvent(tick, v);
                 file->protocol()->endAction();
             }
         }
     }
-
-    QList<QPair<qreal, qreal> > toAlign;
+    QList<QPointF> toAlign;
 
     if (edit_mode == MiscWidgetEditMode::FreehandMode || edit_mode == MiscWidgetEditMode::LineMode) {
 
@@ -958,24 +815,24 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
                 toAlign = freeHandCurve;
                 freeHandCurve.clear();
             }
-        } else if (edit_mode == MiscWidgetEditMode::LineMode) {
+        } else {
             if (isDrawingLine) {
                 // process data
                 isDrawingLine = false;
                 if (lineX < mouseX) {
-                    toAlign.append(QPair<qreal, qreal>(lineX, lineY));
-                    toAlign.append(QPair<qreal, qreal>(mouseX, mouseY));
+                    toAlign.append(qPointF(lineX, lineY));
+                    toAlign.append(qPointF(mouseX, mouseY));
                 } else if (lineX > mouseX) {
-                    toAlign.append(QPair<qreal, qreal>(mouseX, mouseY));
-                    toAlign.append(QPair<qreal, qreal>(lineX, lineY));
+                    toAlign.append(qPointF(mouseX, mouseY));
+                    toAlign.append(qPointF(lineX, lineY));
                 }
             }
         }
 
         if (toAlign.size() > 0) {
 
-            int minTick = file->tick(matrixWidget->msOfXPos(toAlign.first().first));
-            int maxTick = file->tick(matrixWidget->msOfXPos(toAlign.last().first));
+            int minTick = file->tick(matrixWidget->msOfXPos(toAlign.constFirst().x()));
+            int maxTick = file->tick(matrixWidget->msOfXPos(toAlign.constLast().x()));
 
             // process data
             if (mode == MiscWidgetMode::VelocityEditor) {
@@ -984,9 +841,11 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
                 // in the range
                 QList<MidiEvent *> events;
                 if (!Selection::instance()->selectedEvents().isEmpty()) {
+
+                    events.reserve(Selection::instance()->selectedEvents().size());
+
                     for (MidiEvent *event : Selection::instance()->selectedEvents()) {
-                        NoteOnEvent *noteOn = qobject_cast<NoteOnEvent *>(event);
-                        if (noteOn) {
+                        if (NoteOnEvent *noteOn = protocol_cast<NoteOnEvent *>(event)) {
                             if (noteOn->midiTime() >= minTick && noteOn->midiTime() <= maxTick) {
                                 events.append(event);
                             }
@@ -994,8 +853,8 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
                     }
                 } else {
                     const QList<MidiEvent *> *list = matrixWidget->velocityEvents();
-                    for (MidiEvent *event : *list) {
 
+                    for (MidiEvent *event : *list) {
                         if (!file->channel(event->channel())->visible()) {
                             continue;
                         }
@@ -1004,8 +863,7 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
                             continue;
                         }
 
-                        NoteOnEvent *noteOn = qobject_cast<NoteOnEvent *>(event);
-                        if (noteOn) {
+                        if (NoteOnEvent *noteOn = protocol_cast<NoteOnEvent *>(event)) {
                             if (noteOn->midiTime() >= minTick && noteOn->midiTime() <= maxTick) {
                                 events.append(event);
                             }
@@ -1019,24 +877,19 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
 
                     // process per event
                     for (MidiEvent *event : events) {
-
-                        NoteOnEvent *noteOn = qobject_cast<NoteOnEvent *>(event);
-                        if (noteOn) {
+                        if (NoteOnEvent *noteOn = protocol_cast<NoteOnEvent *>(event)) {
 
                             int tick = noteOn->midiTime();
-                            int x = matrixWidget->xPosOfMs(file->msOfTick(tick));
+                            qreal x = matrixWidget->xPosOfMs(file->msOfTick(tick));
                             qreal y = interpolate(toAlign, x);
-
                             qreal v = 127 * (height() - y) / height();
 
-                            noteOn->setVelocity(qFloor(v));
+                            noteOn->setVelocity(ubyte(v));
                         }
                     }
                     file->protocol()->endAction();
                 }
             } else {
-
-
                 startProtocol();
 
                 // remove old events
@@ -1056,43 +909,14 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
                 int lastValue = -1;
                 for (int tick = minTick; tick <= maxTick; tick += stepSize) {
 
-                    qreal x = matrixWidget->xPosOfMs(file->msOfTick(
-                                                         tick));
-                    qreal y = interpolate(toAlign, int(x));
-                    int v = qRound(value(y));
+                    qreal x = matrixWidget->xPosOfMs(file->msOfTick(tick));
+                    qreal y = interpolate(toAlign, x);
+                    ushort v = ushort(value(y));
                     if ((lastValue != -1) && (lastValue == v)) {
                         continue;
                     }
-                    MidiTrack *track = file->track(NewNoteTool::editTrack());
-                    if (!track) {
-                        return;
-                    }
                     lastValue = v;
-                    switch (mode) {
-                        case MiscWidgetMode::ControlEditor: {
-                            if (controller == 7)
-                                    v = toExpVal(v);
-                            ControlChangeEvent *ctrl = new ControlChangeEvent(channel, controller, v,
-                                    track);
-                            file->insertEventInChannel(channel, ctrl, tick);
-                            break;
-                        }
-                        case MiscWidgetMode::PitchBendEditor: {
-                            PitchBendEvent *event = new PitchBendEvent(channel, v, track);
-                            file->insertEventInChannel(channel, event, tick);
-                            break;
-                        }
-                        case MiscWidgetMode::KeyPressureEditor: {
-                            KeyPressureEvent *event = new KeyPressureEvent(channel, v, controller, track);
-                            file->insertEventInChannel(channel, event, tick);
-                            break;
-                        }
-                        case MiscWidgetMode::ChannelPressureEditor: {
-                            ChannelPressureEvent *event = new ChannelPressureEvent(channel, v, track);
-                            file->insertEventInChannel(channel, event, tick);
-                            break;
-                        }
-                    }
+                    insertEvent(tick, v);
                 }
 
                 file->protocol()->endAction();
@@ -1101,7 +925,100 @@ void MiscWidget::mouseReleaseEvent(QMouseEvent *event) {
     }
 
 }
+void MiscWidget::editEvent(MidiEvent *ev, ushort v) {
+    switch (mode) {
+        case MiscWidgetMode::ControlEditor: {
+            if (ControlChangeEvent *ctrl = protocol_cast<ControlChangeEvent *>(ev)) {
+                if (ctrl->control() == 7) {
+                    v = toExpVal(v);
+                }
+                if (v > 127) {
+                    v = 127;
+                }
 
+                ctrl->setValue(ubyte(v));
+            }
+            break;
+        }
+        case MiscWidgetMode::PitchBendEditor: {
+            if (PitchBendEvent *event = protocol_cast<PitchBendEvent *>(ev)) {
+                if (v > 16383) {
+                    v = 16383;
+                }
+                event->setValue(ushort(v));
+            }
+            break;
+        }
+        case MiscWidgetMode::KeyPressureEditor: {
+            if (KeyPressureEvent *event = protocol_cast<KeyPressureEvent *>(ev)) {
+                if (v > 127) {
+                    v = 127;
+                }
+                event->setValue(ubyte(v));
+            }
+            break;
+        }
+        case MiscWidgetMode::ChannelPressureEditor: {
+            if (ChannelPressureEvent *event = protocol_cast<ChannelPressureEvent *>(ev)) {
+                if (v > 127) {
+                    v = 127;
+                }
+                event->setValue(ubyte(v));
+            }
+            break;
+        }
+        default:
+            break;
+    }
+}
+void MiscWidget::insertEvent(int tick, ushort v) {
+    MidiTrack *track = file->track(NewNoteTool::editTrack());
+    if (!track) {
+        return;
+    }
+    switch (mode) {
+        case MiscWidgetMode::ControlEditor: {
+            if (controller == 7) {
+                v = toExpVal(v);
+            }
+            if (v > 127) {
+                v = 127;
+            }
+            ControlChangeEvent *ctrl = new ControlChangeEvent(channel, controller, ubyte(v),
+                                                              track);
+            file->insertEventInChannel(channel, ctrl, tick);
+            break;
+        }
+        case MiscWidgetMode::PitchBendEditor: {
+            if (v > 16383) {
+                v = 16383;
+            }
+            PitchBendEvent *event = new PitchBendEvent(channel, v, track);
+            file->insertEventInChannel(channel, event, tick);
+            break;
+        }
+        case MiscWidgetMode::KeyPressureEditor: {
+            if (v > 127) {
+                v = 127;
+            }
+            KeyPressureEvent *event = new KeyPressureEvent(channel, ubyte(v), controller, track);
+            file->insertEventInChannel(channel, event, tick);
+            break;
+        }
+        case MiscWidgetMode::ChannelPressureEditor: {
+            if (v > 127) {
+                v = 127;
+            }
+            ChannelPressureEvent *event = new ChannelPressureEvent(channel, ubyte(v), track);
+            file->insertEventInChannel(channel, event, tick);
+            break;
+        }
+        default:
+            break;
+    }
+
+
+}
 qreal MiscWidget::value(qreal y) {
     qreal v = _max * (height() - y) / height();
     if (v > _max) {
@@ -1110,25 +1027,26 @@ qreal MiscWidget::value(qreal y) {
     return v;
 }
 
-qreal MiscWidget::interpolate(const QList<QPair<qreal, qreal> > &track, qreal x) {
-
-    for (int i = 0; i < track.size(); i++) {
-
-        if (qFuzzyCompare(track.at(i).first, x)) {
-            return qreal(track.at(i).second);
+qreal MiscWidget::interpolate(const QList<QPointF> &track, qreal x) {
+    qreal xOld = 0.0;
+    qreal yOld = 0.0;
+    bool track_inited = false;
+    for (const QPointF &point : track) {
+        const qreal xNew = point.x();
+        const qreal yNew = point.y();
+        xOld = xNew;
+        yOld = yNew;
+        if (qFuzzyCompare(xNew, x)) {
+            return yNew;
         }
 
-        if (track.at(i).first > x) {
-
-            if (i == 0) {
-                return qreal(track.at(i).second);
-            } else {
-
-                return qreal(track.at(i - 1).second) +
-                        qreal(track.at(i).second - track.at(i - 1).second) * qreal(x - track.at(
-                                    i - 1).first) / qreal(track.at(i).first - track.at(i - 1).first);
+        if (xNew > x) {
+            if (!track_inited) {
+                return yNew;
             }
+            return  yOld + (yNew - yOld) * (x - xOld) / (xNew - xOld);
         }
+        track_inited = true;
     }
 
     return 0;
@@ -1147,7 +1065,6 @@ void MiscWidget::resetState() {
     isDrawingFreehand = false;
     isDrawingLine = false;
 
-    qWarning("resetState");
     trackIndex = -1;
     redraw();
 }
@@ -1155,7 +1072,6 @@ void MiscWidget::resetState() {
 void MiscWidget::keyPressEvent(QKeyEvent *event) {
     if (Tool::currentTool()) {
         if (Tool::currentTool()->pressKey(event->key())) {
-            qWarning("keyPressEvent");
             update();
         }
     }
@@ -1164,7 +1080,6 @@ void MiscWidget::keyPressEvent(QKeyEvent *event) {
 void MiscWidget::keyReleaseEvent(QKeyEvent *event) {
     if (Tool::currentTool()) {
         if (Tool::currentTool()->releaseKey(event->key())) {
-            qWarning("keyReleaseEvent");
             redraw();
         }
     }
@@ -1172,15 +1087,15 @@ void MiscWidget::keyReleaseEvent(QKeyEvent *event) {
 
 QList<QPair<qreal, ushort> > MiscWidget::getTrack(QList<MidiEvent *> *accordingEvents) {
 
-    QList<QPair<qreal, ushort> > track;
+    QList<TrackPair> track;
 
     // get list of all events in window
-    QList<MidiEvent *> *list = matrixWidget->velocityEvents();
+    const QList<MidiEvent *> *list = matrixWidget->velocityEvents();
 
     // get all events before the start tick to find out value before start
     int startTick = matrixWidget->minVisibleMidiTime();
-    QMultiMap<int, MidiEvent *> *channelEvents = file->channel(channel)->eventMap();
-    QMultiMap<int, MidiEvent *>::const_iterator it = channelEvents->upperBound(startTick);
+    const auto *channelEvents = file->channel(channel)->eventMap();
+    auto it = channelEvents->upperBound(startTick);
 
     bool ok = false;
     ushort valueBefore = _default;
@@ -1190,7 +1105,7 @@ QList<QPair<qreal, ushort> > MiscWidget::getTrack(QList<MidiEvent *> *accordingE
         bool atEnd = false;
         while (!atEnd) {
             if (it != channelEvents->constEnd() && it.key() <= startTick) {
-                QPair<qreal, ushort> p = processEvent(it.value(), &ok);
+                TrackPair p = processEvent(it.value(), &ok);
                 if (ok) {
                     valueBefore = p.second;
                     evBef = it.value();
@@ -1204,14 +1119,14 @@ QList<QPair<qreal, ushort> > MiscWidget::getTrack(QList<MidiEvent *> *accordingE
             }
         }
     }
-    track.append(QPair< qreal, ushort>(0, valueBefore));
+    track.append(TrackPair(0, valueBefore));
     if (accordingEvents) {
         accordingEvents->append(evBef);
     }
     // filter and extract values
     for (int i = list->size() - 1; i >= 0; i--) {
         if (list->at(i) && list->at(i)->channel() == channel) {
-            QPair<qreal, ushort> p = processEvent(list->at(i), &ok);
+            TrackPair p = processEvent(list->at(i), &ok);
             if (ok) {
                 if (list->at(i)->midiTime() == startTick) {
                     // remove added event
@@ -1234,39 +1149,36 @@ QList<QPair<qreal, ushort> > MiscWidget::getTrack(QList<MidiEvent *> *accordingE
 bool MiscWidget::filter(MidiEvent *e) {
     switch (mode) {
         case MiscWidgetMode::ControlEditor: {
-            ControlChangeEvent *ctrl = qobject_cast<ControlChangeEvent *>(e);
+            ControlChangeEvent *ctrl = protocol_cast<ControlChangeEvent *>(e);
             if (ctrl && ctrl->control() == controller) {
                 return true;
-            } else {
-                return false;
             }
+            return false;
         }
         case MiscWidgetMode::PitchBendEditor: {
-            PitchBendEvent *pitch = qobject_cast<PitchBendEvent *>(e);
+            PitchBendEvent *pitch = protocol_cast<PitchBendEvent *>(e);
             if (pitch) {
                 return true;
-            } else {
-                return false;
             }
+            return false;
         }
         case MiscWidgetMode::KeyPressureEditor: {
-            KeyPressureEvent *pressure = qobject_cast<KeyPressureEvent *>(e);
+            KeyPressureEvent *pressure = protocol_cast<KeyPressureEvent *>(e);
             if (pressure && pressure->note() == controller) {
                 return true;
-            } else {
-                return false;
             }
+            return false;
         }
         case MiscWidgetMode::ChannelPressureEditor: {
-            ChannelPressureEvent *pressure = qobject_cast<ChannelPressureEvent *>(e);
+            ChannelPressureEvent *pressure = protocol_cast<ChannelPressureEvent *>(e);
             if (pressure) {
                 return true;
-            } else {
-                return false;
             }
+            return false;
         }
+        default:
+            return false;
     }
-    return false;
 }
 
 QPair<qreal, ushort> MiscWidget::processEvent(MidiEvent *e, bool *isOk) {
@@ -1275,7 +1187,7 @@ QPair<qreal, ushort> MiscWidget::processEvent(MidiEvent *e, bool *isOk) {
     QPair<qreal, ushort> pair(-1, 0xFFFF);
     switch (mode) {
         case MiscWidgetMode::ControlEditor: {
-            ControlChangeEvent *ctrl = qobject_cast<ControlChangeEvent *>(e);
+            ControlChangeEvent *ctrl = protocol_cast<ControlChangeEvent *>(e);
             if (ctrl && ctrl->control() == controller) {
                 qreal x = ctrl->x();
                 ubyte y = ctrl->value();
@@ -1286,8 +1198,7 @@ QPair<qreal, ushort> MiscWidget::processEvent(MidiEvent *e, bool *isOk) {
             break;
         }
         case MiscWidgetMode::PitchBendEditor: {
-            PitchBendEvent *pitch = qobject_cast<PitchBendEvent *>(e);
-            if (pitch) {
+            if (PitchBendEvent *pitch = protocol_cast<PitchBendEvent *>(e)) {
                 qreal x = pitch->x();
                 ushort y = pitch->value();
                 pair.first = x;
@@ -1297,7 +1208,7 @@ QPair<qreal, ushort> MiscWidget::processEvent(MidiEvent *e, bool *isOk) {
             break;
         }
         case MiscWidgetMode::KeyPressureEditor: {
-            KeyPressureEvent *pressure = qobject_cast<KeyPressureEvent *>(e);
+            KeyPressureEvent *pressure = protocol_cast<KeyPressureEvent *>(e);
             if (pressure && pressure->note() == controller) {
                 qreal x = pressure->x();
                 ushort y = pressure->value();
@@ -1308,8 +1219,7 @@ QPair<qreal, ushort> MiscWidget::processEvent(MidiEvent *e, bool *isOk) {
             break;
         }
         case MiscWidgetMode::ChannelPressureEditor: {
-            ChannelPressureEvent *pressure = qobject_cast<ChannelPressureEvent *>(e);
-            if (pressure) {
+            if (ChannelPressureEvent *pressure = protocol_cast<ChannelPressureEvent *>(e)) {
                 qreal x = pressure->x();
                 ushort y = pressure->value();
                 pair.first = x;
@@ -1318,6 +1228,8 @@ QPair<qreal, ushort> MiscWidget::processEvent(MidiEvent *e, bool *isOk) {
             }
             break;
         }
+        default:
+            break;
     }
     return pair;
 }
@@ -1344,5 +1256,9 @@ void MiscWidget::computeMinMax() {
             _default = 0;
             break;
         }
+        default:
+            _max = 127;
+            _default = 0;
+            break;
     }
 }

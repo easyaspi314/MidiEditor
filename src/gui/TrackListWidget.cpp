@@ -35,6 +35,8 @@
 #include <QToolBar>
 #include <QPainter>
 
+
+
 TrackListItem::TrackListItem(MidiTrack *track, TrackListWidget *parent) : QWidget(parent) {
 
     trackList = parent;
@@ -62,7 +64,7 @@ TrackListItem::TrackListItem(MidiTrack *track, TrackListWidget *parent) : QWidge
     toolBar->setStyleSheet("QToolBar{border:none;spacing:0}");
 
     // visibility
-    visibleAction = new QAction(QIcon(":/run_environment/graphics/trackwidget/visible.png"), "Track visible", toolBar);
+    visibleAction = new QAction(QIcon(":/trackwidget/visible.png"), "Track visible", toolBar);
     visibleAction->setCheckable(true);
     visibleAction->setChecked(true);
     toolBar->addAction(visibleAction);
@@ -70,7 +72,7 @@ TrackListItem::TrackListItem(MidiTrack *track, TrackListWidget *parent) : QWidge
     connect(visibleAction, &QAction::toggled, this, &TrackListItem::toggleVisibility);
 
     // audibility
-    loudAction = new QAction(QIcon(":/run_environment/graphics/trackwidget/loud.png"), "Track audible", toolBar);
+    loudAction = new QAction(QIcon(":/trackwidget/loud.png"), "Track audible", toolBar);
     loudAction->setCheckable(true);
     loudAction->setChecked(true);
     toolBar->addAction(loudAction);
@@ -80,13 +82,13 @@ TrackListItem::TrackListItem(MidiTrack *track, TrackListWidget *parent) : QWidge
     toolBar->addSeparator();
 
     // name
-    QAction *renameAction = new QAction(QIcon(":/run_environment/graphics/trackwidget/rename.png"),
+    QAction *renameAction = new QAction(QIcon(":/trackwidget/rename.png"),
                                         "Rename track", toolBar);
     toolBar->addAction(renameAction);
     connect(renameAction, &QAction::triggered, this, &TrackListItem::renameTrack);
 
     // remove
-    QAction *removeAction = new QAction(QIcon(":/run_environment/graphics/trackwidget/remove.png"),
+    QAction *removeAction = new QAction(QIcon(":/trackwidget/remove.png"),
                                         "Remove track", toolBar);
     toolBar->addAction(removeAction);
     connect(removeAction, &QAction::triggered, this, &TrackListItem::removeTrack);
@@ -208,7 +210,7 @@ void TrackListWidget::update() {
         }
     }
 
-    for (TrackListItem *item : items.values()) {
+    for (TrackListItem *item : qAsConst(items)) {
         item->onBeforeUpdate();
     }
 

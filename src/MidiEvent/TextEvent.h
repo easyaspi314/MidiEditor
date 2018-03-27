@@ -33,16 +33,15 @@ enum TextType {
 };
 class TextEvent : public MidiEvent {
 
-    Q_OBJECT
+
 
     public:
-
-
-
         TextEvent(ubyte channel, MidiTrack *track, TextType type = TextType::TextTextEventType, const QString &text = QString());
         TextEvent(const TextEvent &other);
-        EventType type() const qoverride;
-
+        int type() const qoverride;
+        enum {
+            Type = TextEventType
+        };
         const QString &text();
         void setText(const QString &text);
 
@@ -53,8 +52,8 @@ class TextEvent : public MidiEvent {
 
         const QByteArray save() qoverride;
 
-        virtual ProtocolEntry *copy() qoverride;
-        virtual void reloadState(ProtocolEntry *entry) qoverride;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
 
         const QString typeString() qoverride;
         static const QString textTypeString(ubyte type);

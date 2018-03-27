@@ -23,20 +23,22 @@
 
 class KeySignatureEvent  : public MidiEvent {
 
-    Q_OBJECT
+
 
     public:
         KeySignatureEvent(ubyte channel, ubyte tonality, bool minor, MidiTrack *track);
         KeySignatureEvent(const KeySignatureEvent &other);
-        EventType type() const qoverride;
-
-        virtual ubyte line() qoverride;
+        int type() const qoverride;
+        enum {
+            Type = KeySignatureEventType
+        };
+        ubyte line() qoverride;
 
         const QString toMessage() qoverride;
         const QByteArray save() qoverride;
 
-        virtual ProtocolEntry *copy() qoverride;
-        virtual void reloadState(ProtocolEntry *entry) qoverride;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
 
         const QString typeString() qoverride;
 

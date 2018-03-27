@@ -44,8 +44,8 @@ OffEvent::OffEvent(ubyte ch, ubyte l, MidiTrack *track) : MidiEvent(ch, track) {
     }
 }
 
-EventType OffEvent::type() const {
-    return OffEventType;
+int OffEvent::type() const {
+    return Type;
 }
 
 const QList<OnEvent*> OffEvent::corruptedOnEvents(){
@@ -99,7 +99,7 @@ ProtocolEntry *OffEvent::copy(){
 }
 
 void OffEvent::reloadState(ProtocolEntry *entry){
-    OffEvent *other = qobject_cast<OffEvent*>(entry);
+    OffEvent *other = protocol_cast<OffEvent*>(entry);
     if(!other){
         return;
     }

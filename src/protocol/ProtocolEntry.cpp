@@ -44,7 +44,11 @@ void ProtocolEntry::reloadState(ProtocolEntry *entry) {
     return;
 }
 
-ProtocolEntry::ProtocolEntry(QObject *parent) : QObject(parent) {
+ProtocolEntry::ProtocolEntry() {
+}
+
+int ProtocolEntry::type() const {
+    return Type;
 }
 
 ProtocolEntry::ProtocolEntry(const ProtocolEntry &other) {

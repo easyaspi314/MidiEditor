@@ -28,8 +28,8 @@ SysExEvent::SysExEvent(const SysExEvent &other) : MidiEvent(other) {
     _data = other._data;
 }
 
-EventType SysExEvent::type() const {
-    return SystemExclusiveEventType;
+int SysExEvent::type() const {
+    return Type;
 }
 
 QByteArray SysExEvent::data(){
@@ -57,7 +57,7 @@ ProtocolEntry *SysExEvent::copy(){
 }
 
 void SysExEvent::reloadState(ProtocolEntry *entry){
-    SysExEvent *other = qobject_cast<SysExEvent*>(entry);
+    SysExEvent *other = protocol_cast<SysExEvent*>(entry);
     if(!other){
         return;
     }

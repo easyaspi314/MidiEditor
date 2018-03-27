@@ -25,15 +25,17 @@
 
 class OnEvent;
 
-class OffEvent : public MidiEvent{
+class OffEvent : public MidiEvent {
 
-    Q_OBJECT
+
 
     public:
         OffEvent(ubyte ch, ubyte line, MidiTrack *track);
         OffEvent(const OffEvent &other);
-        EventType type() const qoverride;
-
+        int type() const qoverride;
+        enum {
+            Type = OffEventType
+        };
         void setOnEvent(OnEvent *event);
         OnEvent *onEvent();
 
@@ -51,7 +53,7 @@ class OffEvent : public MidiEvent{
 
         void setMidiTime(int t, bool toProtocol = true) qoverride;
 
-        virtual bool isOnEvent() qoverride;
+        bool isOnEvent() qoverride;
     protected:
         OnEvent *_onEvent;
 };

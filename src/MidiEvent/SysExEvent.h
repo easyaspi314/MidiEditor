@@ -24,20 +24,22 @@
 
 class SysExEvent : public MidiEvent{
 
-    Q_OBJECT
+
 
     public:
         SysExEvent(ubyte channel, const QByteArray &data, MidiTrack *track);
         SysExEvent(const SysExEvent &other);
-        EventType type() const qoverride;
-
+        int type() const qoverride;
+        enum {
+            Type = SystemExclusiveEventType
+        };
         QByteArray data();
         ubyte line() qoverride;
         const QByteArray save() qoverride;
 
         const QString typeString() qoverride;
         ProtocolEntry *copy() qoverride;
-        virtual void reloadState(ProtocolEntry *entry) qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
 
         void setData(const QByteArray &d);
 

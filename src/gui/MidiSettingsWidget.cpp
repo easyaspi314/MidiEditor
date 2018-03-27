@@ -42,7 +42,8 @@ MidiSettingsWidget::MidiSettingsWidget(QWidget *parent) : SettingsWidget("Midi I
 
     int row = 0;
 
-    QWidget *playerModeInfo = createInfoBox("Choose the Midi ports on your machine to which MidiEditor connects in order to play and record Midi data.");
+    QWidget *playerModeInfo = createInfoBox("Choose the Midi ports on your machine to which "
+                                            "MidiEditor connects in order to play and record Midi data.");
     layout->addWidget(playerModeInfo, row++, 0, 1, 6);
 
     // output
@@ -56,20 +57,20 @@ MidiSettingsWidget::MidiSettingsWidget(QWidget *parent) : SettingsWidget("Midi I
     _inList = new QListWidget(this);
     connect(_inList, &QListWidget::itemChanged, this, &MidiSettingsWidget::inputChanged);
 
-    QPushButton *reloadOutputList = new QPushButton();
+    QPushButton *reloadOutputList = new QPushButton(this);
     reloadOutputList->setToolTip("Refresh port list");
     reloadOutputList->setFlat(true);
-    reloadOutputList->setIcon(QIcon(":/run_environment/graphics/tool/refresh.png"));
+    reloadOutputList->setIcon(QIcon(":/refresh.png"));
     reloadOutputList->setFixedSize(30, 30);
     layout->addWidget(reloadOutputList, row, 2, 1, 1);
     connect(reloadOutputList, &QPushButton::clicked, this, &MidiSettingsWidget::reloadOutputPorts);
     reloadOutputPorts();
 
-    QPushButton *reloadInputList = new QPushButton();
+    QPushButton *reloadInputList = new QPushButton(this);
     reloadInputList->setFlat(true);
     layout->addWidget(reloadInputList, row++, 5, 1, 1);
     reloadInputList->setToolTip("Refresh port list");
-    reloadInputList->setIcon(QIcon(":/run_environment/graphics/tool/refresh.png"));
+    reloadInputList->setIcon(QIcon(":/refresh.png"));
     reloadInputList->setFixedSize(30, 30);
     connect(reloadInputList, &QPushButton::clicked, this, &MidiSettingsWidget::reloadInputPorts);
     reloadInputPorts();

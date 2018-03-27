@@ -31,15 +31,19 @@ enum struct StandardActionType : ubyte {
             SizeChangeAction,
             MoveAction
         };
-class StandardTool :public EventTool {
+class StandardTool : public EventTool {
 
-    Q_OBJECT
+    
 
     public:
 
         StandardTool();
         StandardTool(StandardTool &other);
-        ToolType type() const qoverride;
+
+        int type() const qoverride;
+        enum {
+            Type = StandardToolType
+        };
 
         void draw(QPainter *painter) qoverride;
         bool press(bool leftClick) qoverride;

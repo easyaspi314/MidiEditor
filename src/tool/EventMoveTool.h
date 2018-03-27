@@ -25,12 +25,15 @@ class MidiEvent;
 
 class EventMoveTool : public EventTool {
 
-    Q_OBJECT
+    
 
     public:
         EventMoveTool(bool upDown, bool leftRight);
         EventMoveTool(EventMoveTool &other);
-        ToolType type() const qoverride;
+        int type() const qoverride;
+        enum {
+            Type = EventMoveToolType
+        };
 
         ProtocolEntry *copy() qoverride;
         void reloadState(ProtocolEntry *entry) qoverride;

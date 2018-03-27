@@ -22,14 +22,12 @@
 #include <QImage>
 #include <QString>
 #include <QList>
-#include "../gui/GraphicObject.h"
 #include "../Utils.h"
 
 #include "../protocol/ProtocolEntry.h"
 
 class Protocol;
 class MidiFile;
-//class GraphicObject;
 class EditorTool;
 class ToolButton;
 class StandardTool;
@@ -53,36 +51,27 @@ class StandardTool;
  * If a tool has a StandardTool not equal 0, it has to return to this standard
  * tool when its action has been finished.
  */
-enum ToolType : ubyte {
-            None,
-            Editor,
-            Eraser,
-            EventMove,
-            Event,
-            NewNote,
-            Select,
-            SizeChange,
-            Standard
-        };
+
 class Tool : public ProtocolEntry {
 
-    Q_OBJECT
+
 
     public:
 
-
-
-        virtual ToolType type() const;
+        virtual int type() const qoverride;
+        enum {
+            Type = ToolType
+        };
 
         /**
          * \brief creates a new Tool.
          */
-        Tool(QObject *parent = qnullptr);
+        Tool();
 
         /**
          * \brief creates a new Tool copying all data from &other.
          */
-        Tool(Tool &other);
+        Tool(const Tool &other);
 
         /**
          * \brief returns wether the Tool is selected or not.
@@ -179,7 +168,7 @@ class Tool : public ProtocolEntry {
          *
          * Used in the protoc list and on the Buttons.
          */
-        QImage _image;
+        QImage *_image;
 
         /**
          * \brief The ToolTip the Button should display.

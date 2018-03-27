@@ -52,7 +52,7 @@ NToleQuantizationDialog::NToleQuantizationDialog(QWidget *parent) : QDialog(pare
     layout->addWidget(replaceNum, 1, 1, 1, 2);
     layout->addWidget(replaceDenom, 1, 3, 1, 1);
 
-    for (int i = 1; i < 21; i++) {
+    for (ubyte i = 1; i < 21; i++) {
         ntoleN->addItem(QString::number(i));
         replaceNum->addItem(QString::number(i));
     }
@@ -60,14 +60,18 @@ NToleQuantizationDialog::NToleQuantizationDialog(QWidget *parent) : QDialog(pare
     for (int i = 0; i <= 5; i++) {
         QString text;
 
-        if (i == 0) {
-            text = "Whole note";
-        } else if (i == 1) {
-            text = "Half note";
-        } else if (i == 2) {
-            text = "Quarter note";
-        } else {
-            text =  _("th note").arg(qRound(qPow(2, i)));
+        switch (i) {
+            case 0:
+                text = "Whole note";
+                break;
+            case 1:
+                text = "Half note";
+                break;
+            case 2:
+                text = "Quarter note";
+                break;
+            default:
+                text =  _("th note").arg(qRound(qPow(2, i)));
         }
 
         ntoleBeat->addItem(text);
@@ -90,7 +94,7 @@ NToleQuantizationDialog::NToleQuantizationDialog(QWidget *parent) : QDialog(pare
 }
 
 void NToleQuantizationDialog::takeResults() {
-    ntoleNNum = ntoleN->currentIndex()+1;
+    ntoleNNum = ntoleN->currentIndex() + 1;
     ntoleBeatNum = ntoleBeat->currentIndex();
     replaceNumNum = replaceNum->currentIndex()+1;
     replaceDenomNum = replaceDenom->currentIndex();

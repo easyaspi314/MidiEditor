@@ -30,8 +30,8 @@ ProgChangeEvent::ProgChangeEvent(const ProgChangeEvent &other) : MidiEvent(other
     _program = other._program;
 }
 
-EventType ProgChangeEvent::type() const {
-    return ProgramChangeEventType;
+int ProgChangeEvent::type() const {
+    return Type;
 }
 
 ubyte ProgChangeEvent::line(){
@@ -54,7 +54,7 @@ ProtocolEntry *ProgChangeEvent::copy(){
 }
 
 void ProgChangeEvent::reloadState(ProtocolEntry *entry){
-    ProgChangeEvent *other = qobject_cast<ProgChangeEvent*>(entry);
+    ProgChangeEvent *other = protocol_cast<ProgChangeEvent*>(entry);
     if(!other){
         return;
     }

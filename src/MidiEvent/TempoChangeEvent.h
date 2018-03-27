@@ -23,18 +23,19 @@
 
 class TempoChangeEvent : public MidiEvent {
 
-    Q_OBJECT
 
     public:
         TempoChangeEvent(ubyte channel, int value, MidiTrack *track);
         TempoChangeEvent(const TempoChangeEvent &other);
-        EventType type() const qoverride;
-
+        int type() const qoverride;
+        enum {
+            Type = TempoChangeEventType
+        };
         int beatsPerQuarter();
         int msPerTick();
 
-        virtual ProtocolEntry *copy() qoverride;
-        virtual void reloadState(ProtocolEntry *entry) qoverride;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
         ubyte line() qoverride;
         const QByteArray save() qoverride;
 

@@ -24,13 +24,15 @@
 
 class UnknownEvent : public MidiEvent {
 
-    Q_OBJECT
+    
 
     public:
         UnknownEvent(ubyte channel, ubyte type, QByteArray data, MidiTrack *track);
         UnknownEvent(const UnknownEvent &other);
-        EventType type() const qoverride;
-
+        int type() const qoverride;
+        enum {
+            Type = UnknownEventType
+        };
         QByteArray data();
         ubyte line() qoverride;
         const QByteArray save() qoverride;

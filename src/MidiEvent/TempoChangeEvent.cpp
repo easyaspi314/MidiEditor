@@ -34,8 +34,8 @@ TempoChangeEvent::TempoChangeEvent(const TempoChangeEvent &other) : MidiEvent(ot
     _beats = other._beats;
 }
 
-EventType TempoChangeEvent::type() const {
-    return TempoChangeEventType;
+int TempoChangeEvent::type() const {
+    return Type;
 }
 
 int TempoChangeEvent::beatsPerQuarter(){
@@ -57,7 +57,7 @@ ProtocolEntry *TempoChangeEvent::copy(){
 }
 
 void TempoChangeEvent::reloadState(ProtocolEntry *entry){
-    TempoChangeEvent *other = qobject_cast<TempoChangeEvent*>(entry);
+    TempoChangeEvent *other = protocol_cast<TempoChangeEvent*>(entry);
     if(!other){
         return;
     }

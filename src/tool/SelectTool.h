@@ -22,7 +22,7 @@
 #include "EventTool.h"
 
 class MidiEvent;
-enum struct SelectionType : ubyte {
+enum struct SelectType : ubyte {
     Right = 0,
     Left,
     Box,
@@ -30,13 +30,17 @@ enum struct SelectionType : ubyte {
 };
 class SelectTool: public EventTool {
 
-    Q_OBJECT
+    
 
     public:
 
-        SelectTool(SelectionType type);
+        SelectTool(SelectType type);
         SelectTool(SelectTool &other);
-        ToolType type() const qoverride;
+
+        int type() const qoverride;
+        enum {
+            Type = SelectToolType
+        };
 
         void draw(QPainter *painter) qoverride;
 
@@ -54,7 +58,7 @@ class SelectTool: public EventTool {
 
     protected:
         qreal x_rect, y_rect;
-        SelectionType stool_type;
+        SelectType stool_type;
 
 };
 

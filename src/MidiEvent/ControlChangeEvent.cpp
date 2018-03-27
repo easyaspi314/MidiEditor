@@ -38,8 +38,8 @@ ControlChangeEvent::ControlChangeEvent(const ControlChangeEvent &other) :
     _control = other._control;
 }
 
-EventType ControlChangeEvent::type() const {
-    return ControlChangeEventType;
+int ControlChangeEvent::type() const {
+    return Type;
 }
 
 ubyte ControlChangeEvent::line(){
@@ -88,7 +88,7 @@ ProtocolEntry *ControlChangeEvent::copy(){
 }
 
 void ControlChangeEvent::reloadState(ProtocolEntry *entry){
-    ControlChangeEvent *other = qobject_cast<ControlChangeEvent*>(entry);
+    ControlChangeEvent *other = protocol_cast<ControlChangeEvent*>(entry);
     if(!other){
         return;
     }

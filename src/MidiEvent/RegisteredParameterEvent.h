@@ -8,6 +8,7 @@ class MidiTrack;
 
 class RegisteredParameterEvent : public MidiEvent
 {
+    
     public:
         RegisteredParameterEvent(ubyte channel, MidiTrack *track);
 };

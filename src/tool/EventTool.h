@@ -28,13 +28,17 @@ class MidiTrack;
 
 class EventTool: public EditorTool {
 
-    Q_OBJECT
+    
 
     public:
 
         EventTool();
         EventTool(EventTool &other);
-        ToolType type() const;
+
+        int type() const qoverride;
+        enum {
+            Type = EventToolType
+        };
 
         static void selectEvent(MidiEvent *event, bool single, bool ignoreStr=false);
         static void deselectEvent(MidiEvent *event);

@@ -35,7 +35,7 @@ SizeChangeTool::SizeChangeTool() : EventTool() {
     inDrag = false;
     xPos = 0;
     dragsOnEvent = false;
-    setImage(":/run_environment/graphics/tool/change_size.png");
+    setImage(":/change_size.png");
     setToolTipText("Change the duration of the selected event");
 }
 
@@ -46,8 +46,8 @@ SizeChangeTool::SizeChangeTool(SizeChangeTool &other) : EventTool(other) {
     return;
 }
 
-ToolType SizeChangeTool::type() const {
-    return ToolType::SizeChange;
+int SizeChangeTool::type() const {
+    return Type;
 }
 
 ProtocolEntry *SizeChangeTool::copy() {
@@ -55,7 +55,7 @@ ProtocolEntry *SizeChangeTool::copy() {
 }
 
 void SizeChangeTool::reloadState(ProtocolEntry *entry) {
-    SizeChangeTool *other = qobject_cast<SizeChangeTool*>(entry);
+    SizeChangeTool *other = protocol_cast<SizeChangeTool*>(entry);
     if (!other) {
         return;
     }
@@ -85,7 +85,7 @@ void SizeChangeTool::draw(QPainter *painter) {
     for (MidiEvent* event : Selection::instance()->selectedEvents()) {
         bool show = event->shown();
         if (!show) {
-            OnEvent *ev = qobject_cast<OnEvent*>(event);
+            OnEvent *ev = protocol_cast<OnEvent*>(event);
             if (ev) {
                 show = ev->offEvent() && ev->offEvent()->shown();
             }
@@ -154,8 +154,8 @@ bool SizeChangeTool::release() {
     if (Selection::instance()->selectedEvents().count()>0) {
         currentProtocol()->startNewAction("Change event duration", image());
         for (MidiEvent* event : Selection::instance()->selectedEvents()) {
-            OnEvent *on = qobject_cast<OnEvent*>(event);
-            OffEvent *off = qobject_cast<OffEvent*>(event);
+            OnEvent *on = protocol_cast<OnEvent*>(event);
+            OffEvent *off = protocol_cast<OffEvent*>(event);
             if (on) {
                 int onTick = file()->tick(file()->msOfTick(on->midiTime())-
                         matrixWidget->timeMsOfWidth(qRound(-startEventShift)));

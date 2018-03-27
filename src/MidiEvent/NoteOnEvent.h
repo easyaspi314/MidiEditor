@@ -25,12 +25,16 @@ class OffEvent;
 
 class NoteOnEvent : public OnEvent{
 
-    Q_OBJECT
+
 
     public:
         NoteOnEvent(ubyte note, ubyte velocity, ubyte ch, MidiTrack *track);
         NoteOnEvent(const NoteOnEvent &other);
-        EventType type() const qoverride;
+
+        int type() const qoverride;
+        enum {
+            Type = NoteOnEventType
+        };
 
         ubyte note();
         ubyte velocity();
@@ -38,8 +42,8 @@ class NoteOnEvent : public OnEvent{
 
         void setNote(ubyte n);
         void setVelocity(ubyte v);
-        virtual ProtocolEntry *copy() qoverride;
-        virtual void reloadState(ProtocolEntry *entry) qoverride;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
         const QString toMessage() qoverride;
         const QString offEventMessage() qoverride;
         const QByteArray save() qoverride;

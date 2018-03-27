@@ -23,14 +23,18 @@
 
 class ControlChangeEvent : public MidiEvent {
 
-    Q_OBJECT
+
 
     public:
         ControlChangeEvent(ubyte channel, ubyte contr, ubyte val, MidiTrack *track);
         ControlChangeEvent(const ControlChangeEvent &other);
-        EventType type() const qoverride;
 
-        virtual ubyte line() qoverride;
+        int type() const qoverride;
+        enum {
+            Type = ControlChangeEventType
+        };
+
+        ubyte line() qoverride;
         ubyte control();
         ubyte value();
         void setValue(ubyte v);
@@ -40,12 +44,12 @@ class ControlChangeEvent : public MidiEvent {
         const QByteArray play() qoverride;
         const QByteArray save() qoverride;
 
-        virtual ProtocolEntry *copy() qoverride;
-        virtual void reloadState(ProtocolEntry *entry) qoverride;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
 
         const QString typeString() qoverride;
 
-        virtual bool isOnEvent() qoverride;
+        bool isOnEvent() qoverride;
     private:
         ubyte _control, _value;
 

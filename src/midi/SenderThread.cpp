@@ -124,7 +124,7 @@ void SenderThread::enqueue(MidiEvent *event) {
     try {
         std::vector<ubyte> *array = new std::vector<ubyte>(qArray.constBegin(), qArray.constEnd());
         // If it is a NoteOnEvent or an OffEvent, we put it in _noteQueue.
-        if (event->type() == EventType::NoteOnEventType || event->type() == EventType::OffEventType) {
+        if (event->type() == MidiEvent::NoteOnEventType || event->type() == MidiEvent::OffEventType) {
             _noteQueue->try_enqueue(array);
             // Otherwise, it goes into _eventQueue.
         } else {

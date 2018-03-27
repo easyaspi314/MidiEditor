@@ -40,8 +40,8 @@ EditorTool::EditorTool(EditorTool &other):Tool(other) {
     mouseIn = other.mouseIn;
 }
 
-ToolType EditorTool::type() const {
-    return ToolType::Editor;
+int EditorTool::type() const {
+    return Type;
 }
 
 void EditorTool::draw(QPainter *painter) {
@@ -124,7 +124,7 @@ void EditorTool::reloadState(ProtocolEntry *entry) {
 
     Tool::reloadState(entry);
 
-    EditorTool *other = qobject_cast<EditorTool*>(entry);
+    EditorTool *other = protocol_cast<EditorTool*>(entry);
     if (!other) {
         return;
     }

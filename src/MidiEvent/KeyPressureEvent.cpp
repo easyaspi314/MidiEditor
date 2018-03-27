@@ -34,8 +34,8 @@ KeyPressureEvent::KeyPressureEvent(const KeyPressureEvent &other) :
     _note = other._note;
 }
 
-EventType KeyPressureEvent::type() const {
-    return KeyPressureEventType;
+int KeyPressureEvent::type() const {
+    return Type;
 }
 
 ubyte KeyPressureEvent::line(){
@@ -59,7 +59,7 @@ ProtocolEntry *KeyPressureEvent::copy(){
 }
 
 void KeyPressureEvent::reloadState(ProtocolEntry *entry) {
-    KeyPressureEvent *other = qobject_cast<KeyPressureEvent*>(entry);
+    KeyPressureEvent *other = protocol_cast<KeyPressureEvent*>(entry);
     if(!other){
         return;
     }

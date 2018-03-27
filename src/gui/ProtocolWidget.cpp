@@ -96,7 +96,7 @@ void ProtocolWidget::update() {
                 QImage img = step->image()->scaled(20, 20, Qt::KeepAspectRatio);
                 item->setIcon(QIcon(QPixmap::fromImage(img)));
             } else {
-                item->setIcon(QIcon(":/run_environment/graphics/tool/noicon.png"));
+                item->setIcon(QIcon(":/noicon.png"));
             }
             QVariant v;
             v.setValue(i);

@@ -23,26 +23,28 @@
 
 class PitchBendEvent : public MidiEvent {
 
-    Q_OBJECT
 
     public:
         PitchBendEvent(ubyte channel, ushort val, MidiTrack *track);
         PitchBendEvent(const PitchBendEvent &other);
-        EventType type() const qoverride;
+        int type() const qoverride;
+        enum {
+            Type = PitchBendEventType
+        };
 
-        virtual ubyte line() qoverride;
+        ubyte line() qoverride;
         ushort value();
         void setValue(ushort v);
 
         const QString toMessage() qoverride;
         const QByteArray save() qoverride;
 
-        virtual ProtocolEntry *copy() qoverride;
-        virtual void reloadState(ProtocolEntry *entry) qoverride;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
 
         const QString typeString() qoverride;
 
-        virtual bool isOnEvent() qoverride;
+        bool isOnEvent() qoverride;
     private:
         ushort _value;
 };

@@ -51,8 +51,8 @@ EventTool::EventTool(EventTool &other) : EditorTool(other) {
 
 }
 
-ToolType EventTool::type() const {
-    return ToolType::Event;
+int EventTool::type() const {
+    return Type;
 }
 
 void EventTool::selectEvent(MidiEvent *event, bool single, bool ignoreStr) {
@@ -67,14 +67,14 @@ void EventTool::selectEvent(MidiEvent *event, bool single, bool ignoreStr) {
 
     QList<MidiEvent*> selected = Selection::instance()->selectedEvents();
 
-    OffEvent *offevent = qobject_cast<OffEvent*>(event);
+    OffEvent *offevent = protocol_cast<OffEvent*>(event);
     if (offevent) {
         return;
     }
 
     if (single && !QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier) && (!QApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || ignoreStr)) {
         selected.clear();
-        NoteOnEvent *on = qobject_cast<NoteOnEvent*>(event);
+        NoteOnEvent *on = protocol_cast<NoteOnEvent*>(event);
         if (on) {
             MidiPlayer::instance()->play(on);
         }
@@ -111,7 +111,7 @@ void EventTool::paintSelectedEvents(QPainter *painter) {
         bool show = event->shown();
 
         if (!show) {
-            OnEvent *ev = qobject_cast<OnEvent*>(event);
+            OnEvent *ev = protocol_cast<OnEvent*>(event);
             if (ev) {
                 show = ev->offEvent() && ev->offEvent()->shown();
             }
@@ -166,19 +166,19 @@ void EventTool::copyAction() {
         for (MidiEvent *event : Selection::instance()->selectedEvents()) {
 
             // add the current Event
-            MidiEvent *ev = qobject_cast<MidiEvent*>(event->copy());
+            MidiEvent *ev = protocol_cast<MidiEvent*>(event->copy());
             if (ev) {
                 // do not append off event here
-                OffEvent *off = qobject_cast<OffEvent*>(ev);
+                OffEvent *off = protocol_cast<OffEvent*>(ev);
                 if (!off) {
                     copiedEvents->append(ev);
                 }
             }
 
             // if its onEvent, add a copy of the OffEvent
-            OnEvent *onEv = qobject_cast<OnEvent*>(ev);
+            OnEvent *onEv = protocol_cast<OnEvent*>(ev);
             if (onEv) {
-                OffEvent *offEv = qobject_cast<OffEvent*>(onEv->offEvent()->copy());
+                OffEvent *offEv = protocol_cast<OffEvent*>(onEv->offEvent()->copy());
                 if (offEv) {
                 offEv->setOnEvent(onEv);
                 copiedEvents->append(offEv);
@@ -202,19 +202,19 @@ void EventTool::pasteAction() {
     for (MidiEvent *event : *copiedEvents) {
 
         // add the current Event
-        MidiEvent *ev = qobject_cast<MidiEvent*>(event->copy());
+        MidiEvent *ev = protocol_cast<MidiEvent*>(event->copy());
         if (ev) {
             // do not append off event here
-            OffEvent *off = qobject_cast<OffEvent*>(ev);
+            OffEvent *off = protocol_cast<OffEvent*>(ev);
             if (!off) {
                 copiedCopiedEvents.append(ev);
             }
         }
 
         // if its onEvent, add a copy of the OffEvent
-        OnEvent *onEv = qobject_cast<OnEvent*>(ev);
+        OnEvent *onEv = protocol_cast<OnEvent*>(ev);
         if (onEv) {
-            OffEvent *offEv = qobject_cast<OffEvent*>(onEv->offEvent()->copy());
+            OffEvent *offEv = protocol_cast<OffEvent*>(onEv->offEvent()->copy());
             if (offEv) {
             offEv->setOnEvent(onEv);
             copiedCopiedEvents.append(offEv);

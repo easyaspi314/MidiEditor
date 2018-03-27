@@ -41,7 +41,7 @@ class MainWindow;
  */
 class EditorTool : public Tool {
 
-    Q_OBJECT
+
 
     public:
 
@@ -55,7 +55,10 @@ class EditorTool : public Tool {
          */
         EditorTool(EditorTool &other);
 
-        ToolType type() const qoverride;
+        virtual int type() const qoverride;
+        enum {
+            Type = EditorToolType
+        };
 
         /**
          * \brief draws the EditorTools data to painter.

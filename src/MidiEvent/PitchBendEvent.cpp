@@ -34,8 +34,8 @@ PitchBendEvent::PitchBendEvent(const PitchBendEvent &other) :
     _value = other._value;
 }
 
-EventType PitchBendEvent::type() const {
-    return PitchBendEventType;
+int PitchBendEvent::type() const {
+    return Type;
 }
 
 ubyte PitchBendEvent::line(){
@@ -59,7 +59,7 @@ ProtocolEntry *PitchBendEvent::copy(){
 }
 
 void PitchBendEvent::reloadState(ProtocolEntry *entry){
-    PitchBendEvent *other = qobject_cast<PitchBendEvent*>(entry);
+    PitchBendEvent *other = protocol_cast<PitchBendEvent*>(entry);
     if(!other){
         return;
     }

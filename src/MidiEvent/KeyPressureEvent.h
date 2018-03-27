@@ -27,20 +27,22 @@
 
 class KeyPressureEvent : public MidiEvent {
 
-    Q_OBJECT
+
 
     public:
         KeyPressureEvent(ubyte channel, ubyte value, ubyte note, MidiTrack *track);
         KeyPressureEvent(const KeyPressureEvent &other);
-        EventType type() const qoverride;
-
-        virtual ubyte line() qoverride;
+        int type() const qoverride;
+        enum {
+            Type = KeyPressureEventType
+        };
+        ubyte line() qoverride;
 
         const QString toMessage() qoverride;
         const QByteArray save() qoverride;
 
-        virtual ProtocolEntry *copy() qoverride;
-        virtual void reloadState(ProtocolEntry *entry) qoverride;
+        ProtocolEntry *copy() qoverride;
+        void reloadState(ProtocolEntry *entry) qoverride;
 
         const QString typeString() qoverride;
 

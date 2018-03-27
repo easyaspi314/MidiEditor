@@ -23,12 +23,16 @@
 
 class EraserTool : public EventTool {
 
-    Q_OBJECT
+    
 
     public:
         EraserTool();
         EraserTool(EraserTool &other);
-        ToolType type() const qoverride;
+
+        int type() const qoverride;
+        enum {
+            Type = EraserToolType
+        };
 
         ProtocolEntry *copy() qoverride;
         void reloadState(ProtocolEntry *entry)qoverride;

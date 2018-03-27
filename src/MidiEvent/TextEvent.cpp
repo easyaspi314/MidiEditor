@@ -33,8 +33,8 @@ TextEvent::TextEvent(const TextEvent &other) : MidiEvent(other) {
     _text = other._text;
 }
 
-EventType TextEvent::type() const {
-    return TextEventType;
+int TextEvent::type() const {
+    return Type;
 }
 
 const QString &TextEvent::text(){
@@ -80,7 +80,7 @@ ProtocolEntry *TextEvent::copy(){
 }
 
 void TextEvent::reloadState(ProtocolEntry *entry){
-    TextEvent *other = qobject_cast<TextEvent*>(entry);
+    TextEvent *other = protocol_cast<TextEvent*>(entry);
     if(!other){
         return;
     }

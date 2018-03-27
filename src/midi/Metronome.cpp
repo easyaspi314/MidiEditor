@@ -37,7 +37,7 @@ QSoundEffect *Metronome::clickSound = 0;
 Metronome::Metronome(QObject *parent) : QObject(parent) {
     if (!clickSound) {
         clickSound = new QSoundEffect();
-        clickSound->setSource(QUrl::fromLocalFile(":/run_environment/metronome/metronome-01.wav"));
+        clickSound->setSource(QUrl::fromLocalFile(":/metronome.wav"));
     }
     _file = 0;
     num = 4;

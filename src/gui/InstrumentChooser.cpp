@@ -84,7 +84,7 @@ void InstrumentChooser::accept() {
     auto itEnd = _file->channel(_channel)->eventMap()->constEnd();
 
     for (; it != itEnd; ++it) {
-        ProgChangeEvent *prg = qobject_cast<ProgChangeEvent*>(it.value());
+        ProgChangeEvent *prg = protocol_cast<ProgChangeEvent*>(it.value());
         if (prg) {
             events.append(prg);
             track = prg->track();

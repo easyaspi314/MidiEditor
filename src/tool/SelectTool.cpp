@@ -26,28 +26,28 @@
 #include "StandardTool.h"
 #include "../MidiEvent/NoteOnEvent.h"
 
-SelectTool::SelectTool(SelectionType type) : EventTool() {
+SelectTool::SelectTool(SelectType type) : EventTool() {
     stool_type = type;
     x_rect = 0;
     y_rect = 0;
     switch(stool_type) {
-        case SelectionType::Box: {
-            setImage(":/run_environment/graphics/tool/select_box.png");
+        case SelectType::Box: {
+            setImage(":/select_box.png");
             setToolTipText("Select Events (Box)");
             break;
         }
-        case SelectionType::Single: {
-            setImage(":/run_environment/graphics/tool/select_single.png");
+        case SelectType::Single: {
+            setImage(":/select_single.png");
             setToolTipText("Select single Events");
             break;
         }
-        case SelectionType::Left: {
-            setImage(":/run_environment/graphics/tool/select_left.png");
+        case SelectType::Left: {
+            setImage(":/select_left.png");
             setToolTipText("Select all Events on the left side");
             break;
         }
-        case SelectionType::Right: {
-            setImage(":/run_environment/graphics/tool/select_right.png");
+        case SelectType::Right: {
+            setImage(":/select_right.png");
             setToolTipText("Select all Events on the right side");
             break;
         }
@@ -60,22 +60,22 @@ SelectTool::SelectTool(SelectTool &other) : EventTool(other) {
     y_rect = 0;
 }
 
-ToolType SelectTool::type() const {
-    return ToolType::Select;
+int SelectTool::type() const {
+    return Type;
 }
 
 void SelectTool::draw(QPainter *painter) {
     paintSelectedEvents(painter);
-    if (stool_type == SelectionType::Box && (qRound(x_rect) || qRound(y_rect))) {
+    if (stool_type == SelectType::Box && (qRound(x_rect) || qRound(y_rect))) {
         painter->setPen(Qt::gray);
         painter->setBrush(QColor(0,0,0,100));
         painter->drawRect(qRectF(x_rect, y_rect, mouseX-x_rect, mouseY-y_rect));
-    } else if (stool_type == SelectionType::Right || stool_type == SelectionType::Left) {
+    } else if (stool_type == SelectType::Right || stool_type == SelectType::Left) {
         if (mouseIn) {
             painter->setPen(Qt::black);
             painter->setPen(Qt::gray);
             painter->setBrush(QColor(0,0,0,100));
-            if (stool_type == SelectionType::Left) {
+            if (stool_type == SelectType::Left) {
                 painter->drawRect(qRectF(0, 0, mouseX, matrixWidget->height()-1));
             } else {
                 painter->drawRect(qRectF(mouseX, 0, matrixWidget->width()-1, matrixWidget->height()-1));
@@ -86,7 +86,7 @@ void SelectTool::draw(QPainter *painter) {
 
 bool SelectTool::press(bool leftClick) {
     Q_UNUSED(leftClick);
-    if (stool_type == SelectionType::Box) {
+    if (stool_type == SelectType::Box) {
         y_rect = mouseY;
         x_rect = mouseX;
     }
@@ -102,13 +102,14 @@ bool SelectTool::release() {
     file()->protocol()->startNewAction("Selection changed", image(), false);
     ProtocolEntry* toCopy = copy();
 
-    if (!QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier) && !QApplication::keyboardModifiers().testFlag(Qt::ControlModifier)) {
+    if (!QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier) &&
+            !QApplication::keyboardModifiers().testFlag(Qt::ControlModifier)) {
         clearSelection();
     }
 
-    if (stool_type == SelectionType::Box || stool_type == SelectionType::Single) {
+    if (stool_type == SelectType::Box || stool_type == SelectType::Single) {
         qreal x_start = 0.0, y_start = 0.0, x_end = 0.0, y_end = 0.0;
-        if (stool_type == SelectionType::Box) {
+        if (stool_type == SelectType::Box) {
             x_start = x_rect;
             y_start = y_rect;
             x_end = mouseX;
@@ -123,28 +124,30 @@ bool SelectTool::release() {
                 y_start = y_end;
                 y_end = tmp;
             }
-        } else if (stool_type == SelectionType::Single) {
+        } else {
             x_start = mouseX;
             y_start = mouseY;
             x_end = mouseX+1;
             y_end = mouseY+1;
         }
-        for (MidiEvent* event : *(matrixWidget->activeEvents())) {
+        const auto *eventList = matrixWidget->activeEvents();
+        for (MidiEvent* event : *eventList) {
             if (inRect(event, x_start, y_start, x_end, y_end)) {
                 selectEvent(event, false);
             }
         }
-    } else if (stool_type == SelectionType::Left || stool_type == SelectionType::Right) {
+    } else if (stool_type == SelectType::Left || stool_type == SelectType::Right) {
         int tick = file()->tick(matrixWidget->msOfXPos(mouseX));
         int start, end;
-        if (stool_type == SelectionType::Left) {
+        if (stool_type == SelectType::Left) {
             start = 0;
             end = tick;
         } else {
             end = file()->endTick();
             start = tick;
         }
-        for (MidiEvent *event : *(file()->eventsBetween(start, end))) {
+        const auto *eventsBetweenList = file()->eventsBetween(start, end);
+        for (MidiEvent *event : *eventsBetweenList) {
             selectEvent(event, false);
         }
     }
@@ -163,11 +166,9 @@ bool SelectTool::release() {
 }
 
 bool SelectTool::inRect(MidiEvent *event, qreal x_start, qreal y_start, qreal x_end, qreal y_end) {
-    return  pointInRect(event->x(), event->y(), x_start, y_start, x_end, y_end) ||
-            pointInRect(event->x(), event->y()+event->height(), x_start, y_start, x_end, y_end) ||
-            pointInRect(event->x()+event->width(), event->y(), x_start, y_start, x_end, y_end) ||
-            pointInRect(event->x()+event->width(), event->y()+event->height(), x_start, y_start, x_end, y_end) ||
-            pointInRect(x_start, y_start, event->x(), event->y(), event->x()+event->width(), event->y()+event->height());
+    const QRectF rect(qPointF(x_start, y_start), qPointF(x_end, y_end));
+    const QRectF eventRect(event->x(), event->y(), event->width(), event->height());
+    return rect.contains(eventRect);
 }
 
 bool SelectTool::move(qreal mouseX, qreal mouseY) {
@@ -180,14 +181,13 @@ ProtocolEntry *SelectTool::copy() {
 }
 
 void SelectTool::reloadState(ProtocolEntry *entry) {
-    SelectTool *other = qobject_cast<SelectTool*>(entry);
-    if (!other) {
-        return;
+
+    if (SelectTool *other = protocol_cast<SelectTool*>(entry)) {
+        EventTool::reloadState(entry);
+        x_rect = 0;
+        y_rect = 0;
+        stool_type = other->stool_type;
     }
-    EventTool::reloadState(entry);
-    x_rect = 0;
-    y_rect = 0;
-    stool_type = other->stool_type;
 }
 
 bool SelectTool::releaseOnly() {

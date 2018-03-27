@@ -122,13 +122,18 @@ const QStringList MidiInput::inputPorts() {
 
     // Check outputs.
     uint nPorts = _midiIn->getPortCount();
-    ports.reserve(nPorts);
+    if (nPorts > INT_MAX) {
+        qWarning("MidiInput::inputPorts(): Somehow had more than INT_MAX input ports!");
+        nPorts = INT_MAX;
+    }
+    ports.reserve(int(nPorts));
     for (uint i = 0; i < nPorts; i++) {
 
         try {
             ports.append(QString::fromStdString(_midiIn->getPortName(i)));
+        } catch (RtMidiError &error) {
+            error.printMessage();
         }
-        catch (RtMidiError &) {}
     }
 
     return ports;
@@ -140,12 +145,10 @@ bool MidiInput::setInputPort(const QString &name) {
     uint nPorts = _midiIn->getPortCount();
 
     for (uint i = 0; i < nPorts; i++) {
-
         try {
-
             // if the current port has the given name, select it and close
             // current port
-            if (_midiIn->getPortName(i) == name.toStdString()) {
+            if (name == QString::fromStdString(_midiIn->getPortName(i))) {
 
                 _midiIn->closePort();
                 _midiIn->openPort(i);
@@ -153,8 +156,9 @@ bool MidiInput::setInputPort(const QString &name) {
                 return true;
             }
 
+        } catch (RtMidiError &error) {
+            error.printMessage();
         }
-        catch (RtMidiError &) {}
     }
 
     // port not found
@@ -178,8 +182,7 @@ QMultiMap<int, MidiEvent*> MidiInput::endInput(MidiTrack *track) {
     QMultiMap<int, MidiEvent*> eventList;
     QByteArray array;
 
-    QMultiMap<int, std::vector<ubyte> >::const_iterator it =
-            _messages->constBegin();
+    auto it = _messages->constBegin();
 
     bool ok = true;
     bool endEvent = false;
@@ -192,14 +195,14 @@ QMultiMap<int, MidiEvent*> MidiInput::endInput(MidiTrack *track) {
 
         array.clear();
 
-        for (ulong i = 0; i < it.value().size(); i++) {
-            append(array, it.value().at(i));
+        for (ubyte b : it.value()) {
+            append(array, b);
         }
 
         QDataStream tempStream(array);
 
         MidiEvent *event = MidiEvent::loadMidiEvent(&tempStream, &ok, &endEvent, track);
-        OffEvent *off = qobject_cast<OffEvent*>(event);
+        OffEvent *off = protocol_cast<OffEvent*>(event);
         if (off && !off->onEvent()) {
             emptyOffEvents.insert(it.key(), off);
             ++it;
@@ -210,7 +213,7 @@ QMultiMap<int, MidiEvent*> MidiInput::endInput(MidiTrack *track) {
         }
         // if on event, check whether the off event has been loaded before.
         // this occurs when RTMidi fails to send the correct order
-        OnEvent *on = qobject_cast<OnEvent*>(event);
+        OnEvent *on = protocol_cast<OnEvent*>(event);
         if (on && emptyOffEvents.contains(it.key())) {
             auto emptyIt = emptyOffEvents.lowerBound(it.key());
             while (emptyIt != emptyOffEvents.end() && emptyIt.key() == it.key()) {
@@ -229,7 +232,7 @@ QMultiMap<int, MidiEvent*> MidiInput::endInput(MidiTrack *track) {
     }
     auto it2 = eventList.begin();
     while (it2 != eventList.end()) {
-        OnEvent *on = qobject_cast<OnEvent*>(it2.value());
+        OnEvent *on = protocol_cast<OnEvent*>(it2.value());
         if (on && !on->offEvent()) {
             it2 = eventList.erase(it2);
         } else {
@@ -291,7 +294,7 @@ QMultiMap<int, MidiEvent*> MidiInput::endInput(MidiTrack *track) {
                         mapIt = sortedByLine.upperBound(line);
                         mEnd = sortedByLine.lowerBound(line);
                         for (; mapIt != mEnd; ++mapIt) {
-                            ControlChangeEvent *conv = qobject_cast<ControlChangeEvent*>(mapIt.value());
+                            ControlChangeEvent *conv = protocol_cast<ControlChangeEvent*>(mapIt.value());
                             if (!conv) {
                                 continue;
                             }
@@ -330,7 +333,7 @@ QMultiMap<int, MidiEvent*> MidiInput::endInput(MidiTrack *track) {
                         mapIt = sortedByLine.upperBound(line);
                         mEnd = sortedByLine.lowerBound(line);
                         for (; mapIt != mEnd; ++mapIt) {
-                            KeyPressureEvent *conv = qobject_cast<KeyPressureEvent*>(mapIt.value());
+                            KeyPressureEvent *conv = protocol_cast<KeyPressureEvent*>(mapIt.value());
                             if (!conv) {
                                 continue;
                             }

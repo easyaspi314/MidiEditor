@@ -44,6 +44,7 @@
 #include <QBuffer>
 #include <QTime>
 #include <QPicture>
+#include "CrashHandler.h"
 
 /*
  * TODO:
@@ -230,7 +231,7 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 
             for (int i = 0; i < objects->length(); i++) {
                 objects->at(i)->setShown(false);
-                OnEvent *onev = qobject_cast<OnEvent *>(objects->at(i));
+                OnEvent *onev = protocol_cast<OnEvent *>(objects->at(i));
                 if (onev && onev->offEvent()) {
                     onev->offEvent()->setShown(false);
                 }
@@ -244,7 +245,7 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
             startTick = file->tick(startTimeX, endTimeX, &currentTempoEvents,
                                           &endTick, &msOfFirstEventInList);
 
-            TempoChangeEvent *ev = qobject_cast<TempoChangeEvent *>(currentTempoEvents->at(0));
+            TempoChangeEvent *ev = protocol_cast<TempoChangeEvent *>(currentTempoEvents->at(0));
             if (!ev) {
                 return;
             }
@@ -358,7 +359,7 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
         painter.restore();
     }
 
-    int timelinePos = timelineWidget->mousePosition();
+    qreal timelinePos = timelineWidget->mousePosition();
     if (enabled && timelinePos >= 0 && !MidiPlayer::instance()->isPlaying()) {
         painter.setPen(Qt::red);
         painter.drawLine(qLineF(timelinePos, 0, timelinePos, height()));
@@ -366,8 +367,8 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
 
     if (MidiPlayer::instance()->isPlaying()) {
         painter.setPen(Qt::red);
-        int x = xPosOfMs(MidiPlayer::instance()->timeMs() - _settings.playbackDelay);
-        if (x >= 0 && viewport.contains(QPoint(x, viewport.center().y()))) {
+        qreal x = xPosOfMs(MidiPlayer::instance()->timeMs() - _settings.playbackDelay);
+        if (x >= 0 && viewport.contains(QPoint(qFloor(x), viewport.center().y()))) {
             painter.drawLine(qLineF(x, 0, x, height()));
         }
 
@@ -383,7 +384,7 @@ void MatrixWidget::paintEvent(QPaintEvent *event) {
     if (MidiInput::instance()->recording()) {
         painter.setPen(Qt::black);
         painter.setBrush(Qt::red);
-        painter.drawEllipse(qPointF(viewport.right() - 20, 5), 15, 15);
+        painter.drawEllipse(qPointF(viewport.right() - 20.0, 5), 15, 15);
     }
 
     // if MouseRelease was not used, delete it
@@ -412,8 +413,8 @@ void MatrixWidget::paintChannel(QPainter *painter, ubyte channel) {
             // and an OffEvent, the OnEvent will hold the coordinates
             ubyte line = event->line();
 
-            OffEvent *offEvent = qobject_cast<OffEvent *>(event);
-            OnEvent *onEvent = qobject_cast<OnEvent *>(event);
+            OffEvent *offEvent = protocol_cast<OffEvent *>(event);
+            OnEvent *onEvent = protocol_cast<OnEvent *>(event);
 
             qreal x, width;
             qreal y = yPosOfLine(line);
@@ -423,7 +424,7 @@ void MatrixWidget::paintChannel(QPainter *painter, ubyte channel) {
                 if (onEvent) {
                     offEvent = onEvent->offEvent();
                 } else if (offEvent) {
-                    onEvent = qobject_cast<OnEvent *>(offEvent->onEvent());
+                    onEvent = offEvent->onEvent();
                 }
 
                 width = xPosOfMs(msOfTick(offEvent->midiTime())) -
@@ -464,7 +465,7 @@ void MatrixWidget::paintChannel(QPainter *painter, ubyte channel) {
         if (!(event->track()->hidden())) {
             // append event to velocityObjects if its not a offEvent and if it
             // is in the x-Area
-            OffEvent *offEvent = qobject_cast<OffEvent *>(event);
+            OffEvent *offEvent = protocol_cast<OffEvent *>(event);
             if (!offEvent && event->midiTime() >= startTick &&
                       event->midiTime() <= endTick &&
                       !velocityObjects->contains(event)) {
@@ -512,7 +513,7 @@ void MatrixWidget::setFile(MidiFile *f) {
 
         QMap<int, MidiEvent *>::const_iterator it = map->lowerBound(0);
         while (it != map->constEnd()) {
-            NoteOnEvent *onev = qobject_cast<NoteOnEvent *>(it.value());
+            NoteOnEvent *onev = protocol_cast<NoteOnEvent *>(it.value());
             if (onev && eventInWidget(onev)) {
                 if (onev->line() < maxNote || maxNote < 0) {
                     maxNote = onev->line();
@@ -705,12 +706,12 @@ int MatrixWidget::timeMsOfWidth(int w) {
 }
 
 bool MatrixWidget::eventInWidget(MidiEvent *event) {
-    NoteOnEvent *on = qobject_cast<NoteOnEvent *>(event);
-    OffEvent *off = qobject_cast<OffEvent *>(event);
+    NoteOnEvent *on = protocol_cast<NoteOnEvent *>(event);
+    OffEvent *off = protocol_cast<OffEvent *>(event);
     if (on) {
         off = on->offEvent();
     } else if (off) {
-        on = qobject_cast<NoteOnEvent *>(off->onEvent());
+        on = protocol_cast<NoteOnEvent *>(off->onEvent());
     }
     if (on && off) {
         ubyte line = off->line();
@@ -907,7 +908,7 @@ void MatrixWidget::redraw() {
 
         for (int i = 0; i < objects->length(); i++) {
             objects->at(i)->setShown(false);
-            OnEvent *onev = qobject_cast<OnEvent *>(objects->at(i));
+            OnEvent *onev = protocol_cast<OnEvent *>(objects->at(i));
             if (onev && onev->offEvent()) {
                 onev->offEvent()->setShown(false);
             }
@@ -921,7 +922,7 @@ void MatrixWidget::redraw() {
         startTick = file->tick(0, endTimeX, &currentTempoEvents,
                                       &endTick, &msOfFirstEventInList);
 
-        TempoChangeEvent *ev = qobject_cast<TempoChangeEvent *>(currentTempoEvents->at(0));
+        TempoChangeEvent *ev = protocol_cast<TempoChangeEvent *>(currentTempoEvents->at(0));
         if (!ev) {
             return;
         }
